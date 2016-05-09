@@ -1,3 +1,3 @@
 from dna_ordering_problem import DnaOffer, DnaOrderingProblem
-from optimization import optimize_cuts_with_GA
+from optimization import optimize_costs_with_graph
 from assembly_methods import GibsonAssemblyMethod

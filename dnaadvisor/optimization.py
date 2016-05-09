@@ -6,9 +6,10 @@ from tqdm import tqdm
 import itertools as itt
 import networkx as nx
 
+
 def optimize_cuts_with_graph(sequence, segment_score_function,
                              segment_length_range=(500, 2000),
-                             nucleotide_resolution=10):
+                             nucleotide_resolution=10, refine=True):
     min_length, max_length = segment_length_range
     nodes = range(0, len(sequence), nucleotide_resolution)
     nodes[-1] = len(sequence)
@@ -21,73 +22,47 @@ def optimize_cuts_with_graph(sequence, segment_score_function,
     for start, end in tqdm(segments):
         cost = segment_score_function((start, end), sequence)
         graph.add_edge(start, end, weight=cost)
+
+    best_cuts = nx.dijkstra_path(graph, 0, len(sequence))
+
+    if refine and (nucleotide_resolution > 1):
+        radius = int(nucleotide_resolution / 2)
+        best_cuts = refine_cuts_with_graph(sequence, best_cuts,
+                                           segment_score_function, radius)
+    return best_cuts
+
+def refine_cuts_with_graph(sequence, cuts, segment_score_function, radius):
+    nodes=[
+        range(max(0, cut - radius), min(len(sequence)+1, cut + radius))
+        for cut in cuts
+    ]
+    segments = [
+        (node_1, node_2)
+        for nodes_1, nodes_2 in zip(nodes, nodes[1:])
+        for node_1, node_2 in itt.product(nodes_1, nodes_2)
+        if node_2 - node_1 > 1
+    ]
+    graph=nx.DiGraph()
+    for start, end in tqdm(segments):
+        cost=segment_score_function((start, end), sequence)
+        graph.add_edge(start, end, weight=cost)
     return nx.dijkstra_path(graph, 0, len(sequence))
 
 
-def optimize_costs_with_graph(dna_ordering_problem, length_range=(500, 2000),
-                              nucleotide_resolution=10):
+def optimize_costs_with_graph(dna_ordering_problem,
+                              segment_length_range=(500, 2000),
+                              nucleotide_resolution=10, refine=True):
     def segment_score_function(segment, sequence):
-        offers = dna_ordering_problem.find_offers(segment)
+        offers=dna_ordering_problem.find_offers(segment)
         if offers == []:
             return float(1e8)
         else:
             return min([offer.price for offer in offers])
-    cuts = optimize_cuts_with_graph(
+    best_cuts = optimize_cuts_with_graph(
         dna_ordering_problem.sequence,
         segment_score_function,
-        length_range=length_range,
-        nucleotide_resolution=nucleotide_resolution
+        segment_length_range=segment_length_range,
+        nucleotide_resolution=nucleotide_resolution,
+        refine=refine
     )
-    return dna_ordering_problem.find_best_offers(cuts)
-
-
-def optimize_cost_with_GA(dna_ordering_problem, ncuts, pop_size=20,
-                          generations=40):
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-
-    creator.create("Individual", np.ndarray, fitness=creator.FitnessMax)
-
-    toolbox = base.Toolbox()
-    L = len(dna_ordering_problem.sequence)
-    toolbox.register("attr_int", np.random.randint, 0, L)
-    toolbox.register("individual", tools.initRepeat, creator.Individual,
-                     toolbox.attr_int, ncuts)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-
-    def evaluate(individual):
-        return -dna_ordering_problem.score_cuts(list(set(individual))),
-
-    mutation_amplitude = L / ncuts
-
-    def mutate(individual):
-        individual += np.random.randint(-mutation_amplitude,
-                                        mutation_amplitude, ncuts)
-        individual[individual < 0] = 0
-        individual[individual > L] = L
-
-        return individual,
-
-    def mutate(individual):
-        fitness = individual.fitness
-        individual += np.random.randint(-mutation_amplitude,
-                                        mutation_amplitude, len(individual))
-        individual = np.minimum(L, np.maximum(0, individual))
-        individual = creator.Individual(np.array(list(set(individual))))
-        individual.fitness = fitness
-        return individual,
-
-    toolbox.register("evaluate", evaluate)
-    toolbox.register("mutate", mutate)
-    toolbox.register("select", tools.selTournament, tournsize=3)
-
-    history = tools.History()
-    toolbox.decorate("mutate", history.decorator)
-
-    hof = tools.HallOfFame(1, similar=np.array_equal)
-    stats = tools.Statistics()
-    #stats.register("mean", lambda ind: np.mean(ind))
-    pop = toolbox.population(n=pop_size)
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0, mutpb=0.2,
-                                   ngen=generations, stats=stats,
-                                   halloffame=hof, verbose=False)
-    return pop, log, stats, hof, history
+    return dna_ordering_problem.find_best_offers(best_cuts)
