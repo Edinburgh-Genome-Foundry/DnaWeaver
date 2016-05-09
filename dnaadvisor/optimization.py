@@ -2,9 +2,47 @@
 
 import numpy as np
 from deap import creator, base, tools, algorithms
+from tqdm import tqdm
+import itertools as itt
+import networkx as nx
+
+def optimize_cuts_with_graph(sequence, segment_score_function,
+                             segment_length_range=(500, 2000),
+                             nucleotide_resolution=10):
+    min_length, max_length = segment_length_range
+    nodes = range(0, len(sequence), nucleotide_resolution)
+    nodes[-1] = len(sequence)
+    segments = [
+        (start, end)
+        for start, end in itt.product(nodes, nodes)
+        if min_length < end - start < max_length
+    ]
+    graph = nx.DiGraph()
+    for start, end in tqdm(segments):
+        cost = segment_score_function((start, end), sequence)
+        graph.add_edge(start, end, weight=cost)
+    return nx.dijkstra_path(graph, 0, len(sequence))
 
 
-def optimize_cuts_with_GA(dna_ordering_problem, ncuts, pop_size=20, generations=40):
+def optimize_costs_with_graph(dna_ordering_problem, length_range=(500, 2000),
+                              nucleotide_resolution=10):
+    def segment_score_function(segment, sequence):
+        offers = dna_ordering_problem.find_offers(segment)
+        if offers == []:
+            return float(1e8)
+        else:
+            return min([offer.price for offer in offers])
+    cuts = optimize_cuts_with_graph(
+        dna_ordering_problem.sequence,
+        segment_score_function,
+        length_range=length_range,
+        nucleotide_resolution=nucleotide_resolution
+    )
+    return dna_ordering_problem.find_best_offers(cuts)
+
+
+def optimize_cost_with_GA(dna_ordering_problem, ncuts, pop_size=20,
+                          generations=40):
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 
     creator.create("Individual", np.ndarray, fitness=creator.FitnessMax)

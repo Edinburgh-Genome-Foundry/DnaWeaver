@@ -42,6 +42,17 @@ class DnaOrderingProblem:
         self.offers = offers
         self.assembly_method = assembly_method
 
+    def find_offers(self, zone):
+        fragment = self.assembly_method.compute_fragment_sequence(
+            zone, self.sequence
+        )
+        result = []
+        for offer in self.offers:
+            evaluation = OfferEvaluation(fragment, offer, zone)
+            if evaluation.is_orderable:
+                result.append(evaluation)
+        return result
+
     def compute_fragments_zones(self, cuts):
         L = len(self.sequence)
         cuts = sorted(list(set([0, L] + cuts)))
