@@ -1,7 +1,13 @@
-from dnaadvisor import optimize_cuts_with_GA, DnaOffer, DnaOrderingProblem, GibsonAssemblyMethod
+from dnaadvisor import *
 from dnachisel import random_dna_sequence, PROVIDERS_CONSTRAINTS
-sequence = random_dna_sequence(200) + 'GGTCTC' + random_dna_sequence(300) + 'GGTCTC' + random_dna_sequence(200)
-sequence = 'GGTCTC' +  random_dna_sequence(200)
+import numpy as np
+
+np.random.seed(123)
+
+sequence = (random_dna_sequence(200) + 'GGTCTC' +
+            random_dna_sequence(300) + 'GGTCTC' +
+            random_dna_sequence(200))
+
 gen9_offer = DnaOffer(
     name="Gen9Offer",
     constraints = PROVIDERS_CONSTRAINTS["Gen9"],
@@ -13,29 +19,15 @@ idt_offer = DnaOffer(
     constraints= PROVIDERS_CONSTRAINTS["IDT"],
     pricing = lambda sequence: 0.10*len(sequence)
 )
-
-twix_offer=DnaOffer(
-    name="Twix",
-    constraints = [],
-    pricing = lambda sequence: 0.20*len(sequence)
-
-)
-
-prob = DnaOrderingProblem(
+problem = DnaOrderingProblem(
     sequence= sequence,
-    offers = [gen9_offer, idt_offer, twix_offer],
+    offers = [gen9_offer, idt_offer],
     assembly_method= GibsonAssemblyMethod(20)
 )
-pop, log, stats, hof, history = optimize_cuts_with_GA(prob, 5, pop_size=80, generations=300)
-winner = list(hof[0])
-print prob.score_cuts(winner)
-offers = prob.find_best_offers(winner).values()
-offers = sorted(offers, key=lambda o: o.zone)
-for offer in offers:
-    print offer
 
-def random_constrained_sequence(length, constraints):
-    dna = random_dna_sequence(300)
-    canvas = DnaCanvas(sequence, constraints=constraints)
-    canvas.solve_all_constraints_one_by_one()
-    return canvas.sequence
+offers =  optimize_costs_with_graph(problem, segment_length_range=(5, 400),
+                                    nucleotide_resolution=10)
+offers = sorted(offers.values(), key=lambda o: o.zone)
+for offer in offers:
+    print (offer)
+print "total: %d $" % sum(o.price for o in offers)

@@ -20,7 +20,8 @@ class OfferEvaluation:
         if not self.is_orderable:
             return "%s (not orderable)" % self.offer.name
         else:
-            return "%s%s %.02f$" % ("" if self.zone is None else ("%s " % str(self.zone)),
+            return "%s%s %.02f$" % ("" if self.zone is None
+                                    else ("%s " % str(self.zone)),
                                     self.offer.name, self.price)
 
 

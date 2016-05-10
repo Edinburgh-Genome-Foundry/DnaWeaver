@@ -9,10 +9,14 @@ import networkx as nx
 
 def optimize_cuts_with_graph(sequence, segment_score_function,
                              segment_length_range=(500, 2000),
-                             nucleotide_resolution=10, refine=True):
+                             nucleotide_resolution=10,
+                             location_filter=None,
+                             refine=True):
     min_length, max_length = segment_length_range
     nodes = range(0, len(sequence), nucleotide_resolution)
     nodes[-1] = len(sequence)
+    if location_filter is not None:
+        nodes = [node for node in nodes if location_filter(node, sequence)]
     segments = [
         (start, end)
         for start, end in itt.product(nodes, nodes)
@@ -51,18 +55,23 @@ def refine_cuts_with_graph(sequence, cuts, segment_score_function, radius):
 
 def optimize_costs_with_graph(dna_ordering_problem,
                               segment_length_range=(500, 2000),
+                              cuts_number_penalty=0,
+                              location_filter=None,
                               nucleotide_resolution=10, refine=True):
+
     def segment_score_function(segment, sequence):
-        offers=dna_ordering_problem.find_offers(segment)
+        offers = dna_ordering_problem.find_offers(segment)
         if offers == []:
             return float(1e8)
         else:
-            return min([offer.price for offer in offers])
+            return min([offer.price for offer in offers]) + cuts_number_penalty
+
     best_cuts = optimize_cuts_with_graph(
         dna_ordering_problem.sequence,
         segment_score_function,
         segment_length_range=segment_length_range,
         nucleotide_resolution=nucleotide_resolution,
+        location_filter=location_filter,
         refine=refine
     )
     return dna_ordering_problem.find_best_offers(best_cuts)
