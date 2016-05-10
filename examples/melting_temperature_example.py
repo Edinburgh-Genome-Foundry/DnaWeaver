@@ -7,8 +7,9 @@ from dnachisel import random_dna_sequence, SequenceLengthConstraint
 import numpy as np
 np.random.seed(123)
 
+sequence = random_dna_sequence(10000)
 
-def filter_has_moderate_melting_temperature(location, sequence):
+def valid_melting_temperature(location):
     if min(location, len(sequence) - location) < 20:
         return True
     subsequence = sequence[location - 10:location + 10]
@@ -23,18 +24,21 @@ company_1 = DnaOffer(
 )
 
 problem = DnaOrderingProblem(
-    sequence=random_dna_sequence(10000),
+    sequence=,
     offers=[company_1],
+    locations_filter = (valid_melting_temperature,)
     assembly_method=GibsonAssemblyMethod(20),
 )
 
-best_cut = optimize_costs_with_graph(
-    problem, segment_length_range=(150, 4000),
-    location_filter=filter_has_moderate_melting_temperature,
-    nucleotide_resolution=100, refine=False
+
+solution = problem.solve(
+    min_segment_length=150,
+    max_segment_length=4000,
+    nucleotide_resolution=100,
+    refine_resolution=False
 )
 
-print ("Proposed ordering solution:")
+print ("Solution found:")
 offers = sorted(best_cut.values(), key=lambda o: o.zone)
 for offer in offers:
     print (offer)

@@ -1,7 +1,7 @@
 .. raw:: html
 
     <a href="https://twitter.com/share" class="twitter-share-button"
-    data-text="DnaChisel - A Python module for printing with living matter" data-size="large" data-hashtags="Bioprinting">Tweet
+    data-text="DnaAdvisor - A Python module for printing with living matter" data-size="large" data-hashtags="Bioprinting">Tweet
     </a>
     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';
     if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';
@@ -13,114 +13,66 @@
 DNA Advisor
 ============
 
-DnaChisel is a Python library to modify the nucleotides of DNA sequences with respect to a set of
-constraints and optimization objectives.
+DnaAdvisor is a Python library to determine which DNA fragments to orders from
+synthesis company in order to assemble large DNA sequences using Gibson Assembly,
+Golden Gate assembly, etc..
 
-It can be used for many purposes, such as codon-optimizing the genes of a sequence
-for a particular micro-organism, modifying a sequence to meet the constraints of
-a DNA provider while preserving genes and other sensible patterns, or inserting
-a pattern in a sequence using only synonymous mutations.
+Provided a DNA sequence and a list of offers (i.e. pricings and constraints) from
+different DNA companies, DnaAdvisor returns the list of fragments orders which
+minimizes the total cost.
+
+DnaAdvisor can be easily extended to include new offers and constraints from DNA company,
+or to take into account objectives other than just price.
 
 Example of use
 ---------------
 
-In this basic example we optimize a sequence with respect to the following constraints and objectives:
-
-- **Constraint 1:** The sequence should contain no restriction site for BsaI (GGTCTC).
-- **Constraint 2:** The local GC content of every 50-nucleotide subsequence should be between 30% and 70%.
-- **Objective 1:** The sequence's  global GC content should be 40% (or as close as possible)
-
-Here is the Python code to solve the problem with DnaChisel:
-::
-    from dnachisel import *
-
-    # DEFINE THE OPTIMIZATION PROBLEM
-
-    canvas = DnaCanvas(
-        sequence=random_dna_sequence(length=10000),
-        constraints=[ NoPatternConstraint(enzyme_pattern("BsaI")),
-                      GCContentConstraint(0.3, 0.7, gc_window=50)],
-        objectives = [GCContentObjective(0.4)]
-    )
-
-    # SOLVE THE CONSTRAINTS, OPTIMIZE WITH RESPECT TO THE OBJECTIVE
-
-    canvas.solve_all_constraints_one_by_one()
-    canvas.maximize_all_objectives_one_by_one(max_random_iters=10000)
-
-    # PRINT SUMMARIES TO CHECK THE CONSTRAINTS AND OBJECTIVES
-
-    canvas.print_constraints_summary()
-    canvas.print_objectives_summary()
-
-This prints the following result, indicating that all constraints pass in the end
-and the objective has benn (very well) optimized:
-::
-    ===> SUCCESS - all constraints evaluations pass
-    NoPattern(GGTCTC (BsaI), None) Passed. Pattern not found !
-    GCContent(min 0.30, max 0.70, gc_win 50, window None) Passed !
 
 
-    ===> TOTAL OBJECTIVES SCORE: 0.00
-    GCContentObj(0.40, global): scored -0.00E+00. GC content is 0.400 (0.400 wanted)
+How it works
+---------------
 
 
-
-For a more complete and meaningful example, see also :ref:`this other script <plasmid-optimization>`,
-in which a plasmid is codon-optimized and tweaked so as to verify constraints imposed by
-a DNA synthesis company.
-
-DnaChisel implements advanced constraints such as the preservation of coding
-sequences,  or the inclusion or exclusion of advanced patterns, as well as
-some common biological objectives (such as codon optimization, GC content), but it
-is also very easy to implement new constraints and objectives.
-
-
-Search strategies
------------------
+Graph representation of the problem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Long DNA sequences have a huge space of possible mutations
 (just 20 nucleotides can form a trillion different sequences), therefore it is not
 possible to solve a DNA optimization problem through an exhaustive search.
-DnaChisel uses the following strategies to avoid exploring the whole search space:
+DnaAdvisor uses the following strategies to avoid exploring the whole search space:
 
-- **Constraining of the mutation space:** Prior to searching, DnaChisel trims the
-  possible mutations by analyzing the constraints of the problem. For instance
-  a ``DoNotModify(segment)`` constraint makes it impossible to mutate the nucleotides
-  of the concerned DNA segment, and in segments subject to an
-  ``EnforceTranslation`` constraint, only synonymous mutations of the codons are
-  allowed.
+.. figure:: images/base_problem.png
+   :figwidth: 75%
+   :align: center
 
-- **Constraints solving before objective optimization**: DnaChisel currently enforces a
-  resolution of problems in two steps: first solve the constraints and make sure
-  that they all pass, then optimize the sequence with respect to the different
-  objectives, while making sure that they all pass. While not to always yield
-  optimal results, this heuristic gives generally very good results, and is more
-  practical, as solving for the constraints first is generally very fast and directly
-  informs on whether all constraints can be met.
+Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+DnaAdvisor uses the following strategies to avoid exploring the whole search space:
 
-- **Localized searches:** When DnaChisel finds that a constraint is not
-  verified, and if the constraint breaches are localized on the
-  sequence (for instance, a forbidden restriction site at a given location),
-  then it will attempt to solve each breach separately
-  by creating *localized* versions of the mutations space and constraints around
-  the problematic region.
-  It works the same for optimization objectives: localized objectives indicate
-  on which segments of the sequence to focus the search.
+.. figure:: images/graph.png
+   :figwidth: 75%
+   :align: center
 
-- **A mix of exhaustive searches and random searches:** for each localized
-  constraint problem, if the search space is small enough DnaChisel performs
-  an exhaustive search (i.e. it tries every possible change of the sequence until
-  all constraints are resolved), else DnaChisel performs a random search where
-  if create random valid variations of the sequence until one meets all the
-  constraints. The optimization of objectives functions in a similar way.
+Cuts refinement
+~~~~~~~~~~~~~~~
+
+Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+DnaAdvisor uses the following strategies to avoid exploring the whole search space:
+using again the graph trick. The graph of a cuts refinement problem looks like this:
+
+.. figure:: images/refinement.png
+   :figwidth: 60%
+   :align: center
 
 Installation
 -------------
 
-You can install DnaChisel through PIP
+You can install DnaAdvisor through PIP
 ::
-  sudo pip install dnachisel
+  sudo pip install DnaAdvisor
 
 Alternatively, you can unzip the sources in a folder and type
 ::
@@ -130,7 +82,7 @@ Alternatively, you can unzip the sources in a folder and type
 Contribute
 ----------
 
-DnaChisel is an open-source library originally written at the Edinburgh Genome Foundry by Zulko_.
+DnaAdvisor is an open-source library originally written at the Edinburgh Genome Foundry by Zulko_.
 It is released on Github under the MIT licence, everyone is welcome to contribute.
 
 
@@ -151,11 +103,11 @@ It is released on Github under the MIT licence, everyone is welcome to contribut
 .. toctree::
     :caption: Examples
 
-    examples/plasmid_optimization
-    examples/non_unique_kmers_minimization
-    examples/pattern_instertion
+    examples/basic_example
+    examples/real_companies_example
+    examples/melting_temperature
 
 
 .. _Zulko: https://github.com/Zulko/
-.. _Github: https://github.com/EdinburghGenomeFoundry/dnachisel
-.. _PYPI: https://pypi.python.org/pypi/dnachisel
+.. _Github: https://github.com/EdinburghGenomeFoundry/DnaAdvisor
+.. _PYPI: https://pypi.python.org/pypi/DnaAdvisor

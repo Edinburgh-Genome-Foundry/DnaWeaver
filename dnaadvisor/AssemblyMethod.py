@@ -21,6 +21,3 @@ class GibsonAssemblyMethod(AssemblyMethod):
             zone: self.compute_fragment_sequence(zone, sequence)
             for zone in zip(cuts, cuts[1:])
         }
-
-    def validate_cuts(self, cuts, sequence):
-        return True

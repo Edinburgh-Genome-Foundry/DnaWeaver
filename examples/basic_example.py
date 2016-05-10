@@ -11,7 +11,7 @@ np.random.seed(123)
 sequence = random_dna_sequence(10000)
 
 enzyme_site = enzyme_pattern("BsaI")
-
+print ("BsaI site found at positions %s" % enzyme_site.find_matches(sequence))
 
 company_1 = DnaOffer(
     name="Company 1",
@@ -28,16 +28,15 @@ company_2 = DnaOffer(
 problem = DnaOrderingProblem(
     sequence=sequence,
     offers=[company_1, company_2],
+    cuts_number_penalty=0,
     assembly_method=GibsonAssemblyMethod(20)
 )
 
-best_cut = optimize_costs_with_graph(problem, segment_length_range=(150, 4000),
-                                     nucleotide_resolution=100, refine=False,
-                                     cuts_number_penalty=0)
+solution = problem.solve(
+    min_segment_length=100,
+    max_segment_length=4000,
+    nucleotide_resolution=100,
+    refine_resolution=False
+)
 
-print ("BsaI site found at positions %s" % enzyme_site.find_matches(sequence))
-print ("Here is the proposed ordering solution:")
-offers = sorted(best_cut.values(), key=lambda o: o.zone)
-for offer in  offers:
-    print (offer)
-print "Total price: %d $" % sum(o.price for o in offers)
+print (problem.ordering_plan_summary(solution))

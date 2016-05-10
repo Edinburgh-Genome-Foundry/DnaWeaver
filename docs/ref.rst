@@ -3,33 +3,20 @@
 DnaAdvisor Reference manual
 ==========================
 
-DnaCanvas
----------
+DnaOrderingProblem
+--------------------
 
-.. autoclass:: dnachisel.DnaCanvas
+.. autoclass:: dnaadvisor.DnaOrderingProblem
    :members:
 
-Constraints
------------
+Optimization
+------------
 
-.. automodule:: dnachisel.constraints
+.. automodule:: dnaadvisor.optimization
    :members:
 
-Objectives
------------
+Assembly methods
+----------------
 
-.. automodule:: dnachisel.objectives
+.. automodule:: dnaadvisor.assembly_methods
    :members:
-
-
-Patterns
----------
-
-.. automodule:: dnachisel.patterns
-   :members:
-
-
-Biotools
---------
-.. automodule:: dnachisel.biotools
-  :members:
