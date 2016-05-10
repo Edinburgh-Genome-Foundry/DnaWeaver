@@ -24,9 +24,9 @@ company_1 = DnaOffer(
 )
 
 problem = DnaOrderingProblem(
-    sequence=,
+    sequence= sequence,
     offers=[company_1],
-    locations_filter = (valid_melting_temperature,)
+    location_filters = (valid_melting_temperature,),
     assembly_method=GibsonAssemblyMethod(20),
 )
 
@@ -38,8 +38,4 @@ solution = problem.solve(
     refine_resolution=False
 )
 
-print ("Solution found:")
-offers = sorted(best_cut.values(), key=lambda o: o.zone)
-for offer in offers:
-    print (offer)
-print "Total price: %d $" % sum(o.price for o in offers)
+print (problem.ordering_plan_summary(solution))
