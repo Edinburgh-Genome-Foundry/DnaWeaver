@@ -21,51 +21,29 @@ Provided a DNA sequence and a list of offers (i.e. pricings and constraints) fro
 different DNA companies, DnaAdvisor returns the list of fragments orders which
 minimizes the total cost.
 
+DnaAdvisor uses decomposition optimization techniques based on graphs, see
+:ref:`howitworks` for more details on how it works.
+
 DnaAdvisor can be easily extended to include new offers and constraints from DNA company,
 or to take into account objectives other than just price.
 
-Example of use
+Minimal example
 ---------------
+::
 
-
-
-How it works
----------------
-
-
-Graph representation of the problem
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Long DNA sequences have a huge space of possible mutations
-(just 20 nucleotides can form a trillion different sequences), therefore it is not
-possible to solve a DNA optimization problem through an exhaustive search.
-DnaAdvisor uses the following strategies to avoid exploring the whole search space:
-
-.. figure:: images/base_problem.png
-   :figwidth: 75%
-   :align: center
-
-Long DNA sequences have a huge space of possible mutations
-(just 20 nucleotides can form a trillion different sequences), therefore it is not
-possible to solve a DNA optimization problem through an exhaustive search.
-DnaAdvisor uses the following strategies to avoid exploring the whole search space:
-
-.. figure:: images/graph.png
-   :figwidth: 75%
-   :align: center
-
-Cuts refinement
-~~~~~~~~~~~~~~~
-
-Long DNA sequences have a huge space of possible mutations
-(just 20 nucleotides can form a trillion different sequences), therefore it is not
-possible to solve a DNA optimization problem through an exhaustive search.
-DnaAdvisor uses the following strategies to avoid exploring the whole search space:
-using again the graph trick. The graph of a cuts refinement problem looks like this:
-
-.. figure:: images/refinement.png
-   :figwidth: 60%
-   :align: center
+    from dnaadvisor import *
+    from dnachisel import PROVIDERS_CONSTRAINTS
+    offer_1 = DnaOrderingProblem("offer 1",
+                                 constraints=PROVIDERS_CONSTRAINTS["IDT"],
+                                 pricing=lambda sequence: 0.1 * len(sequence))
+    offer_2 = DnaOrderingProblem("offer 2",
+                                 constraints=PROVIDERS_CONSTRAINTS["gen9"],
+                                 pricing=lambda sequence: 0.2 * len(sequence))
+    sequence = open("sequence.txt","r").read()
+    problem = DnaOrderingProblem(sequence, offers=[offer_1, offer_2],
+                                 assembly_method=GibsonAssemblyMethod(20))
+    solution = problem.solve(min_segment_length=100, max_segment_length=4000)
+    print (solution.summary())
 
 Installation
 -------------
@@ -98,6 +76,7 @@ It is released on Github under the MIT licence, everyone is welcome to contribut
     :caption: Reference
     :maxdepth: 3
 
+    how_it_works
     ref
 
 .. toctree::
@@ -105,7 +84,7 @@ It is released on Github under the MIT licence, everyone is welcome to contribut
 
     examples/basic_example
     examples/real_companies_example
-    examples/melting_temperature
+    examples/melting_temperature_example
 
 
 .. _Zulko: https://github.com/Zulko/
