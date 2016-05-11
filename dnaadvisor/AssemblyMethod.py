@@ -7,7 +7,7 @@ class AssemblyMethod:
     pass
 
 
-class GibsonAssemblyMethod(AssemblyMethod):
+class OverlapingAssemblyMethod(AssemblyMethod):
     """Gibson Assembly Method.
 
     Parameters
@@ -63,3 +63,9 @@ class GibsonAssemblyMethod(AssemblyMethod):
             segment: self.compute_fragment_sequence(segment, sequence)
             for segment in zip(cuts, cuts[1:])
         }
+
+class GibsonAssemblyMethod(OverlapingAssemblyMethod):
+    """Gibson Assembly Method. Just another overlap-method"""
+
+class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
+    """The Build-a-Genome Assembly Method. Just another overlap-method"""
