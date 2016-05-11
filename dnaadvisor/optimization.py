@@ -10,6 +10,24 @@ import networkx as nx
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
                              cuts_number_penalty=0, location_filters=(),
                              segment_filters=()):
+    """Return the best cuts for the sequence decomposition problem.
+
+    This function implements a very generic solution to the problem.
+
+    Parameters
+    ----------
+
+    sequence_length
+
+    segment_score_function
+
+    cuts_number_penalty
+
+    location_filters
+
+    segments_filters
+
+    """
 
     nodes = sorted(list(set( [0, sequence_length] + [
         node
@@ -33,6 +51,27 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 def refine_cuts_with_graph(sequence_length, cuts, radius,
                            segment_score_function, location_filters=(),
                            segment_filters=(), nucleotide_resolution=1):
+    """Refine a cutting solution by exploring the space around each cut index.
+
+    Parameters
+    ----------
+
+    sequence_length
+
+    cuts
+
+    radius
+
+    segment_score_function
+
+    location_filters
+
+    segment_filters
+
+    nucleotide_resolution
+
+
+    """
     nodes = [
         range(max(0, cut - radius),
               min(sequence_length + 1, cut + radius),
@@ -67,6 +106,31 @@ def optimize_cuts_with_graph_twostep(sequence_length,
                                      min_segment_length=500,
                                      max_segment_length=2000,
                                      refine_resolution=1):
+    """Find a solution to a cutting problem by making a coarse-grained search
+    followed by a refinement step.
+
+    Parameters
+    ----------
+
+    sequence_length
+
+    segment_score_function
+
+    cuts_number_penalty
+
+    location_filters
+
+    segment_filters
+
+    initial_resolution
+
+    min_segment_length
+
+    max_segment_length
+
+    refine_resolution
+    
+    """
 
     def is_resolution_location(location):
         return location % initial_resolution == 0

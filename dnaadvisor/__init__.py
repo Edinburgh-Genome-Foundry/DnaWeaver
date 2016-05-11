@@ -1,5 +1,7 @@
-"""DnaAdvisor"""
+"""DnaAdvisor, a Python package for optimal DNA sequence decomposition and
+ordering."""
 
 from DnaOrderingProblem import DnaOrderingProblem
 from DnaOffer import DnaOffer
-from assembly_methods import GibsonAssemblyMethod
+from AssemblyMethod import GibsonAssemblyMethod
+__all__ = ("DnaOffer", "DnaOrderingProblem", "GibsonAssemblyMethod")

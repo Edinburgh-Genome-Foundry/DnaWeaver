@@ -1,23 +1,65 @@
 
 class AssemblyMethod:
+    """General class for assembly methods.
+
+    Yeah that class is useless right now but bear with me.
+    """
     pass
 
 
 class GibsonAssemblyMethod(AssemblyMethod):
+    """Gibson Assembly Method.
 
-    def __init__(self, overlap=40):
-        self.overlap = overlap
+    Parameters
+    ----------
+
+    homology_arm_length
+      Length of the homology arm, or "overhang". A length of L means that
+      consecutive segments will overlap by 2*L
+
+    """
+
+    def __init__(self, homology_arm_length=20):
+        self.homology_arm_length = homology_arm_length
 
 
-    def compute_fragment_sequence(self, zone, sequence):
+    def compute_fragment_sequence(self, segment, sequence):
+        """Return the segment's sequence with flanking sequences.
+
+        Parameters
+        ----------
+
+        segment
+          A pair of integers (start, end) delimiting the subfragment
+          sequence[start:stop]
+
+        sequence
+          An "ATGC" DNA sequence string
+
+        """
         L = len(sequence)
-        return sequence[max(0, zone[0] - self.overlap):
-                        min(L, zone[1] + self.overlap)]
+        start, end = segment
+        return sequence[max(0, start - self.homology_arm_length):
+                        min(L, end + self.homology_arm_length)]
 
     def compute_fragments_sequences(self, cuts, sequence):
+        """Compute the sequences (with flanks) of all fragments corresponding
+        to the cuts.
+
+        Parameters
+        ----------
+
+        cuts
+          a list of cuts between 0 and len(sequence) (if these two numbers are
+          omited they will be added anyways)
+
+        sequence
+          An "ATGC" DNA sequence string
+
+        """
         L = len(sequence)
         cuts = sorted(list(set([0, L] + cuts)))
         return {
-            zone: self.compute_fragment_sequence(zone, sequence)
-            for zone in zip(cuts, cuts[1:])
+            segment: self.compute_fragment_sequence(segment, sequence)
+            for segment in zip(cuts, cuts[1:])
         }

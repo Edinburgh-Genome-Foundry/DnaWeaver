@@ -34,4 +34,4 @@ solution = problem.solve(
     nucleotide_resolution=5,
 )
 
-print (problem.ordering_plan_summary(solution))
+print (solution.summary())

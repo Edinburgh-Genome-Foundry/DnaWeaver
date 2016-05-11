@@ -1,10 +1,89 @@
-"""Definition of a problem."""
+"""Definition and solution DNA ordering problems."""
 
 from DnaOffer import DnaOfferEvaluation
 from optimization import optimize_cuts_with_graph_twostep
 
 
+class DnaOrderingPlan:
+    """Class for representing ordering plans and exporting to many formats.
+
+    Parameters
+    ----------
+
+    plan
+      A dictionary { sequence: offer_evaluation, ... } where `sequence`
+      is an ATGC string sequence of DNA, and offer_evaluation is a
+      DnaOfferEvaluation.
+
+    """
+
+    def __init__(self, plan):
+        self.plan = plan
+
+    def summary(self):
+        """Return a print-friendly, simple string of the ordering plan."""
+        evaluations = sorted(self.plan.values(), key=lambda o: o.segment)
+        plan = "\n  ".join(str(e) for e in evaluations)
+        total_price = sum(ev.price for ev in evaluations)
+        return "Ordering plan:\n  %s\n  Total price: %d" % (plan, total_price)
+
+    def write_pdf_report(self):
+        """Write a PDF report of the ordering plan."""
+        raise NotImplementedError()
+
+    def to_html_widget(self):
+        """Return an interactive widget of the ordering"""
+        raise NotImplementedError()
+
+
 class DnaOrderingProblem:
+    """Class for the definition of ordering problems.
+
+    In an ordering problem, we define a series of offers (a "pricing"
+    proposed by a company and subject to constraints on the sequence)
+    a DNA sequence, and an assembly method. ordering_problem.solve()
+
+
+    Examples
+    --------
+
+    >>> problem = DnaOrderingProblem(sequence, offers=[company_1, company_2],
+    >>>                              assembly_method=GibsonAssemblyMethod(20))
+    >>> solution = problem.solve(min_segment_length=100,
+    >>>                          max_segment_length=4000)
+    >>> print (problem.ordering_plan_summary(solution))
+
+
+    Parameters
+    ----------
+
+    sequence
+      A "ATGC" string representing a DNA sequence
+
+    offers
+      A list of DnaOffer objects
+
+    assembly_method
+      An AssemblyMethod object - assembly method that will be used.
+
+    location_filters
+      A list or tuple of functions f(index)->boolean used for prefiltering
+      the possible cut locations. Only the locations verifying f(index)==True
+      for all f in location_filters will be considered in the problem.
+
+    segment_filters
+       A list or tuple of functions f((start, end))->boolean used for
+       prefiltering the segments of the sequence. Only the segments verifying
+       f((start, end))==True for all f in segments_filters will be considered
+       in the problem.
+
+     cuts_number_penalty
+       A number representing a penalty on the numbers of cuts. A large number
+       leads to solutions with fewer fragments (but more expensive than the
+       optimal solution). The score optimized is total_price + P*Nfragments
+       where P is the cuts_number_penalty.
+
+    """
 
     def __init__(self, sequence, offers, assembly_method,
                  location_filters=(), segment_filters=(),
@@ -28,13 +107,31 @@ class DnaOrderingProblem:
         return result
 
     def best_price_for_segment(self, segment):
+        """Return the best price for a segment.
+
+        First a sequence is computed by extracting the segment from the
+        problem's sequence, and possibly adding flanking overhangs (depending
+        on the assembly method used, e.g. Gibson Assembly).
+
+        Then the minimal price is computed among all the problem's DNA offers
+        whose constraints are verified by the sequence.
+        """
         offers = self.offers_for_segment(segment)
         if offers == []:
             return -1
         else:
             return min(offer.price for offer in offers)
 
+    def compute_fragments_sequences(self, cuts):
+        """Return all fragments necessary for assembly, depending on the cuts.
+        """
+        return self.assembly_method.compute_fragments_sequences(
+            cuts, self.sequence
+        )
+
     def compute_all_offers(self, cuts):
+        """Return all valid offers for all fragments corresponding to the cuts.
+        """
         segments_fragments = self.compute_fragments_sequences(cuts)
         offers = {fragment: [] for fragment in segments_fragments.values()}
         for segment, fragment in segments_fragments.items():
@@ -44,12 +141,29 @@ class DnaOrderingProblem:
                     offers[fragment].append(evaluation)
         return offers
 
-    def compute_fragments_sequences(self, cuts):
-        return self.assembly_method.compute_fragments_sequences(
-            cuts, self.sequence
-        )
+
 
     def find_best_ordering_plan(self, cuts):
+        """Find the best price-wise ordering plan corresponding to the cuts.
+
+        First the DNA fragments corresponding to the cuts are computed.
+        For each fragment, we evaluate all offer and keep the valid offer with
+        the lowest price.
+
+        Parameters
+        ----------
+
+        cuts
+          A list of integers between 0 and len(self.sequence) representing
+          cut locations.
+
+        Returns
+        -------
+
+        ordering_plan
+          A DnaOrderingPlan object
+
+        """
         offers = self.compute_all_offers(cuts)
         best_offers = {}
         for fragment, fragment_offers in offers.items():
@@ -58,17 +172,44 @@ class DnaOrderingProblem:
             else:
                 best_offer = min(fragment_offers, key=lambda o: o.price)
                 best_offers[fragment] = best_offer
-        return best_offers
+        return DnaOrderingPlan(best_offers)
 
-    @staticmethod
-    def ordering_plan_summary(plan):
-        evaluations = sorted(plan.values(), key=lambda o: o.segment)
-        plan = "\n  ".join(str(e) for e in evaluations)
-        total_price = sum(ev.price for ev in evaluations)
-        return "Ordering plan:\n  %s\n  Total price: %d" % (plan, total_price)
 
     def solve(self, min_segment_length=500, max_segment_length=2000,
               nucleotide_resolution=1, refine_resolution=1):
+        """Solve the ordering problem.
+
+        Examples
+        --------
+
+        >>> solution = ordering_problem.solve()
+        >>> print (ordering_problem.ordering_plan_summary(solution))
+
+        Parameters
+        ----------
+
+        min_segment_length (int)
+          Minimal length of the segments (without possible overhangs)
+
+        max_segment_length (int)
+          Maximal length of the segments (without possible overhangs)
+
+        nucleotide_resolution
+          Resolution to use in the solution of the problem (before refinement).
+          If equal to 10, only every 10th nucleotide will be considered as a
+          possible cutting point (thus reducing the size of the problem)
+
+        refine_resolution
+          Resolution to apply during the refinement.
+
+        Returns
+        -------
+
+        ordering_plan
+          A DnaOrderingPlan object summarizing what sequences to order, and
+          from which offers they should be ordered.
+
+        """
 
         best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(self.sequence),

@@ -39,4 +39,4 @@ solution = problem.solve(
     refine_resolution=False
 )
 
-print (problem.ordering_plan_summary(solution))
+print (solution.summary())
