@@ -19,7 +19,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
     segments = [
         (start, end)
-        for start, end in tqdm(itt.product(nodes, nodes))
+        for start, end in tqdm(itt.combinations(nodes, 2))
         if all(fl((start, end)) for fl in segment_filters)
     ]
 
@@ -36,9 +36,9 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
                            segment_score_function, location_filters=(),
                            segment_filters=(), nucleotide_resolution=1):
     nodes = [
-        range(max(0, cut - radius),
-              min(sequence_length + 1, cut + radius),
-              nucleotide_resolution)
+        set([cut] + list(range(max(0, cut - radius),
+                         min(sequence_length + 1, cut + radius),
+                         nucleotide_resolution)))
         for cut in cuts
     ]
 

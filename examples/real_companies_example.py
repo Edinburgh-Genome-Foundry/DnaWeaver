@@ -33,5 +33,22 @@ solution = problem.solve(
     max_segment_length=700,
     nucleotide_resolution=5,
 )
+print (solution.summary())
+
+solution = problem.solve(
+    min_segment_length=50,
+    max_segment_length=700,
+    nucleotide_resolution=49,
+    refine_resolution=False,
+)
+
+print (solution.summary())
+
+solution = problem.solve(
+    min_segment_length=50,
+    max_segment_length=700,
+    nucleotide_resolution=49,
+    refine_resolution=10,
+)
 
 print (solution.summary())
