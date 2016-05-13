@@ -35,7 +35,7 @@ problem = DnaOrderingProblem(
 solution = problem.solve(
     min_segment_length=100,
     max_segment_length=4000,
-    nucleotide_resolution=100,
+    nucleotide_resolution=50,
     refine_resolution=False
 )
 
