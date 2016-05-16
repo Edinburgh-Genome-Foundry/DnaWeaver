@@ -25,6 +25,15 @@ class DnaOfferEvaluation:
     Parameter
     ---------
 
+    sequence
+      An ATGC string of a DNA sequence
+
+    offer
+      a DnaOffer object (with constraints and pricing)
+
+    segment
+      Optional. A couple (start, end) defining the segment between two "cuts"
+      in the original sequence on which that segment was considered.
 
     """
 

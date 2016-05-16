@@ -1,3 +1,4 @@
+from dnachisel.biotools import reverse_complement
 
 class AssemblyMethod:
     """General class for assembly methods.
@@ -71,12 +72,55 @@ class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     """The Build-a-Genome Assembly Method. Just another overlap-method"""
 
 class GoldenGateAssemblyMethod(AssemblyMethod):
-    def __init__(self, homology_arm_length=20):
-        self.homology_arm_length = homology_arm_length
+    """The Golden Gate Assembly Method.
+
+    This method adds overhangs with a Type IIS REase site to the segments.
+
+    Parameters
+    ----------
+
+    left_overhang
+      An ATGC DNA sequence representing the left overhang, in 5' -3'.
+      For practicality, this can contain "[BsaI]", "[BsmBI]", "[BbsI]", which
+      will be replaced by their restriction sites
+
+
+    right_overhang
+      An ATGC DNA sequence representing the right overhang, in 5'-3'.
+      Be careful, I said 5'-3' !!!
+      If left to None, will be equal to left_overhang.
+
+    Examples
+    --------
+
+    >>> #  The fragments will have an overhang with an homology region, a BsaI
+    >>> #  site, and a "T" for the wildcard
+    >>> assembly_method = GoldenGateAssemblyMethod(
+    >>>  left_overhang = "ATGTGTCGTGTGTGCGTA[BsaI]T",
+    >>>  right_overhang = "TTCTCTCGATAAATGGCC[BsaI]T"
+    >>> )
+
+    """
+    enzymes_dict = {
+        "[BsaI]": "GGTCTC",
+        "[BsmBI]": "CGTCTC",
+        "[BbsI]": "GAAGAC",
+    }
+
+    def __init__(self, left_overhang="[BsaI]A", right_overhang=None):
+        if right_overhang is None:
+            right_overhang = left_overhang
+        for name, site in self.enzymes_dict:
+            left_overhang = left_overhang.replace(name, site)
+            right_overhang = right_overhang.replace(name, site)
+
+        self.left_overhang = left_overhang
+        self.right_overhang = right_overhang
+        self.right_overhang_rev = reverse_complement(right_overhang)
 
 
     def compute_fragment_sequence(self, segment, sequence):
-        """Return the segment's sequence with flanking sequences.
+        """Return the segment's sequence with flanking sequences for
 
         Parameters
         ----------
@@ -91,8 +135,8 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         """
         L = len(sequence)
         start, end = segment
-        return sequence[max(0, start - self.homology_arm_length):
-                        min(L, end + self.homology_arm_length)]
+        segment = sequence[max(0, start - 2): min(L, end + 2)]
+        return self.left_overhang + segment + self.right_overhang_rev
 
     def compute_fragments_sequences(self, cuts, sequence):
         """Compute the sequences (with flanks) of all fragments corresponding

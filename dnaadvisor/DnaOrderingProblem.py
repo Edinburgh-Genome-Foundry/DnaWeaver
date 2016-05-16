@@ -146,7 +146,7 @@ class DnaOrderingProblem:
 
     def solve(self, min_segment_length=500, max_segment_length=2000,
               nucleotide_resolution=1, refine_resolution=1,
-              forced_cuts=None):
+              forced_cuts=None, return_graph=False):
         """Solve the ordering problem.
 
         Examples
@@ -172,8 +172,15 @@ class DnaOrderingProblem:
         refine_resolution
           Resolution to apply during the refinement.
 
+         return_graph
+           If True, the graph of the problem will be returned along
+
         Returns
         -------
+
+        graph
+          Only returned if return_graph is True. Networkx directed graph of
+          the problem, with a weight on each edge to indicate the best price.
 
         ordering_plan
           A DnaOrderingPlan object summarizing what sequences to order, and
@@ -183,8 +190,9 @@ class DnaOrderingProblem:
 
         if forced_cuts is not None:
             forced_cuts = list(sorted(forced_cuts))
-            fragments =self.compute_fragments_sequences(forced_cuts)
+            fragments = self.compute_fragments_sequences(forced_cuts)
             offers = []
+            graph = None
             for segment in sorted(fragments.keys()):
                 sub_problem = copy(self)
                 sub_problem.sequence = fragments[segment]
@@ -192,16 +200,36 @@ class DnaOrderingProblem:
                     min_segment_length=min_segment_length,
                     max_segment_length=max_segment_length,
                     nucleotide_resolution=nucleotide_resolution,
-                    refine_resolution=refine_resolution
-                ).plan
-                for offer in sub_offers:
+                    refine_resolution=refine_resolution,
+                    return_graph=return_graph
+                )
+                if return_graph:
+                    sub_graph, sub_offers = sub_offers
+                    if graph is None:
+                        graph = sub_graph
+                    else:
+                        edges = [
+                            (start + segment[0],
+                             min(segment[1], stop + segment[0]),
+                             data)
+                            for (start, stop, data)
+                            in sub_graph.edges(data=True)
+                        ]
+                        graph.add_edges_from(edges)
+
+                for offer in sub_offers.plan:
                     start, stop = offer.segment
                     offer.segment = (start + segment[0],
                                      min(segment[1], stop + segment[0]))
                     offers.append(offer)
-            return DnaOrderingPlan(offers, full_sequence=self.sequence)
+            best_plan = DnaOrderingPlan(offers, full_sequence=self.sequence)
 
-        best_cuts = optimize_cuts_with_graph_twostep(
+            if return_graph:
+                return graph, best_plan
+            else:
+                return best_plan
+
+        graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(self.sequence),
             segment_score_function=self.best_price_for_segment,
             cuts_number_penalty=self.cuts_number_penalty,
@@ -213,4 +241,9 @@ class DnaOrderingProblem:
             refine_resolution=refine_resolution
         )
 
-        return self.find_best_ordering_plan(best_cuts)
+        best_plan = self.find_best_ordering_plan(best_cuts)
+
+        if return_graph:
+            return graph, best_plan
+        else:
+            return best_plan

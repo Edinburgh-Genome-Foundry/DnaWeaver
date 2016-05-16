@@ -10,6 +10,44 @@ import networkx as nx
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
                              cuts_number_penalty=0, location_filters=(),
                              segment_filters=()):
+    """Find the sequence cuts which optimize the sum of segments scores.
+
+    This is a very generic method meant to be applied to any sequence cutting
+    problem.
+
+    Parameters
+    ----------
+
+    sequence_length
+      Length of the sequence
+
+    segment_score_function
+      A function f( (start, end) ) -> score where (start, end) refers to the
+      sequence segment start:end, and score is a float. The algorithm will
+      produce cuts which minimize the total scores of the segments.
+
+    cuts_number_penalty
+      A penalty that can be applied 
+
+
+    location_filters
+
+    segment_filters
+
+
+    Returns
+    -------
+
+    graph
+      The graph of the problem (a Networkx DiGraph whose nodes are indices of
+      locations in the sequence and the "weight" of edge [i][j] is given by
+      segment_score_function(segment[i][j] + cuts_number_penalty)).
+
+    best_cuts
+      The list of optimal cuts (includes 0 and len(sequence)), which minimizes
+      the total score of all the segments corresponding to the cuts.
+
+    """
 
     nodes = sorted(list(set( [0, sequence_length] + [
         node
@@ -30,7 +68,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
             graph.add_edge(start, end, weight=weight + cuts_number_penalty)
     best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
 
-    return best_cuts
+    return graph, best_cuts
 
 def refine_cuts_with_graph(sequence_length, cuts, radius,
                            segment_score_function, location_filters=(),
@@ -69,7 +107,37 @@ def optimize_cuts_with_graph_twostep(sequence_length,
                                      min_segment_length=500,
                                      max_segment_length=2000,
                                      refine_resolution=1):
+    """Find optimal sequence cuts with coarse-grain search + refinement step.
 
+
+    Parameters
+    ----------
+
+    initial_resolution
+
+    min_segment_length
+
+    max_segment_length
+
+    refine_resolution
+
+    other parameters
+      Other parameters will be passed to functions optimize_cuts_with_graph and
+      refine_cuts_with_graph.
+
+    Returns
+    -------
+
+    graph
+      The graph of the problem (a Networkx DiGraph whose nodes are indices of
+      locations in the sequence and the "weight" of edge [i][j] is given by
+      segment_score_function(segment[i][j] + cuts_number_penalty)).
+
+    best_cuts
+      The list of optimal cuts (includes 0 and len(sequence)), which minimizes
+      the total score of all the segments corresponding to the cuts.
+
+    """
     def is_resolution_location(location):
         return location % initial_resolution == 0
 
@@ -81,7 +149,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
 
     new_segment_filters = [size_is_valid] + list(segment_filters)
 
-    best_cuts = optimize_cuts_with_graph(
+    graph, best_cuts = optimize_cuts_with_graph(
         sequence_length,
         segment_score_function=segment_score_function,
         cuts_number_penalty=cuts_number_penalty,
@@ -98,4 +166,4 @@ def optimize_cuts_with_graph_twostep(sequence_length,
             segment_filters=segment_filters,
             location_filters=location_filters
         )
-    return best_cuts
+    return graph, best_cuts
