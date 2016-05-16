@@ -84,7 +84,9 @@ It is released on Github under the MIT licence, everyone is welcome to contribut
 
     examples/basic_example
     examples/real_companies_example
-    examples/melting_temperature_example
+    examples/oligos_assembly_example
+    examples/golden_gate_simple_example
+    examples/golden_gate_with_forced_cuts_example
 
 
 .. _Zulko: https://github.com/Zulko/

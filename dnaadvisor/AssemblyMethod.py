@@ -110,7 +110,7 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
     def __init__(self, left_overhang="[BsaI]A", right_overhang=None):
         if right_overhang is None:
             right_overhang = left_overhang
-        for name, site in self.enzymes_dict:
+        for name, site in self.enzymes_dict.items():
             left_overhang = left_overhang.replace(name, site)
             right_overhang = right_overhang.replace(name, site)
 

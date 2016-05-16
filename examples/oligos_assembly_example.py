@@ -1,8 +1,29 @@
 """Example of oligo design for oligo assembly using DnaAdvisor
 
-In this example we will order DNA oligos that will be assembled using an
-oligo assembly method
+Problem
+--------
+We consider a random 1500bp DNA sequence that we wish to assemble using an
+oligo assembly method, e.g. Build-a-Genome. The oligos should verify:
+- Length between 40 and 100
+- 20bp overlaps between adjacent oligos
+- Overlaps should have a Tm between 50-55 degC (as measured by primer3)
+- Oligos should have a weak secondary structure (dG > -40 as measured
+  by ViennaRNA)
+
+What we show
+------------
+- We show how to use `locations_filter` to define the cut locations that will
+  produce overlaps with the right Tm
+- We show how to use `segments_filter` to filter out segments which will
+  produce oligos with too strong a secondary structure.
+- We show that DnaAdvisor can come to a nice solution under these conditions.
+
+Technical note
+--------------
+Note that edges computing (in particular the secondary structure with
+ViennaRNA) is the bottleneck of computations.
 """
+
 
 from dnaadvisor import DnaOffer, DnaOrderingProblem, BuildAGenomeAssemblyMethod
 from dnachisel import random_dna_sequence
@@ -33,12 +54,12 @@ def has_weak_secondary_structure(segment):
     return RNA.fold(fragment)[1] > -40
 
 
-company_1 = DnaOffer(name="Company 1", constraints=[],
-                     pricing=lambda sequence: 0.10 * len(sequence))
+oligo_company = DnaOffer(name="Oligos Company", constraints=[],
+                         pricing=lambda sequence: 0.10 * len(sequence))
 
 problem = DnaOrderingProblem(
     sequence=sequence,
-    offers=[company_1],
+    offers=[oligo_company],
     location_filters=(has_melting_temperature_between_50_and_55,),
     segment_filters=(has_weak_secondary_structure,),
     assembly_method=assembly_method
