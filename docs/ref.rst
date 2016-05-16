@@ -15,8 +15,14 @@ Optimization
 .. automodule:: dnaadvisor.optimization
    :members:
 
+DnaOffer, DnaOrderingPlan, etc.
+-------------------------------
+
+.. automodule:: dnaadvisor.DnaOffer
+  :members:
+
 Assembly methods
 ----------------
 
-.. automodule:: dnaadvisor.assembly_methods
+.. automodule:: dnaadvisor.AssemblyMethod
    :members:
