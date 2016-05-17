@@ -1,9 +1,10 @@
 """Definition and solution DNA ordering problems."""
 
-from DnaOffer import DnaOfferEvaluation
-from optimization import optimize_cuts_with_graph_twostep
-from DnaOffer import DnaOrderingPlan
 from copy import copy
+
+from DnaOffer import DnaOfferEvaluation
+from optimization import optimize_cuts_with_graph_twostep, NoSolutionFoundError
+from DnaOffer import DnaOffer, DnaOrderingPlan
 
 
 
@@ -56,15 +57,16 @@ class DnaOrderingProblem:
 
     """
 
-    def __init__(self, sequence, offers, assembly_method,
+    def __init__(self, sequence=None, offers=(), assembly_method=None,
                  location_filters=(), segment_filters=(),
-                 cuts_number_penalty=0):
+                 cuts_number_penalty=0, custom_segment_score=None):
         self.sequence = sequence
         self.offers = offers
         self.assembly_method = assembly_method
         self.segment_filters = segment_filters
         self.location_filters = location_filters
         self.cuts_number_penalty = cuts_number_penalty
+        self.custom_segment_score = custom_segment_score
 
     def offers_for_segment(self, segment):
         fragment = self.assembly_method.compute_fragment_sequence(
@@ -145,8 +147,8 @@ class DnaOrderingProblem:
                                full_sequence=self.sequence)
 
     def solve(self, min_segment_length=500, max_segment_length=2000,
-              nucleotide_resolution=1, refine_resolution=1,
-              forced_cuts=None, return_graph=False):
+              nucleotide_resolution=1, refine_resolution=1, forced_cuts=(),
+              return_graph=False):
         """Solve the ordering problem.
 
         Examples
@@ -187,58 +189,21 @@ class DnaOrderingProblem:
           from which offers they should be ordered.
 
         """
-
-        if forced_cuts is not None:
-            forced_cuts = list(sorted(forced_cuts))
-            fragments = self.compute_fragments_sequences(forced_cuts)
-            offers = []
-            graph = None
-            for segment in sorted(fragments.keys()):
-                sub_problem = copy(self)
-                sub_problem.sequence = fragments[segment]
-                sub_offers = sub_problem.solve(
-                    min_segment_length=min_segment_length,
-                    max_segment_length=max_segment_length,
-                    nucleotide_resolution=nucleotide_resolution,
-                    refine_resolution=refine_resolution,
-                    return_graph=return_graph
-                )
-                if return_graph:
-                    sub_graph, sub_offers = sub_offers
-                    if graph is None:
-                        graph = sub_graph
-                    else:
-                        edges = [
-                            (start + segment[0],
-                             min(segment[1], stop + segment[0]),
-                             data)
-                            for (start, stop, data)
-                            in sub_graph.edges(data=True)
-                        ]
-                        graph.add_edges_from(edges)
-
-                for offer in sub_offers.plan:
-                    start, stop = offer.segment
-                    offer.segment = (start + segment[0],
-                                     min(segment[1], stop + segment[0]))
-                    offers.append(offer)
-            best_plan = DnaOrderingPlan(offers, full_sequence=self.sequence)
-
-            if return_graph:
-                return graph, best_plan
-            else:
-                return best_plan
+        segment_score = (self.best_price_for_segment
+                         if self.custom_segment_score is None
+                         else self.custom_segment_score)
 
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(self.sequence),
-            segment_score_function=self.best_price_for_segment,
+            segment_score_function=segment_score,
             cuts_number_penalty=self.cuts_number_penalty,
             location_filters=self.location_filters,
             segment_filters=self.segment_filters,
             initial_resolution=nucleotide_resolution,
             min_segment_length=min_segment_length,
             max_segment_length=max_segment_length,
-            refine_resolution=refine_resolution
+            refine_resolution=refine_resolution,
+            forced_cuts=forced_cuts
         )
 
         best_plan = self.find_best_ordering_plan(best_cuts)
@@ -247,3 +212,15 @@ class DnaOrderingProblem:
             return graph, best_plan
         else:
             return best_plan
+
+    def as_DnaOffer(self, name, **solve_kwargs):
+        new_ordering_problem = copy(self)
+        def virtual_pricing(sequence):
+            new_ordering_problem.sequence = sequence
+            try:
+                best_offer = new_ordering_problem.solve(**solve_kwargs)
+            except NoSolutionFoundError:
+                return -1
+            return best_offer.total_price()
+
+        return DnaOffer(name, constraints=(), pricing=virtual_pricing)

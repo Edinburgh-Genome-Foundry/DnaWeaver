@@ -62,6 +62,7 @@ class DnaOfferEvaluation:
         else:
             self.is_orderable = True
             self.price = offer.pricing(sequence)
+            self.basepair_price = 1.0* self.price / len(self.sequence)
 
     def __repr__(self):
         if not self.is_orderable:
