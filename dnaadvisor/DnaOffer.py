@@ -42,27 +42,9 @@ class DnaOfferEvaluation:
         self.sequence = sequence
         self.offer = offer
         self.segment = segment
-
-        # The next paragraph is there
-        constraints = offer.constraints
-        dnachisel_constraints = [
-            constraint for constraint in constraints
-            if isinstance(constraint, Constraint)
-        ]
-
-        if dnachisel_constraints != []:
-            canvas = DnaCanvas(sequence, dnachisel_constraints)
-            constraints = [
-                constraint for constraint in constraints
-                if not isinstance(constraint, Constraint)
-            ] + [lambda seq: canvas.all_constraints_pass()]
-        if not all(constraint(sequence) for constraint in constraints):
-            self.is_orderable = False
-            self.price = None
-        else:
-            self.is_orderable = True
-            self.price = offer.pricing(sequence)
-            self.basepair_price = 1.0* self.price / len(self.sequence)
+        self.price = offer.evaluate(sequence)
+        self.is_orderable = (self.price >= 0)
+        self.basepair_price = 1.0 * self.price / len(self.sequence)
 
     def __repr__(self):
         if not self.is_orderable:
@@ -75,13 +57,45 @@ class DnaOfferEvaluation:
 
 class DnaOffer:
 
-    def __init__(self, name, constraints, pricing):
+    def __init__(self, name, constraints, pricing, memoize=False):
         self.name = name
         self.constraints = constraints
         self.pricing = pricing
+        self.memoize = memoize
+        self.memoize_dict = {}
 
     def __repr__(self):
         return self.name
+
+    def evaluate(self, sequence):
+
+        if self.memoize:
+            result = self.memoize_dict.get(sequence, None)
+            if result is not None:
+                return result
+
+        constraints = self.constraints
+        dnachisel_constraints = [
+            constraint for constraint in constraints
+            if isinstance(constraint, Constraint)
+        ]
+
+        if dnachisel_constraints != []:
+            canvas = DnaCanvas(sequence, dnachisel_constraints)
+            constraints = [
+                constraint for constraint in constraints
+                if not isinstance(constraint, Constraint)
+            ] + [lambda seq: canvas.all_constraints_pass()]
+
+        if not all(constraint(sequence) for constraint in constraints):
+            price = -1
+        else:
+            price = self.pricing(sequence)
+
+        if self.memoize:
+            self.memoize_dict[sequence] = price
+
+        return price
 
 
 class DnaOrderingPlan:

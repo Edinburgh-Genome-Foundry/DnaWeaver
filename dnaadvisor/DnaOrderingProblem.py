@@ -7,7 +7,6 @@ from optimization import optimize_cuts_with_graph_twostep, NoSolutionFoundError
 from DnaOffer import DnaOffer, DnaOrderingPlan
 
 
-
 class DnaOrderingProblem:
     """Class for the definition of ordering problems.
 
@@ -213,7 +212,7 @@ class DnaOrderingProblem:
         else:
             return best_plan
 
-    def as_DnaOffer(self, name, **solve_kwargs):
+    def as_DnaOffer(self, name, memoize=False,  **solve_kwargs):
         new_ordering_problem = copy(self)
         def virtual_pricing(sequence):
             new_ordering_problem.sequence = sequence
@@ -223,4 +222,5 @@ class DnaOrderingProblem:
                 return -1
             return best_offer.total_price()
 
-        return DnaOffer(name, constraints=(), pricing=virtual_pricing)
+        return DnaOffer(name, constraints=(), pricing=virtual_pricing,
+                        memoize=memoize)
