@@ -1,6 +1,8 @@
 from copy import deepcopy
 from dnachisel.constraints import Constraint
 from dnachisel import DnaCanvas
+from .optimization import NoSolutionFoundError
+from copy import copy
 
 try:
     import pandas as pd
@@ -97,6 +99,32 @@ class DnaOffer:
 
         return price
 
+class DnaAssemblyOffer(DnaOffer):
+
+    def __init__(self, name, dna_ordering_problem, assembly_price=0,
+                 memoize=False, constraints=(), **solve_kwargs):
+        self.name = name
+        self.dna_ordering_problem = copy(dna_ordering_problem)
+        self.memoize = memoize
+        self.memoize_dict = {}
+        self.constraints = constraints
+        self.assembly_price = assembly_price
+        self.solve_kwargs = solve_kwargs
+
+    def pricing(self, sequence):
+        try:
+            best_ordering_plan = self.best_ordering_plan(sequence)
+        except NoSolutionFoundError:
+            return -1
+
+        if len(best_ordering_plan.plan)==1:
+            return best_ordering_plan.total_price()
+        else:
+            return best_ordering_plan.total_price() + self.assembly_price
+
+    def best_ordering_plan(self, sequence):
+        self.dna_ordering_problem.sequence = sequence
+        return self.dna_ordering_problem.solve(**self.solve_kwargs)
 
 class DnaOrderingPlan:
     """Class for representing a group of orders and exporting to many formats.

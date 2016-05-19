@@ -2,7 +2,7 @@
 ordering."""
 
 from DnaOrderingProblem import DnaOrderingProblem
-from DnaOffer import DnaOffer
+from DnaOffer import DnaOffer, DnaAssemblyOffer
 from AssemblyMethod import (GibsonAssemblyMethod,
                             BuildAGenomeAssemblyMethod,
                             GoldenGateAssemblyMethod)
