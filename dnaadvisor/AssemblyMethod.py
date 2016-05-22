@@ -5,7 +5,21 @@ class AssemblyMethod:
 
     Yeah that class is useless right now but bear with me.
     """
-    pass
+    def __init__(self, duration=0, cost=0, location_filters=(),
+                 segment_filters=(), min_segment_length=None,
+                 max_segment_length=None, force_cuts=(),
+                 sequence_constraints=()):
+        self.duration = duration
+        self.cost = cost
+        self.location_filters = location_filters
+        self.segment_filters = segment_filters
+        self.min_segment_length = min_segment_length
+        self.max_segment_length = max_segment_length
+        self.sequence_constraints = sequence_constraints
+        if callable(force_cuts):
+            self.force_cuts = force_cuts
+        else:
+            self.force_cuts = lambda *a: force_cuts
 
 
 class OverlapingAssemblyMethod(AssemblyMethod):
@@ -20,11 +34,14 @@ class OverlapingAssemblyMethod(AssemblyMethod):
 
     """
 
-    def __init__(self, homology_arm_length=20):
+    def __init__(self, homology_arm_length=20, **properties):
+        AssemblyMethod.__init__(self, **properties)
         self.homology_arm_length = homology_arm_length
 
 
-    def compute_fragment_sequence(self, segment, sequence):
+
+
+    def compute_fragment_sequence(self, sequence, segment):
         """Return the segment's sequence with flanking sequences.
 
         Parameters
@@ -42,28 +59,6 @@ class OverlapingAssemblyMethod(AssemblyMethod):
         start, end = segment
         return sequence[max(0, start - self.homology_arm_length):
                         min(L, end + self.homology_arm_length)]
-
-    def compute_fragments_sequences(self, cuts, sequence):
-        """Compute the sequences (with flanks) of all fragments corresponding
-        to the cuts.
-
-        Parameters
-        ----------
-
-        cuts
-          a list of cuts between 0 and len(sequence) (if these two numbers are
-          omited they will be added anyways)
-
-        sequence
-          An "ATGC" DNA sequence string
-
-        """
-        L = len(sequence)
-        cuts = sorted(list(set([0, L] + cuts)))
-        return {
-            segment: self.compute_fragment_sequence(segment, sequence)
-            for segment in zip(cuts, cuts[1:])
-        }
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
@@ -107,7 +102,9 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         "[BbsI]": "GAAGAC",
     }
 
-    def __init__(self, left_overhang="[BsaI]A", right_overhang=None):
+    def __init__(self, left_overhang="[BsaI]A", right_overhang=None,
+                 **properties):
+        AssemblyMethod.__init__(self, **properties)
         if right_overhang is None:
             right_overhang = left_overhang
         for name, site in self.enzymes_dict.items():
@@ -119,7 +116,7 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         self.right_overhang_rev = reverse_complement(right_overhang)
 
 
-    def compute_fragment_sequence(self, segment, sequence):
+    def compute_fragment_sequence(self, sequence, segment):
         """Return the segment's sequence with flanking sequences for
 
         Parameters
@@ -137,25 +134,3 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         start, end = segment
         segment = sequence[max(0, start - 2): min(L, end + 2)]
         return self.left_overhang + segment + self.right_overhang_rev
-
-    def compute_fragments_sequences(self, cuts, sequence):
-        """Compute the sequences (with flanks) of all fragments corresponding
-        to the cuts.
-
-        Parameters
-        ----------
-
-        cuts
-          a list of cuts between 0 and len(sequence) (if these two numbers are
-          omited they will be added anyways)
-
-        sequence
-          An "ATGC" DNA sequence string
-
-        """
-        L = len(sequence)
-        cuts = sorted(list(set([0, L] + cuts)))
-        return {
-            segment: self.compute_fragment_sequence(segment, sequence)
-            for segment in zip(cuts, cuts[1:])
-        }

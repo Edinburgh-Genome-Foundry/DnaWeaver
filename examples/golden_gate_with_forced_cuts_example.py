@@ -6,18 +6,19 @@ In this example we consider a random 5000bp DNA sequence that we wish to order
 to the company InGen.
 
 The problem is that our sequence has an AarI restriction site as well as
-an homopolymer of nine "G"s, which InGen forbids.
+an homopolymer of nine "G"s, which InGen forbi
 As a solution, we locate these sites and forced the solver to cut in the middle
 of these sites.
 """
 
-from dnaadvisor import *
+from dnaadvisor import (ExternalDnaOffer, DnaAssemblyStation,
+                        GoldenGateAssemblyMethod)
 from dnachisel import (random_dna_sequence, enzyme_pattern,
                        NoPatternConstraint, homopolymer_pattern)
-from dnachisel.biotools import gc_content
-import numpy as np
+import numpy
 
-np.random.seed(1234)
+numpy.random.seed(1234)
+
 sequence = random_dna_sequence(5000)
 
 forbidden_patterns = [
@@ -29,32 +30,45 @@ for pattern in forbidden_patterns:
     matches = pattern.find_matches(sequence)
     print ("Pattern %s found at locations %s" % (pattern, matches))
 
+def force_cuts(sequence):
+    all_forbidden_patterns_centers = sorted([
+        (a + b) // 2
+        for pattern in forbidden_patterns
+        for (a, b) in pattern.find_matches(sequence)
+    ])
+    return all_forbidden_patterns_centers
+
 all_forbidden_patterns_centers = sorted([
     (a + b) // 2
     for pattern in forbidden_patterns
     for (a, b) in pattern.find_matches(sequence)
 ])
 
-company_1 = DnaOffer(name="Company 1",
-                     constraints=[NoPatternConstraint(pattern)
-                                  for pattern in forbidden_patterns],
-                     pricing=lambda sequence: 0.10 * len(sequence))
+cheap_dna_com = ExternalDnaOffer(
+    "CheapDNA.com",
+    sequence_constraints= [NoPatternConstraint(pattern)
+                           for pattern in forbidden_patterns],
+    price_function=lambda sequence: 0.10 * len(sequence))
 
-problem = DnaOrderingProblem(
-    sequence=sequence,
-    offers=[company_1],
-    assembly_method=GoldenGateAssemblyMethod()
-)
 
-solution = problem.solve(
-    min_segment_length=100,
-    max_segment_length=3500,
-    nucleotide_resolution=50,
-    forced_cuts=all_forbidden_patterns_centers,
+assembly_station = DnaAssemblyStation(
+    "Golden Gate Assembly Station",
+    dna_assembly_method=GoldenGateAssemblyMethod(
+        left_overhang="[BsaI]A",
+        min_segment_length=100,
+        max_segment_length=3500,
+        force_cuts=force_cuts
+    ),
+    dna_source=cheap_dna_com,
+    nucleotide_resolution=10,
     refine_resolution=1
 )
 
-print solution.summary()
+quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
+
+print (quote)
+if quote.accepted:
+    print (quote.ordering_plan.summary())
 
 # This will print:
 # ----------------

@@ -38,35 +38,44 @@ sequence = random_dna_sequence(10000)
 enzyme_site = enzyme_pattern("BsaI")
 print ("BsaI site found at positions %s" % enzyme_site.find_matches(sequence))
 
-cheap_dna_offer = DnaOffer(
+cheap_dna_offer = ExternalDnaOffer(
     name="CheapDNA.com",
-    constraints=[NoPatternConstraint(enzyme_site),
-                 SequenceLengthConstraint(max_length=4000)],
-    pricing=lambda sequence: 0.10 * len(sequence)
+    sequence_constraints=[NoPatternConstraint(enzyme_site),
+                          SequenceLengthConstraint(max_length=4000)],
+    price_function=lambda sequence: 0.10 * len(sequence),
+    delay=10
 )
 
-deluxe_dna_offer = DnaOffer(
+deluxe_dna_offer = ExternalDnaOffer(
     name="DeluxeDNA.com",
-    constraints=[SequenceLengthConstraint(max_length=3000)],
-    pricing=lambda sequence: 0.20 * len(sequence)
+    sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
+    price_function=lambda sequence: 0.20 * len(sequence),
+    delay=5
 )
 
-problem = DnaOrderingProblem(
-    sequence=sequence,
-    offers=[cheap_dna_offer, deluxe_dna_offer],
-    assembly_method=GibsonAssemblyMethod(40),
-    cuts_number_penalty=0
-)
-
-solution = problem.solve(
-    min_segment_length=100,
-    max_segment_length=4000,
+assembly_station = DnaAssemblyStation(
+    name="Gibson Assembly Station",
+    dna_assembly_method=GibsonAssemblyMethod(
+        homology_arm_length=20,
+        min_segment_length=100,
+        max_segment_length=4000,
+        duration=7
+    ),
+    dna_source=DnaSourcesComparator([
+        cheap_dna_offer,
+        deluxe_dna_offer
+    ]),
     nucleotide_resolution=20,
-    refine_resolution=1,
-
+    refine_resolution=1
 )
 
-print (solution.summary())
+quote = assembly_station.get_quote(sequence, max_delay=20,
+                                   with_ordering_plan=True)
+
+print (quote)
+if quote.accepted:
+    print (quote.ordering_plan.summary())
+
 
 # This will print:
 # ----------------

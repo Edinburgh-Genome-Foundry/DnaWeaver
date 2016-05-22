@@ -1,13 +1,15 @@
 """DnaAdvisor, a Python package for optimal DNA sequence decomposition and
 ordering."""
 
-from DnaOrderingProblem import DnaOrderingProblem
-from DnaOffer import DnaOffer, DnaAssemblyOffer
+from DnaSource import (ExternalDnaOffer,
+                       DnaSourcesComparator,
+                       DnaAssemblyStation)
 from AssemblyMethod import (GibsonAssemblyMethod,
                             BuildAGenomeAssemblyMethod,
                             GoldenGateAssemblyMethod)
-__all__ = ("DnaOffer",
-           "DnaOrderingProblem",
-           "GibsonAssemblyMethod",
+__all__ = ("ExternalDnaOffer",
+           "DnaSourcesComparator",
+           "DnaAssemblyStation",
            "BuildAGenomeAssemblyMethod",
+           "GibsonAssemblyMethod",
            "GoldenGateAssemblyMethod")

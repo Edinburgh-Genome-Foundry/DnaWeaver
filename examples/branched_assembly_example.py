@@ -1,5 +1,9 @@
-from dnaadvisor import (DnaOffer, DnaAssemblyOffer, DnaOrderingProblem,
-                        BuildAGenomeAssemblyMethod, GibsonAssemblyMethod)
+
+from dnaadvisor import (ExternalDnaOffer,
+                        DnaAssemblyStation,
+                        GibsonAssemblyMethod,
+                        BuildAGenomeAssemblyMethod,
+                        DnaSourcesComparator)
 from dnachisel import random_dna_sequence
 import dnachisel.constraints as cst
 import numpy
@@ -7,69 +11,93 @@ import numpy
 
 # OLIGO COMPANIES
 
-cheap_dna_com = DnaOffer(
+cheap_dna_com = ExternalDnaOffer(
     name="CheapDNA.com",
-    constraints=[cst.GCContentConstraint(0.4, 0.6, gc_window=50)],
-    pricing=lambda sequence: 0.10 * len(sequence),
+    sequence_constraints=[cst.GCContentConstraint(0.4, 0.6, gc_window=50),
+                          cst.SequenceLengthConstraint(max_length=200)],
+    price_function=lambda sequence: 0.10 * len(sequence),
+    delay=10,
     memoize=True
 )
 
-deluxe_dna_com = DnaOffer(
+deluxe_dna_com = ExternalDnaOffer(
     name="DeluxeDNA.com",
-    pricing=lambda sequence: 0.20 * len(sequence),
-    constraints=[], memoize=True
+    sequence_constraints=[cst.SequenceLengthConstraint(max_length=200)],
+    price_function=lambda sequence: 0.20 * len(sequence),
+    delay=5,
+    memoize = True
 )
 
-big_dna_com = DnaOffer(
+big_dna_com = ExternalDnaOffer(
     name="BigDNA.com",
-    pricing=lambda sequence: 0.25 * len(sequence),
-    constraints=[lambda seq: len(seq) < 4000], memoize=True
+    sequence_constraints=[cst.SequenceLengthConstraint(2000, 4000)],
+    price_function=lambda sequence: 0.40 * len(sequence),
+    delay=10,
+    memoize = True
 )
 
 
-# OLIGO ASSEMBLY
+# OLIGOS TO BLOCKS ASSEMBLY
 
-oligos_assembler_offer = DnaAssemblyOffer(
-    "Oligos Assembler",
-    DnaOrderingProblem(offers=[cheap_dna_com, deluxe_dna_com],
-                       assembly_method=BuildAGenomeAssemblyMethod(20)),
-    memoize=True,
-    min_segment_length=40,
-    max_segment_length=100,
+oligo_assembly_station = DnaAssemblyStation(
+    name="Oligo Assembly Station",
+    dna_assembly_method=BuildAGenomeAssemblyMethod(
+        homology_arm_length=20,
+        min_segment_length=40,
+        max_segment_length=100,
+        duration=8,
+        cost=0
+    ),
+    dna_source=DnaSourcesComparator([
+        cheap_dna_com,
+        deluxe_dna_com
+    ]),
     nucleotide_resolution=10,
-    refine_resolution=False
+    refine_resolution=False,
+    memoize=True
 )
 
 
-# BLOCKS ASSEMBLY
+# BLOCKS TO CHUNKS ASSEMBLY
 
-blocks_assembler_offer = DnaAssemblyOffer(
-    "Blocks Assembler",
-    DnaOrderingProblem(offers=[oligos_assembler_offer, big_dna_com],
-                       assembly_method=GibsonAssemblyMethod(40)),
-    memoize=True,
-    min_segment_length=2000,
-    max_segment_length=4000,
+blocks_assembly_station = DnaAssemblyStation(
+    name="Blocks Assembly Station",
+    dna_assembly_method=GibsonAssemblyMethod(
+        homology_arm_length=40,
+        min_segment_length=2000,
+        max_segment_length=4000,
+        duration=8
+    ),
+    dna_source=DnaSourcesComparator([
+        oligo_assembly_station,
+        big_dna_com
+    ]),
     nucleotide_resolution=200,
-    refine_resolution=False
+    refine_resolution=False,
+    memoize=True
 )
 
+# CHUNKS TO MEGACHUNKS ASSEMBLY
 
-# CHUNKS ASSEMBLY
-
-chunks_assembler_offer = DnaAssemblyOffer(
-    "Chunks Assembler",
-    DnaOrderingProblem(offers=[blocks_assembler_offer],
-                       assembly_method=GibsonAssemblyMethod(300)),
-    memoize=True,
-    min_segment_length=15000,
-    max_segment_length=25000,
+chunks_assembly_station = DnaAssemblyStation(
+    name="Chunks Assembly Station",
+    dna_assembly_method=GibsonAssemblyMethod(
+        homology_arm_length=300,
+        min_segment_length=15000,
+        max_segment_length=25000,
+        duration=8
+    ),
+    dna_source=blocks_assembly_station,
     nucleotide_resolution=1000,
-    refine_resolution=False
+    refine_resolution=100,
 )
 
 numpy.random.seed(1234)
 sequence = random_dna_sequence(50000)
-chunks_assembler_offer.best_ordering_plan(sequence)
 
-# WRITE GENBANK FILE
+quote = chunks_assembly_station.get_quote(sequence, max_delay=30,
+                                          with_ordering_plan=True)
+
+print (quote)
+if quote.accepted:
+    print (quote.ordering_plan.summary())
