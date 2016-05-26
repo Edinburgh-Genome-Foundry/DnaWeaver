@@ -1,13 +1,14 @@
 """Optimization techniques"""
 
 import numpy as np
-from deap import creator, base, tools, algorithms
 from tqdm import tqdm
 import itertools as itt
 import networkx as nx
 
 
 class NoSolutionFoundError(Exception):
+    """Error thrown when it appears the optimization problem has
+    no solution."""
     pass
 
 
@@ -32,10 +33,12 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       produce cuts which minimize the total scores of the segments.
 
     cuts_number_penalty
-      A penalty that can be applied
+      A penalty that can be applied to each segment to reduce the number of
+      segments.
 
 
     location_filters
+
 
     segment_filters
 
@@ -74,7 +77,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
                               tqdm(nodes, desc="Filtering edges")):
         for end in nodes[i + 1:]:
             if end - start > max_segment_length:
-                break
+                break()
             elif all(fl((start, end)) for fl in segment_filters):
                 segments.append((start, end))
     graph = nx.DiGraph()
@@ -86,9 +89,15 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
     try:
         best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
+<<<<<<< HEAD
     except (KeyError, nx.NetworkXNoPath) as err:
         raise NoSolutionFoundError("Could not find a solution in "
                                    "optimize_cuts_with_graph")
+=======
+    except (KeyError, nx.NetworkXNoPath):
+         raise NoSolutionFoundError("Could not find a solution in "
+                                    "optimize_cuts_with_graph")
+>>>>>>> 3ac47366b763862a7e117730b27427d12aa44350
 
     return graph, best_cuts
 
@@ -97,6 +106,21 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
                            segment_score_function, location_filters=(),
                            segment_filters=(), nucleotide_resolution=1,
                            forced_cuts=(), progress_bars=True):
+    """Refines the cuts to optimize a cutting problem, using a local search.
+
+    Given an initial list `cuts` of cutting locations, the method will try to
+    replace each cut by a nearby location to see if it minimizes further the
+    total segment score.
+
+    cuts
+      List of indices indicating the initial cutting pattern to improve
+
+    radius
+      Radius of the region to consider around each original cut for optimization
+
+    segment_score function
+      function (star)
+    """
 
     nodes = [
         set([cut] + ([] if cut in forced_cuts else
