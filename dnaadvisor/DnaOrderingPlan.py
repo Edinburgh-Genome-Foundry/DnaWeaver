@@ -23,12 +23,12 @@ except:
 
 class DnaQuote:
 
-    def __init__(self, source, sequence, price=None, accepted=True, delay=None,
+    def __init__(self, source, sequence, price=None, accepted=True, lead_time=None,
                  ordering_plan=None, message=""):
         self.source = source
         self.accepted = accepted
         self.price = price
-        self.delay = delay
+        self.lead_time = lead_time
         self.sequence = sequence
         self.message = message
         self.ordering_plan = ordering_plan
@@ -36,8 +36,8 @@ class DnaQuote:
     def __repr__(self):
         if self.accepted:
             infos = "price %.02f" % self.price
-            if self.delay is not None:
-                infos = infos + ", delay %0.1f" % self.delay
+            if self.lead_time is not None:
+                infos = infos + ", lead_time %0.1f" % self.lead_time
         else:
             infos = "refused: %s" % self.message
         return "From %s, %s" % (self.source, infos)
@@ -66,20 +66,20 @@ class DnaOrderingPlan:
                            for segment, quote in sorted(self.quotes.items()))
         total_price = self.total_price()
         final_txt = "Ordering plan:\n  %s\n  Price:%.02f" % (plan, total_price)
-        delay = self.overall_delay()
-        if delay != None:
-            final_txt = final_txt + ", Delay:%.1f" % delay
+        lead_time = self.overall_lead_time()
+        if lead_time is not None:
+            final_txt = final_txt + ", lead_time:%.1f" % lead_time
         return final_txt
 
     def total_price(self):
         return sum(quote.price for quote in self.quotes.values())
 
-    def overall_delay(self):
-        delays = [quote.delay for quote in self.quotes.values()]
-        if any(delay is None for delay in delays):
+    def overall_lead_time(self):
+        lead_times = [quote.lead_time for quote in self.quotes.values()]
+        if any(lead_time is None for lead_time in lead_times):
             return None
         else:
-            return max(delays)
+            return max(lead_times)
 
     def cuts_indices(self):
         return sorted([offer.segment[1] for offer in self.quotes.keys()])[:-1]

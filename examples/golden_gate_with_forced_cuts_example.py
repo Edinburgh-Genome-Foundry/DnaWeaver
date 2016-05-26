@@ -53,7 +53,7 @@ cheap_dna_com = ExternalDnaOffer(
 
 assembly_station = DnaAssemblyStation(
     "Golden Gate Assembly Station",
-    dna_assembly_method=GoldenGateAssemblyMethod(
+    assembly_method=GoldenGateAssemblyMethod(
         left_overhang="[BsaI]A",
         min_segment_length=100,
         max_segment_length=3500,

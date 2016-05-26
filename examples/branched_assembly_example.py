@@ -41,7 +41,7 @@ big_dna_com = ExternalDnaOffer(
 
 oligo_assembly_station = DnaAssemblyStation(
     name="Oligo Assembly Station",
-    dna_assembly_method=BuildAGenomeAssemblyMethod(
+    assembly_method=BuildAGenomeAssemblyMethod(
         homology_arm_length=20,
         min_segment_length=40,
         max_segment_length=100,
@@ -62,7 +62,7 @@ oligo_assembly_station = DnaAssemblyStation(
 
 blocks_assembly_station = DnaAssemblyStation(
     name="Blocks Assembly Station",
-    dna_assembly_method=GibsonAssemblyMethod(
+    assembly_method=GibsonAssemblyMethod(
         homology_arm_length=40,
         min_segment_length=2000,
         max_segment_length=4000,
@@ -81,7 +81,7 @@ blocks_assembly_station = DnaAssemblyStation(
 
 chunks_assembly_station = DnaAssemblyStation(
     name="Chunks Assembly Station",
-    dna_assembly_method=GibsonAssemblyMethod(
+    assembly_method=GibsonAssemblyMethod(
         homology_arm_length=300,
         min_segment_length=15000,
         max_segment_length=25000,

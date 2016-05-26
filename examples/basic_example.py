@@ -55,7 +55,7 @@ deluxe_dna_offer = ExternalDnaOffer(
 
 assembly_station = DnaAssemblyStation(
     name="Gibson Assembly Station",
-    dna_assembly_method=GibsonAssemblyMethod(
+    assembly_method=GibsonAssemblyMethod(
         homology_arm_length=20,
         min_segment_length=100,
         max_segment_length=4000,

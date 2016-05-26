@@ -4,13 +4,14 @@ from .optimization import (optimize_cuts_with_graph_twostep,
 from dnachisel import Constraint, DnaCanvas
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
 
+
 class DnaSource:
 
-    def get_quote(self, sequence, max_delay=None, max_price=None,
+    def get_quote(self, sequence, time_limit=None, max_price=None,
                   with_ordering_plan=False, time_resolution=1.0):
 
         if self.memoize:
-            args = (sequence, max_delay, max_price, with_ordering_plan)
+            args = (sequence, time_limit, max_price, with_ordering_plan)
             quote = self.memoize_dict.get(args, None)
             if quote is not None:
                 return quote
@@ -20,7 +21,7 @@ class DnaSource:
                              message="Constraints do not pass")
 
         elif max_price is not None:
-            quote = self.get_best_delay_under_price_limit(
+            quote = self.get_best_lead_time_under_price_limit(
                 sequence,
                 max_price=max_price,
                 time_resolution=time_resolution,
@@ -30,7 +31,7 @@ class DnaSource:
         else:
             quote = self.get_best_price(
                 sequence,
-                max_delay=max_delay,
+                time_limit=time_limit,
                 with_ordering_plan=with_ordering_plan
             )
 
@@ -42,12 +43,12 @@ class DnaSource:
     def __repr__(self):
         return self.name
 
-    def get_best_delay_under_price_limit(self, sequence, max_price,
-                                         time_resolution,
-                                         with_ordering_plan=None):
+    def get_best_lead_time_under_price_limit(self, sequence, max_price,
+                                             time_resolution,
+                                             with_ordering_plan=None):
         """dichotomize, kind of"""
-        def f(max_delay):
-            return self.get_quote(sequence, max_delay=max_delay,
+        def f(time_limit):
+            return self.get_quote(sequence, time_limit=time_limit,
                                   with_ordering_plan=with_ordering_plan)
         quote = f(None)
         if (not quote.accepted) or (quote.price > max_price):
@@ -55,20 +56,19 @@ class DnaSource:
                 self, sequence, accepted=False,
                 message="Price over limit even without time limit."
             )
-        step_size = quote.delay / 2.0
-        delay = quote.delay - step_size
+        step_size = quote.lead_time / 2.0
+        lead_time = quote.lead_time - step_size
         best_quote = quote
         while step_size > time_resolution:
-            quote = f(delay)
+            quote = f(lead_time)
             if quote.accepted and (quote.price <= max_price):
                 best_quote = quote
-                delay -= step_size
+                lead_time -= step_size
             else:
-                delay += step_size
+                lead_time += step_size
             step_size /= 2.0
 
         return best_quote
-
 
     def verify_constraints(self, sequence):
         constraints = self.sequence_constraints
@@ -87,8 +87,6 @@ class DnaSource:
         return all(constraint(sequence) for constraint in constraints)
 
 
-
-
 class DnaSourcesComparator(DnaSource):
 
     def __init__(self, dna_sources, memoize=False):
@@ -97,10 +95,10 @@ class DnaSourcesComparator(DnaSource):
         self.memoize = memoize
         self.memoize_dict = {}
 
-    def get_best_price(self, sequence, max_delay=None,
+    def get_best_price(self, sequence, time_limit=None,
                        with_ordering_plan=False):
         quotes = [
-            source.get_quote(sequence, max_delay=max_delay,
+            source.get_quote(sequence, time_limit=time_limit,
                              with_ordering_plan=with_ordering_plan)
             for source in self.dna_sources
         ]
@@ -114,54 +112,55 @@ class DnaSourcesComparator(DnaSource):
 
 class DnaAssemblyStation(DnaSource):
 
-    def __init__(self, name, dna_assembly_method, dna_source, memoize=False,
+    def __init__(self, name, assembly_method, dna_source, memoize=False,
                  **solve_kwargs):
         self.name = name
-        self.dna_assembly_method = dna_assembly_method
+        self.assembly_method = assembly_method
         self.dna_source = dna_source
         self.solve_kwargs = solve_kwargs
-        self.extra_delay = dna_assembly_method.duration
-        self.extra_price = dna_assembly_method.cost
-        self.sequence_constraints = dna_assembly_method.sequence_constraints
+        self.extra_time = assembly_method.duration
+        self.extra_price = assembly_method.cost
+        self.sequence_constraints = assembly_method.sequence_constraints
         self.memoize = memoize
         self.memoize_dict = {}
 
-    def get_quote_for_sequence_segment(self, sequence, segment, max_delay=None,
+    def get_quote_for_sequence_segment(self, sequence, segment, time_limit=None,
                                        **kwargs):
-        fragment_to_order = self.dna_assembly_method.compute_fragment_sequence(
+        fragment_to_order = self.assembly_method.compute_fragment_sequence(
             sequence, segment, **kwargs
         )
         return self.dna_source.get_quote(fragment_to_order,
-                                         max_delay=max_delay)
+                                         time_limit=time_limit)
 
-    def get_ordering_plan_from_cuts(self, sequence, cuts, max_delay=None):
+    def get_ordering_plan_from_cuts(self, sequence, cuts, time_limit=None):
         cuts = sorted(cuts)
         return DnaOrderingPlan({
             segment: self.get_quote_for_sequence_segment(sequence, segment,
-                                                         max_delay=max_delay)
+                                                         time_limit=time_limit)
             for segment in zip(cuts, cuts[1:])
         })
 
-    def get_ordering_plan_for_sequence(self, sequence, max_delay=None,
+    def get_ordering_plan_for_sequence(self, sequence, time_limit=None,
                                        return_graph=False,
                                        nucleotide_resolution=None,
                                        refine_resolution=None,
                                        progress_bars=True):
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
-                sequence, segment, max_delay=max_delay
+                sequence, segment, time_limit=time_limit
             )
             if not quote.accepted:
                 return -1
             else:
                 return quote.price
-        assembly = self.dna_assembly_method
+        assembly = self.assembly_method
         if nucleotide_resolution is None:
             nucleotide_resolution = \
-                self.solve_kwargs.get("nucleotide_resolution", None)
+                self.solve_kwargs.get("nucleotide_resolution", 1)
         if refine_resolution is None:
             refine_resolution = \
-                self.solve_kwargs.get("refine_resolution", None)
+                self.solve_kwargs.get("refine_resolution", 1)
+        
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
@@ -175,62 +174,65 @@ class DnaAssemblyStation(DnaSource):
             progress_bars=progress_bars
         )
         ordering_plan = self.get_ordering_plan_from_cuts(sequence, best_cuts,
-                                                         max_delay=max_delay)
+                                                         time_limit=time_limit)
         if return_graph:
             return graph, ordering_plan
         else:
             return ordering_plan
 
-    def get_best_price(self, sequence, max_delay=None,
+    def get_best_price(self, sequence, time_limit=None,
                        with_ordering_plan=False):
 
-        if (max_delay is not None):
-            max_delay = max_delay - self.extra_delay
-            if max_delay < 0:
+        if (time_limit is not None):
+            time_limit = time_limit - self.extra_time
+            if time_limit < 0:
                 return DnaQuote(self, sequence, accepted=False,
-                                message="Delay too short")
+                                message="Time limit too short")
         try:
             ordering_plan = self.get_ordering_plan_for_sequence(
-                sequence, max_delay=max_delay, **self.solve_kwargs
+                sequence, time_limit=time_limit, **self.solve_kwargs
             )
         except NoSolutionFoundError:
             return DnaQuote(self, sequence, accepted=False,
                             message="No solution found !")
         total_price = ordering_plan.total_price() + self.extra_price
-        delay = ordering_plan.overall_delay()
-        total_delay = None if delay is None else delay + self.extra_delay
+        lead_time = ordering_plan.overall_lead_time()
+        total_duration = (None if lead_time is None else
+                          lead_time + self.extra_time)
         if not with_ordering_plan:
             ordering_plan = None
-        return DnaQuote(self, sequence, price=total_price, delay=total_delay,
+        return DnaQuote(self, sequence, price=total_price,
+                        lead_time=total_duration,
                         ordering_plan=ordering_plan)
 
 
 class ExternalDnaOffer(DnaSource):
 
-    def __init__(self, name, sequence_constraints, price_function, delay=None,
-                 memoize=False):
+    def __init__(self, name, sequence_constraints, price_function,
+                 lead_time=None, memoize=False):
         self.name = name
         self.sequence_constraints = sequence_constraints
         self.price_function = price_function
-        self.delay_function = delay if callable(delay) else (lambda *a: delay)
+        self.lead_time = (lead_time if callable(lead_time)
+                          else (lambda *a: lead_time))
         self.memoize = memoize
         self.memoize_dict = {}
 
     def __repr__(self):
         return self.name
 
-    def get_best_price(self, sequence, max_delay=None,
+    def get_best_price(self, sequence, time_limit=None,
                        with_ordering_plan=False):
 
-        delay = self.delay_function(sequence)
+        lead_time = self.lead_time(sequence)
         price = self.price_function(sequence)
-        accepted = (max_delay is None) or (delay <= max_delay)
-        return DnaQuote(self, sequence, accepted=accepted, delay=delay,
-                        price=price)
+        accepted = (time_limit is None) or (lead_time <= time_limit)
+        return DnaQuote(self, sequence, accepted=accepted,
+                        lead_time=lead_time, price=price)
 
-    def get_best_delay_under_price_limit(self, sequence, max_price):
+    def get_best_lead_time_under_price_limit(self, sequence, max_price):
 
-        delay = self.delay_function(sequence)
+        lead_time = self.lead_time(sequence)
         price = self.price_function(sequence)
-        return DnaQuote(self, sequence, price=price, delay=delay,
+        return DnaQuote(self, sequence, price=price, lead_time=lead_time,
                         accepted=price < max_price)

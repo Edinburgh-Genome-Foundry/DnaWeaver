@@ -6,8 +6,10 @@ from tqdm import tqdm
 import itertools as itt
 import networkx as nx
 
+
 class NoSolutionFoundError(Exception):
     pass
+
 
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
                              cuts_number_penalty=0, location_filters=(),
@@ -60,18 +62,17 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
         node
         for node in range(0, sequence_length)
         if all(fl(node) for fl in location_filters)
-    ]+ forced_cuts)))
+    ] + forced_cuts)))
     if forced_cuts != []:
         def forced_cuts_filter(segment):
             start, end = segment
             return not any((start < cut < end) for cut in forced_cuts)
         segment_filters = [forced_cuts_filter] + list(segment_filters)
 
-
     segments = []
     for i, start in enumerate(nodes if not progress_bars else
                               tqdm(nodes, desc="Filtering edges")):
-        for end in nodes[i+1:]:
+        for end in nodes[i + 1:]:
             if end - start > max_segment_length:
                 break
             elif all(fl((start, end)) for fl in segment_filters):
@@ -86,10 +87,11 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
     try:
         best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
     except (KeyError, nx.NetworkXNoPath) as err:
-         raise NoSolutionFoundError("Could not find a solution in "
-                                    "optimize_cuts_with_graph")
+        raise NoSolutionFoundError("Could not find a solution in "
+                                   "optimize_cuts_with_graph")
 
     return graph, best_cuts
+
 
 def refine_cuts_with_graph(sequence_length, cuts, radius,
                            segment_score_function, location_filters=(),
@@ -181,7 +183,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
         cuts_number_penalty=cuts_number_penalty,
         location_filters=new_location_filters,
         segment_filters=new_segment_filters,
-        forced_cuts= forced_cuts,
+        forced_cuts=forced_cuts,
         max_segment_length=max_segment_length,
         progress_bars=progress_bars
     )
@@ -194,7 +196,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
             nucleotide_resolution=refine_resolution,
             segment_filters=segment_filters,
             location_filters=location_filters,
-            forced_cuts = forced_cuts,
+            forced_cuts=forced_cuts,
             progress_bars=progress_bars
         )
     return graph, best_cuts
