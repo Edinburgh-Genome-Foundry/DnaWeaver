@@ -144,6 +144,7 @@ class DnaAssemblyStation(DnaSource):
                                        return_graph=False,
                                        nucleotide_resolution=None,
                                        refine_resolution=None,
+                                       a_star_factor=0,
                                        progress_bars=True):
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
@@ -160,7 +161,7 @@ class DnaAssemblyStation(DnaSource):
         if refine_resolution is None:
             refine_resolution = \
                 self.solve_kwargs.get("refine_resolution", 1)
-        
+
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
@@ -171,7 +172,8 @@ class DnaAssemblyStation(DnaSource):
             forced_cuts=assembly.force_cuts(sequence),
             initial_resolution=nucleotide_resolution,
             refine_resolution=refine_resolution,
-            progress_bars=progress_bars
+            progress_bars=progress_bars,
+            a_star_factor=a_star_factor
         )
         ordering_plan = self.get_ordering_plan_from_cuts(sequence, best_cuts,
                                                          time_limit=time_limit)
@@ -236,3 +238,103 @@ class ExternalDnaOffer(DnaSource):
         price = self.price_function(sequence)
         return DnaQuote(self, sequence, price=price, lead_time=lead_time,
                         accepted=price < max_price)
+
+
+class PcrOutStation(DnaSource):
+
+    def __init__(self, name, primers_dna_source, blast_database=None,
+                 sequences=None, pcr_homology_length=25,
+                 max_overhang_length=40, extra_cost=0, extra_time=0,
+                 max_amplicon_length=None, blast_word_size=50, memoize=False,
+                 sequence_constraints=()):
+        self.name = name
+        self.blast_database = blast_database
+        self.primers_dna_source = primers_dna_source
+        self.pcr_homology_length = pcr_homology_length
+        self.max_overhang_length = max_overhang_length
+        self.extra_time = extra_time
+        self.extra_cost = extra_cost
+        self.max_amplicon_length = max_amplicon_length
+        self.blast_word_size = blast_word_size
+        if max_amplicon_length is not None:
+            sequence_constraints = ([lambda seq: len(seq) <
+                                     max_amplicon_length] + list(constraints))
+        self.sequence_constraints = sequence_constraints
+        self.memoize = memoize
+        self.memoize_dict = {}
+        self.sequences = sequences
+
+    def get_hits(self, sequence):
+        if self.sequences is not None:
+            result = []
+            for dna_name, seq in self.sequences:
+                index = seq.find(sequence)
+                if index != -1:
+                    result.append((dna_name, (index, index+len(sequence))))
+            return result
+        else:
+            record = blast_sequence(sequence, self.blast_database,
+                                    perc_identity=100,
+                                    word_size=self.blast_word_size)
+            return [
+                (hit.sbjct, (hit.query_start, hit.query_end))
+                for alignment in record.alignments
+                for hit in alignment.hsps
+            ]
+
+
+    def get_best_price(self, sequence, time_limit=None,
+                       with_ordering_plan=False):
+
+        for subject, (hit_start, hit_end) in self.get_hits(sequence):
+
+            largest_overhang = max(hit_start, len(sequence) - hit_end)
+
+            if largest_overhang <= self.max_overhang_length:
+                primer_l_end = hit_start + self.pcr_homology_length
+                primer_left = sequence[:primer_l_end]
+                primer_r_end = hit_end - self.pcr_homology_length
+                primer_right = reverse_complement(sequence[primer_r_end:])
+
+                primer_time_limit = (None if time_limit is None else
+                                     time_limit - self.extra_duration)
+                quotes = [
+                    self.primers_dna_source.get_quote(
+                        primer, time_limit=primer_time_limit
+                    )
+                    for primer in [primer_left, primer_right]
+                ]
+                if not all(quote.accepted for quote in quotes):
+                    continue  # primers inorderable
+
+                if time_limit is not None:
+                    overall_lead_time = (max(quote.lead_time
+                                             for quote in quotes) +
+                                         self.extra_time)
+                else:
+                    overall_lead_time = None
+                total_price = (sum(quote.price for quote in quotes) +
+                               self.extra_cost)
+
+                if with_ordering_plan:
+                    ordering_plan = DnaOrderingPlan({
+                        (0, primer_left_end): quotes[0],
+                        (primer_right_end, len(sequence)): quotes[0]
+                    })
+                else:
+                    ordering_plan = None
+                return DnaQuote(self, sequence, accepted=True,
+                                lead_time=overall_lead_time,
+                                price=total_price,
+                                ordering_plan=ordering_plan)
+
+        return DnaQuote(self, sequence, accepted=False,
+                        message="No valid match found")
+
+    def pre_blast(self, sequence):
+        self.sequences = None
+        self.sequences = [
+            (subject, sequence[start:end])
+            for subject, (start, end) in self.get_hits(sequence)
+        ]
+        print len(self.sequences)

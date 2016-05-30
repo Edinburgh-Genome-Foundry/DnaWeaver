@@ -38,51 +38,63 @@ import numpy as np
 np.random.seed(12345)
 
 cell9_rules = [
-        cst.NoPatternConstraint(patterns.enzyme_pattern("BsaI")),
-        cst.NoPatternConstraint(patterns.enzyme_pattern("AarI")),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("A", 9)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("T", 9)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("G", 6)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("C", 9)),
-        cst.GCContentConstraint(0.4, 0.65),
-        cst.GCContentConstraint(0.25, 0.80, gc_window=50)
+    cst.NoPatternConstraint(patterns.enzyme_pattern("BsaI")),
+    cst.NoPatternConstraint(patterns.enzyme_pattern("AarI")),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("A", 9)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("T", 9)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("G", 6)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("C", 9)),
+    cst.GCContentConstraint(0.4, 0.65),
+    cst.GCContentConstraint(0.25, 0.80, gc_window=50)
 ]
 tdi_rules = [
-        cst.GCContentConstraint(0.25, 0.68),
-        cst.GCContentConstraint(0.28, 0.76, gc_window=100),
-        cst.GCContentConstraint(0.15, 0.90, gc_window=20),
-        cst.TerminalGCContentConstraint(0.24, 0.76, window_size=30),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("A", 13)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("T", 13)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("G", 6)),
-        cst.NoPatternConstraint(patterns.homopolymer_pattern("C", 6)),
-        cst.NoPatternConstraint(patterns.repeated_kmers(3, n_repeats=5)),
-        cst.NoPatternConstraint(patterns.repeated_kmers(2, n_repeats=9)),
-        cst.NoHairpinsIDTConstraint(stem_size=20, hairpin_window=200)
+    cst.GCContentConstraint(0.25, 0.68),
+    cst.GCContentConstraint(0.28, 0.76, gc_window=100),
+    cst.GCContentConstraint(0.15, 0.90, gc_window=20),
+    cst.TerminalGCContentConstraint(0.24, 0.76, window_size=30),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("A", 13)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("T", 13)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("G", 6)),
+    cst.NoPatternConstraint(patterns.homopolymer_pattern("C", 6)),
+    cst.NoPatternConstraint(patterns.repeated_kmers(3, n_repeats=5)),
+    cst.NoPatternConstraint(patterns.repeated_kmers(2, n_repeats=9)),
+    cst.NoHairpinsIDTConstraint(stem_size=20, hairpin_window=200)
 ]
 
-cell9_offer = DnaOffer(name="Cell9 offer", constraints=cell9_rules,
-                       pricing=lambda sequence: 0.10 * len(sequence))
+cell9_offer = ExternalDnaOffer(
+    name="Cell9 offer",
+    sequence_constraints=cell9_rules,
+    price_function=lambda sequence: 0.10 * len(sequence)
+)
 
-tdi_offer = DnaOffer(name="TDI Offer", constraints=tdi_rules,
-                     pricing=lambda sequence: 0.10 * len(sequence))
+tdi_offer = ExternalDnaOffer(
+    name="TDI Offer",
+    sequence_constraints=tdi_rules,
+    price_function=lambda sequence: 0.10 * len(sequence)
+)
 
 
 # NOTE: The seed is set so as to make sure that the "random" fragments and
 # their subfragments are indeed gen9-compatible
-sequence = (random_compatible_dna_sequence(100, cell9_rules) + 'GGTCTC' +
-            random_compatible_dna_sequence(500, cell9_rules) + 'GGTCTC' +
-            random_compatible_dna_sequence(100, cell9_rules))
+sequence = (random_compatible_dna_sequence(1000, cell9_rules) + 'GGTCTC' +
+            random_compatible_dna_sequence(5000, cell9_rules) + 'GGTCTC' +
+            random_compatible_dna_sequence(1000, cell9_rules))
 
-problem = DnaOrderingProblem(
-    sequence=sequence,
-    offers=[cell9_offer, tdi_offer],
-    assembly_method=GibsonAssemblyMethod(20)
+assembly_station = DnaAssemblyStation(
+    name="Oligo Assembly Station",
+    assembly_method=BuildAGenomeAssemblyMethod(
+        homology_arm_length=20,
+        min_segment_length=50,
+        max_segment_length=700,
+        duration=7
+    ),
+    dna_source=DnaSourcesComparator([cell9_offer, tdi_offer]),
+    nucleotide_resolution=20,
+    refine_resolution=False
 )
 
-solution = problem.solve(
-    min_segment_length=50,
-    max_segment_length=700,
-    nucleotide_resolution=5,
-)
-print (solution.summary())
+quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
+
+print (quote)
+if quote.accepted:
+    print (quote.ordering_plan.summary())

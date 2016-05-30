@@ -25,7 +25,8 @@ ViennaRNA) is the bottleneck of computations.
 """
 
 
-from dnaadvisor import DnaOffer, DnaOrderingProblem, BuildAGenomeAssemblyMethod
+from dnaadvisor import (ExternalDnaOffer, DnaAssemblyStation,
+                        BuildAGenomeAssemblyMethod)
 from dnachisel import random_dna_sequence
 import primer3   # primer3 Python binding
 import RNA       # ViennaRNA binding
@@ -54,22 +55,24 @@ def has_weak_secondary_structure(segment):
     return RNA.fold(fragment)[1] > -40
 
 
-oligo_company = DnaOffer(name="Oligos Company", constraints=[],
-                         pricing=lambda sequence: 0.10 * len(sequence))
-
-problem = DnaOrderingProblem(
-    sequence=sequence,
-    offers=[oligo_company],
-    location_filters=(has_melting_temperature_between_50_and_55,),
-    segment_filters=(has_weak_secondary_structure,),
-    assembly_method=assembly_method
+assembly_station = DnaAssemblyStation(
+    name="Oligo Assembly Station",
+    assembly_method=BuildAGenomeAssemblyMethod(
+        homology_arm_length=20,
+        min_segment_length=40,
+        max_segment_length=100,
+        duration=7
+    ),
+    dna_source=ExternalDnaOffer(
+        name="Oligos Company",
+        pricing=lambda seq: 0.10 * len(seq)
+    ),
+    nucleotide_resolution=10,
+    refine_resolution=1
 )
 
+quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
 
-solution = problem.solve(
-    min_segment_length=40,
-    max_segment_length=100,
-    nucleotide_resolution=4,
-)
-
-print (solution.summary())
+print (quote)
+if quote.accepted:
+    print (quote.ordering_plan.summary())

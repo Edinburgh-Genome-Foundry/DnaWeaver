@@ -1,4 +1,3 @@
-
 from dnaadvisor import (ExternalDnaOffer,
                         DnaAssemblyStation,
                         GibsonAssemblyMethod,
@@ -16,7 +15,7 @@ cheap_dna_com = ExternalDnaOffer(
     sequence_constraints=[cst.GCContentConstraint(0.4, 0.6, gc_window=50),
                           cst.SequenceLengthConstraint(max_length=200)],
     price_function=lambda sequence: 0.10 * len(sequence),
-    delay=10,
+    lead_time=10,
     memoize=True
 )
 
@@ -24,16 +23,16 @@ deluxe_dna_com = ExternalDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[cst.SequenceLengthConstraint(max_length=200)],
     price_function=lambda sequence: 0.20 * len(sequence),
-    delay=5,
-    memoize = True
+    lead_time=5,
+    memoize=True
 )
 
 big_dna_com = ExternalDnaOffer(
     name="BigDNA.com",
     sequence_constraints=[cst.SequenceLengthConstraint(2000, 4000)],
     price_function=lambda sequence: 0.40 * len(sequence),
-    delay=10,
-    memoize = True
+    lead_time=10,
+    memoize=True
 )
 
 
@@ -54,7 +53,9 @@ oligo_assembly_station = DnaAssemblyStation(
     ]),
     nucleotide_resolution=10,
     refine_resolution=False,
-    memoize=True
+    memoize=True,
+    progress_bars=False,
+    a_star_factor=0
 )
 
 
@@ -74,7 +75,9 @@ blocks_assembly_station = DnaAssemblyStation(
     ]),
     nucleotide_resolution=200,
     refine_resolution=False,
-    memoize=True
+    memoize=True,
+    progress_bars=False,
+    a_star_factor=0
 )
 
 # CHUNKS TO MEGACHUNKS ASSEMBLY
@@ -90,14 +93,17 @@ chunks_assembly_station = DnaAssemblyStation(
     dna_source=blocks_assembly_station,
     nucleotide_resolution=1000,
     refine_resolution=100,
+    a_star_factor=0,
 )
 
 numpy.random.seed(1234)
 sequence = random_dna_sequence(50000)
 
-quote = chunks_assembly_station.get_quote(sequence, max_delay=30,
+import time
+t0 = time.time()
+quote = chunks_assembly_station.get_quote(sequence,
                                           with_ordering_plan=True)
-
+print time.time() - t0
 print (quote)
 if quote.accepted:
     print (quote.ordering_plan.summary())

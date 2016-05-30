@@ -43,21 +43,21 @@ cheap_dna_offer = ExternalDnaOffer(
     sequence_constraints=[NoPatternConstraint(enzyme_site),
                           SequenceLengthConstraint(max_length=4000)],
     price_function=lambda sequence: 0.10 * len(sequence),
-    delay=10
+    lead_time=10
 )
 
 deluxe_dna_offer = ExternalDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
     price_function=lambda sequence: 0.20 * len(sequence),
-    delay=5
+    lead_time=5
 )
 
 assembly_station = DnaAssemblyStation(
     name="Gibson Assembly Station",
     assembly_method=GibsonAssemblyMethod(
         homology_arm_length=20,
-        min_segment_length=100,
+        min_segment_length=2000,
         max_segment_length=4000,
         duration=7
     ),
@@ -65,11 +65,11 @@ assembly_station = DnaAssemblyStation(
         cheap_dna_offer,
         deluxe_dna_offer
     ]),
-    nucleotide_resolution=20,
-    refine_resolution=1
+    nucleotide_resolution=5,
+    refine_resolution=False
 )
 
-quote = assembly_station.get_quote(sequence, max_delay=20,
+quote = assembly_station.get_quote(sequence, time_limit=18,
                                    with_ordering_plan=True)
 
 print (quote)
