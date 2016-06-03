@@ -1,5 +1,6 @@
-from Bio import NCBIXML
+from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
+import numpy as np
 import subprocess
 
 

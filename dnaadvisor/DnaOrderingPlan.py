@@ -109,3 +109,44 @@ class DnaOrderingPlan:
         if sort_by is not None:
             dataframe = dataframe.sort_values(by=sort_by)
         return dataframe
+
+    def to_SeqRecord(self, record=None, record_id="Ordering plan"):
+        """
+        >>> record = to_SeqRecord(solution)
+        >>> # Let's plot with DnaVu:
+        >>> from dnavu import create_record_plot
+        >>> from bokeh.io import output_file, show
+        >>> output_file("view.html")
+        >>> plot = create_record_plot(record)
+        >>> show(plot)
+        """
+        if not BIOPYTHON_AVAILABLE:
+            raise ImportError("Install Biopython to use to_SeqRecord.")
+        offers = sorted(self.plan, key=lambda s: s.segment)
+        if record is None:
+            record = SeqRecord(Seq(self.full_sequence, DNAAlphabet()),
+                               id=record_id)
+        else:
+            record = deepcopy(record)
+        new_features = []
+        for offer in offers:
+            ind = record.seq.find(offer.sequence)
+            if (ind != -1):
+                start, end = ind, ind + len(offer.sequence)
+            else:
+                start, end = offer.segment[0], offer.segment[1]
+            feature = SeqFeature(
+                FeatureLocation(start, end, 1), type="order",
+                qualifiers={
+                    "offer": offer.offer, "price": offer.price,
+                    "locus_tag": "%s, %d$" % (offer.offer, offer.price)
+                }
+            )
+            new_features.append(feature)
+        record.features = new_features + record.features
+        return record
+
+    def to_genbank(self, filename, record=None, record_id="Ordering plan"):
+        record = self.to_SeqRecord(record=record, record_id=record_id)
+        with open(filename, "w+") as f:
+            SeqIO.write(record, f, "genbank")
