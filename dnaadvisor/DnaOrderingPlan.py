@@ -42,6 +42,19 @@ class DnaQuote:
             infos = "refused: %s" % self.message
         return "From %s, %s" % (self.source, infos)
 
+    def compute_ordering_tree(quote):
+        source = quote.source
+        if hasattr(quote.source, "dna_source"):
+            if quote.ordering_plan is None:
+                quote = source.get_quote(quote.sequence,
+                                         max_lead_time=quote.lead_time,
+                                         with_ordering_plan=True)
+            return (quote, {segment: subquote.compute_ordering_tree()
+                            for segment, subquote in
+                            quote.ordering_plan.quotes.items()})
+        else:
+            return (quote, {})
+
 
 class DnaOrderingPlan:
     """Class for representing a group of orders and exporting to many formats.

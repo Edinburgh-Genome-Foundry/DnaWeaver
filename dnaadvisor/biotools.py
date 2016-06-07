@@ -2,6 +2,9 @@ from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
 import numpy as np
 import subprocess
+import tempfile
+import time
+import os
 
 
 def complement(dna_sequence):
@@ -101,5 +104,24 @@ def blast_sequence(sequence, blast_db, word_size=4, perc_identity=80,
 
     os.fdopen(xml_file, 'w').close()
     os.fdopen(fasta_file, 'w').close()
+    os.remove(xml_name)
+    os.remove(fasta_name)
+
 
     return blast_record
+
+
+def largest_substring(query, target, max_overhang):
+    start, end = max_overhang, len(query)-max_overhang
+    ind = target.find(query[start:end])
+
+    if query[start:end] not in target:
+        return False
+    while (start>=0) and (query[start:end] in target):
+        start -= 1
+    start +=1
+    while (end<len(query)) and (query[start:end] in target):
+        end += 1
+    end -=1
+    ind = target.find(query[start:end])
+    return ind, ind + end - start

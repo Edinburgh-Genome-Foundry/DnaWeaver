@@ -2,6 +2,7 @@ from copy import copy
 from .optimization import (optimize_cuts_with_graph_twostep,
                            NoSolutionFoundError)
 from dnachisel import Constraint, DnaCanvas
+from biotools import blast_sequence, largest_substring, reverse_complement
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
 
 
@@ -263,7 +264,8 @@ class PcrOutStation(DnaSource):
         self.blast_word_size = blast_word_size
         if max_amplicon_length is not None:
             sequence_constraints = ([lambda seq: len(seq) <
-                                     max_amplicon_length] + list(constraints))
+                                     max_amplicon_length] +
+                                    list(sequence_constraints))
         self.sequence_constraints = sequence_constraints
         self.memoize = memoize
         self.memoize_dict = {}
@@ -273,9 +275,10 @@ class PcrOutStation(DnaSource):
         if self.sequences is not None:
             result = []
             for dna_name, seq in self.sequences:
-                index = seq.find(sequence)
-                if index != -1:
-                    result.append((dna_name, (index, index+len(sequence))))
+                match_coords = largest_substring(sequence, seq,
+                                                 self.max_overhang_length)
+                if match_coords:
+                    result.append((dna_name, match_coords))
             return result
         else:
             record = blast_sequence(sequence, self.blast_database,
@@ -286,7 +289,6 @@ class PcrOutStation(DnaSource):
                 for alignment in record.alignments
                 for hit in alignment.hsps
             ]
-
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
@@ -302,7 +304,7 @@ class PcrOutStation(DnaSource):
                 primer_right = reverse_complement(sequence[primer_r_end:])
 
                 primer_max_lead_time = (None if max_lead_time is None else
-                                     max_lead_time - self.extra_duration)
+                                        max_lead_time - self.extra_duration)
                 quotes = [
                     self.primers_dna_source.get_quote(
                         primer, max_lead_time=primer_max_lead_time
@@ -343,3 +345,22 @@ class PcrOutStation(DnaSource):
             for subject, (start, end) in self.get_hits(sequence)
         ]
         print len(self.sequences)
+
+
+class PartsLibrary(DnaSource):
+
+    def __init__(self, name, parts_dict, memoize=False):
+        self.name = name
+        self.sequence_constraints = []
+        self.parts_dict = parts_dict
+        self.memoize = False
+
+    def get_best_price(self, sequence, max_lead_time=None,
+                       with_ordering_plan=False):
+        if sequence in self.parts_dict:
+            return DnaQuote(self, sequence, accepted=True,
+                            price=0, lead_time=0,
+                            message="Part name: " + self.parts_dict[sequence])
+
+        return DnaQuote(self, sequence, accepted=False,
+                        message="Sequence not in the library")
