@@ -57,7 +57,7 @@ yeast_genome.pre_blast(sequence)
 quote = gg_station.get_quote(sequence, with_ordering_plan=True)
 print quote.ordering_plan.summary()
 print time.time() - t0
-tree = quote.compute_ordering_tree()
+tree = quote.compute_assembly_tree()
 
 from bokeh.io import output_file
 from bokeh.plotting import show

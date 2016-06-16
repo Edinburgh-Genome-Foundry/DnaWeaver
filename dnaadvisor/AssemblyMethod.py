@@ -97,24 +97,25 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
 
     """
     enzymes_dict = {
-        "[BsaI]": "GGTCTC",
-        "[BsmBI]": "CGTCTC",
-        "[BbsI]": "GAAGAC",
+        "BsaI": "GGTCTC",
+        "BsmBI": "CGTCTC",
+        "BbsI": "GAAGAC",
     }
 
-    def __init__(self, left_overhang="[BsaI]A", right_overhang=None,
+    def __init__(self, enzyme="BsaI", wildcard_basepair="A",  left_overhang="",
+                 right_overhang="", avoid_enzyme_in_segments=False,
                  **properties):
         AssemblyMethod.__init__(self, **properties)
-        if right_overhang is None:
-            right_overhang = left_overhang
-        for name, site in self.enzymes_dict.items():
-            left_overhang = left_overhang.replace(name, site)
-            right_overhang = right_overhang.replace(name, site)
-
-        self.left_overhang = left_overhang
-        self.right_overhang = right_overhang
-        self.right_overhang_rev = reverse_complement(right_overhang)
-
+        self.enzyme = enzyme
+        enzyme_site = self.enzymes_dict[enzyme]
+        enzyme_site_plus_basepair = enzyme_site + wildcard_basepair
+        self.left_overhang = left_overhang + enzyme_site_plus_basepair
+        self.right_overhang = right_overhang + enzyme_site_plus_basepair
+        self.right_overhang_rev = reverse_complement(self.right_overhang)
+        if avoid_enzyme_in_segments:
+            self.segment_filters = list(self.segment_filters) + [
+                lambda seq, start, end: (enzyme_site not in seq[start:end])
+            ]
 
     def compute_fragment_sequence(self, sequence, segment):
         """Return the segment's sequence with flanking sequences for
