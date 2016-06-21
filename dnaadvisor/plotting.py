@@ -19,8 +19,10 @@ import matplotlib.patches as patches
 
 def plot_assembly_tree(tree, color_palette=None, parts_offset=0,
                        backend="bokeh", plot_top_assembly=True,
-                       ax=None):
+                       ax=None, edge_widths=None):
     rectangles = []
+    if edge_widths is None:
+        edge_widths = {}
 
     def rec(node, depth=0, xstart=0, xend=None):
         quote, children = node
@@ -33,7 +35,8 @@ def plot_assembly_tree(tree, color_palette=None, parts_offset=0,
                 "source": str(quote.source),
                 "lead_time": str(quote.lead_time),
                 "price": str(quote.price),
-                "has_children": children != {}
+                "has_children": children != {},
+                "line_width": edge_widths.get(str(quote.source), 1)
             })
         for (start, end), child in children.items():
             rec(child, depth=depth + 1, xstart=xstart + start,
@@ -109,7 +112,6 @@ def _bokeh_plot(rectangles, guides, tops):
     dataframe = pd.DataFrame.from_records(rectangles)
     for sourcename, df in dataframe.groupby("source"):
         source = ColumnDataSource(df)
-        print sourcename, len(df)
         p.quad(name="parts",
                top="top", bottom="bottom", left="left",
                    right="right", color="color", source=source, line_width=1,
@@ -143,7 +145,7 @@ def _matplotlib_plot(rectangles, guides, tops, ax):
             legend_patch = patches.Patch(facecolor=g["color"],
                                          label=g["source"],
                                          edgecolor="k",
-                                         linewidth=1)
+                                         linewidth=g["line_width"])
             legend_handles.append(legend_patch)
             seen_sources.add(g["source"])
             plt.legend(handles=[legend_patch])
@@ -151,7 +153,7 @@ def _matplotlib_plot(rectangles, guides, tops, ax):
                                   g["right"] - g["left"],
                                   g["top"] - g["bottom"],
                                   facecolor=g["color"],
-                                  edgecolor="k", linewidth=1)
+                                  edgecolor="k", linewidth=g["line_width"])
         ax.add_patch(patch)
     ax.axis("off")
     return ax, legend_handles

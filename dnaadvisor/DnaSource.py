@@ -4,12 +4,15 @@ from .optimization import (optimize_cuts_with_graph_twostep,
 from dnachisel import Constraint, DnaCanvas
 from biotools import blast_sequence, largest_substring, reverse_complement
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
-
+import numpy as np
 
 class DnaSource:
 
     def get_quote(self, sequence, max_lead_time=None, max_price=None,
                   with_ordering_plan=False, time_resolution=1.0):
+
+        if max_lead_time is None:
+            max_lead_time = np.inf
 
         if self.memoize:
             args = (sequence, max_lead_time, max_price, with_ordering_plan)
@@ -310,7 +313,7 @@ class PcrOutStation(DnaSource):
                 primer_right = reverse_complement(sequence[primer_r_end:])
 
                 primer_max_lead_time = (None if max_lead_time is None else
-                                        max_lead_time - self.extra_duration)
+                                        max_lead_time - self.extra_time)
                 quotes = [
                     self.primers_dna_source.get_quote(
                         primer, max_lead_time=primer_max_lead_time
@@ -350,7 +353,6 @@ class PcrOutStation(DnaSource):
             (subject, sequence[start:end])
             for subject, (start, end) in self.get_hits(sequence)
         ]
-        print len(self.sequences)
 
 
 class PartsLibrary(DnaSource):

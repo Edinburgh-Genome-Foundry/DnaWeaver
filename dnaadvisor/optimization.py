@@ -54,7 +54,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     """
     if source not in G or target not in G:
         msg = 'Either source {} or target {} is not in G'
-        raise nx.NodeNotFound(msg.format(source, target))
+        raise nx.exception.NetworkXNoPath(msg.format(source, target))
 
     if heuristic is None:
         # The default heuristic is h=0 - same as Dijkstra's algorithm
@@ -175,7 +175,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
                 segments.append((start, end))
     graph = nx.DiGraph()
 
-    if a_star_factor == 0:
+    if False:#a_star_factor == 0:
         for start, end in (segments if not progress_bars else
                            tqdm(segments, desc='Computing edges')):
             weight = segment_score_function((start, end))
@@ -205,7 +205,8 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
         try:
             best_cuts = astar_path(graph, 0, sequence_length,
-                                   heuristic=lambda n1, n2: abs(0.2*(n2-n1)),
+                                   heuristic=lambda n1, n2: abs(
+                                                      a_star_factor*(n2-n1)),
                                    weight=compute_weight)
         except (KeyError, nx.NetworkXNoPath):
             raise NoSolutionFoundError("Could not find a solution in "
