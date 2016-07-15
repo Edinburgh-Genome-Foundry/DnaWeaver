@@ -57,8 +57,8 @@ def random_dna_sequence(length, probas=None, seed=None):
     return "".join(sequence)
 
 
-def blast_sequence(sequence, blast_db, word_size=4, perc_identity=80,
-                   num_alignments=1000, num_threads=3):
+def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
+                   perc_identity=80, num_alignments=1000, num_threads=3):
     """Return a Biopython BLAST record of the given sequence BLASTed
     against the provided database.
 
@@ -86,8 +86,9 @@ def blast_sequence(sequence, blast_db, word_size=4, perc_identity=80,
         "blastn", "-out", xml_name,
         "-outfmt", "5",
         "-num_alignments", str(num_alignments),
-        "-query", fasta_name,
-        "-db", blast_db,
+        "-query", fasta_name] +
+        (["-db", blast_db] if blast_db is not None
+         else ['-subject', subject]) + [
         "-word_size", str(word_size),
         "-num_threads", str(num_threads),
         "-perc_identity", str(perc_identity)

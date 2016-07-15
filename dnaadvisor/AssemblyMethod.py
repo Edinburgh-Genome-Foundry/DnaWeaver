@@ -5,10 +5,11 @@ class AssemblyMethod:
 
     Yeah that class is useless right now but bear with me.
     """
+    name = "None"
     def __init__(self, duration=0, cost=0, location_filters=(),
                  segment_filters=(), min_segment_length=None,
                  max_segment_length=None, force_cuts=(),
-                 sequence_constraints=()):
+                 sequence_constraints=(), name=None):
         self.duration = duration
         self.cost = cost
         self.location_filters = location_filters
@@ -33,6 +34,7 @@ class OverlapingAssemblyMethod(AssemblyMethod):
       consecutive segments will overlap by 2*L
 
     """
+    name= "Overlap"
 
     def __init__(self, homology_arm_length=20, **properties):
         AssemblyMethod.__init__(self, **properties)
@@ -62,9 +64,11 @@ class OverlapingAssemblyMethod(AssemblyMethod):
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
+    name = "Gibson"
 
 class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     """The Build-a-Genome Assembly Method. Just another overlap-method"""
+    name = "BaG"
 
 class GoldenGateAssemblyMethod(AssemblyMethod):
     """The Golden Gate Assembly Method.
@@ -96,6 +100,8 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
     >>> )
 
     """
+    name = "Golden Gate"
+
     enzymes_dict = {
         "BsaI": "GGTCTC",
         "BsmBI": "CGTCTC",

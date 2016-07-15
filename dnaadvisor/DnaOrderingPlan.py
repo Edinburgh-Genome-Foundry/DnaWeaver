@@ -10,21 +10,46 @@ try:
 except:
     PANDAS_AVAILABLE = False
 
-try:
-    from Bio.SeqRecord import SeqRecord
-    from Bio.Seq import Seq
-    from Bio.Alphabet import DNAAlphabet
-    from Bio import SeqIO
-    from Bio.SeqFeature import SeqFeature, FeatureLocation
-    BIOPYTHON_AVAILABLE = True
-except:
-    BIOPYTHON_AVAILABLE = False
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
+from Bio.Alphabet import DNAAlphabet
+from Bio import SeqIO
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+import itertools as itt
+
+class AssemblyOperation:
+    """A class to represent assembly operation to model, analyze and report
+    assembly trees."""
+    def __init__(self, id, quote, segments, deadline=None):
+        self.id = id
+        self.quote = quote
+        self.segments=segments
+        self.deadline = deadline
+
+    def return_tree_as_list(self):
+        return [self] + sum([child.return_tree_as_list()
+                             for segment, child in self.segments.items()], [])
+
+    def propagate_deadline(self, deadline):
+        self.deadline = deadline
+        children_deadline = deadline - self.step_duration
+        for segment, child in self.segments.items():
+            child.propagate_deadline(children_deadline)
+
+    @property
+    def step_duration(self):
+        if self.segments == {}:
+            children_lead_time = 0
+        else:
+            children_lead_time = max(child.quote.lead_time
+                                     for _, child in self.segments.items())
+        return self.quote.lead_time - children_lead_time
 
 
 class DnaQuote:
 
     def __init__(self, source, sequence, price=None, accepted=True, lead_time=None,
-                 ordering_plan=None, message=""):
+                 ordering_plan=None, metadata={}, message=""):
         self.source = source
         self.accepted = accepted
         self.price = price
@@ -32,6 +57,7 @@ class DnaQuote:
         self.sequence = sequence
         self.message = message
         self.ordering_plan = ordering_plan
+        self.metadata = metadata
 
     def __repr__(self):
         if self.accepted:
@@ -42,18 +68,37 @@ class DnaQuote:
             infos = "refused: %s" % self.message
         return "From %s, %s" % (self.source, infos)
 
-    def compute_assembly_tree(quote):
-        source = quote.source
-        if hasattr(quote.source, "dna_source"):
-            if quote.ordering_plan is None:
-                quote = source.get_quote(quote.sequence,
-                                         max_lead_time=quote.lead_time,
-                                         with_ordering_plan=True)
-            return (quote, {segment: subquote.compute_assembly_tree()
-                            for segment, subquote in
-                            quote.ordering_plan.quotes.items()})
-        else:
-            return (quote, {})
+    def compute_assembly_tree(quote, id_prefix="Op. "):
+
+        counter = itt.count()
+
+        def rec(quote):
+            source = quote.source
+            if (hasattr(quote.source, "dna_source") or
+                hasattr(quote.source, "primers_dna_source")):
+                if quote.ordering_plan is None:
+                    quote = source.get_quote(quote.sequence,
+                                             max_lead_time=quote.lead_time,
+                                             with_ordering_plan=True)
+                segments = {
+                    segment: rec(subquote)
+                    for segment, subquote in
+                    sorted(quote.ordering_plan.quotes.items(),
+                           key=lambda it: it[0])
+                }
+                return AssemblyOperation(
+                    id="%s%04d" %(id_prefix, counter.next()),
+                    quote=quote,
+                    segments=segments
+                )
+            else:
+                return AssemblyOperation(
+                    id="%s%04d" %(id_prefix, counter.next()),
+                    quote=quote,
+                    segments={}
+                )
+
+        return rec(quote)
 
 
 class DnaOrderingPlan:
@@ -133,8 +178,6 @@ class DnaOrderingPlan:
         >>> plot = create_record_plot(record)
         >>> show(plot)
         """
-        if not BIOPYTHON_AVAILABLE:
-            raise ImportError("Install Biopython to use to_SeqRecord.")
         offers = sorted(self.plan, key=lambda s: s.segment)
         if record is None:
             record = SeqRecord(Seq(self.full_sequence, DNAAlphabet()),

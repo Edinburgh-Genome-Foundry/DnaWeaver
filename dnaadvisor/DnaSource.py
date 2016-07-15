@@ -5,6 +5,8 @@ from dnachisel import Constraint, DnaCanvas
 from biotools import blast_sequence, largest_substring, reverse_complement
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
 import numpy as np
+import networkx as nx
+from collections import defaultdict
 
 class DnaSource:
 
@@ -91,6 +93,34 @@ class DnaSource:
         return all(constraint(sequence) for constraint in constraints)
 
 
+    def compute_supply_graph(self):
+
+        seen_sources = set()
+        levels = defaultdict(lambda: [])
+        edges = []
+
+        def rec(source, depth=0):
+
+            if source in seen_sources:
+                return
+            seen_sources.add(source)
+
+            levels[depth].append(source)
+
+            if hasattr(source, "dna_source"):
+                edges.append((source.dna_source, source))
+                rec(source.dna_source, depth + 1)
+
+            if hasattr(source, "dna_sources"):
+                for other in source.dna_sources:
+                    edges.append((other, source))
+                    rec(other, depth + 1)
+
+        rec(self)
+        levels = [levels[i] for i in sorted(levels.keys())][::-1]
+        return edges, levels
+
+
 class DnaSourcesComparator(DnaSource):
 
     def __init__(self, dna_sources, memoize=False):
@@ -123,7 +153,7 @@ class DnaAssemblyStation(DnaSource):
         self.dna_source = dna_source
         self.solve_kwargs = solve_kwargs
         self.extra_time = assembly_method.duration
-        self.extra_price = assembly_method.cost
+        self.extra_cost = assembly_method.cost
         self.sequence_constraints = assembly_method.sequence_constraints
         self.memoize = memoize
         self.memoize_dict = {}
@@ -212,7 +242,7 @@ class DnaAssemblyStation(DnaSource):
         except NoSolutionFoundError:
             return DnaQuote(self, sequence, accepted=False,
                             message="No solution found !")
-        total_price = ordering_plan.total_price() + self.extra_price
+        total_price = ordering_plan.total_price() + self.extra_cost
         lead_time = ordering_plan.overall_lead_time()
         total_duration = (None if lead_time is None else
                           lead_time + self.extra_time)
@@ -342,7 +372,8 @@ class PcrOutStation(DnaSource):
                 return DnaQuote(self, sequence, accepted=True,
                                 lead_time=overall_lead_time,
                                 price=total_price,
-                                ordering_plan=ordering_plan)
+                                ordering_plan=ordering_plan,
+                                metadata={"subject": subject})
 
         return DnaQuote(self, sequence, accepted=False,
                         message="No valid match found")

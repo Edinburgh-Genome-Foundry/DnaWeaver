@@ -175,7 +175,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
                 segments.append((start, end))
     graph = nx.DiGraph()
 
-    if False:#a_star_factor == 0:
+    if a_star_factor == 0:
         for start, end in (segments if not progress_bars else
                            tqdm(segments, desc='Computing edges')):
             weight = segment_score_function((start, end))
