@@ -1,7 +1,7 @@
 DNA Chisel
 ==========
 
-DnaAdvisor is a Python library to modify the nucleotides of DNA sequences with respect to a set of
+DnaWeaver is a Python library to modify the nucleotides of DNA sequences with respect to a set of
 constraints and optimization objectives.
 
 It can be used for many purposes, such as codon-optimizing the genes of a sequence
@@ -18,7 +18,7 @@ In this basic example we optimize a sequence with respect to the following const
 - **Constraint 2:** The local GC content of every 50-nucleotide subsequence should be between 30% and 70%.
 - **Objective 1:** The sequence's  GC content should be 40% (or as close as possible)
 
-Here is the Python code to solve the problem with DnaAdvisor:
+Here is the Python code to solve the problem with DnaWeaver:
 ::
     from dnachisel import *
 
@@ -45,7 +45,7 @@ For a more complete and meaningful example, see also this other script, in which
 a plasmid is codon-optimized and tweaked so as to verify constraints imposed by
 a DNA synthesis company.
 
-DnaAdvisor implements advanced constraints such as the preservation of coding
+DnaWeaver implements advanced constraints such as the preservation of coding
 sequences,  or the inclusion or exclusion of advanced patterns, as well as
 some common biological objectives (such as codon optimization, GC content), but it
 is also very easy to implement new constraints and objectives.
@@ -57,14 +57,14 @@ Search strategies
 Long DNA sequences have a huge space of possible mutations
 (just 20 nucleotides can form a trillion different sequences), therefore it is not
 possible to solve a DNA optimization problem through an exhaustive.
-DnaAdvisor uses the following strategies to avoid exploring the whole search space:
+DnaWeaver uses the following strategies to avoid exploring the whole search space:
 
 - **Constraining of the mutation space:** no mutation can be done in segments of the sequence
   subject to a ``DoNotModify`` constraint, and in segments subject to an
   ``EnforceTranslation`` constraint only synonymous mutations of the codons are
   allowed.
 
-- **Constraints solving before objective optimization**: DnaAdvisor currently enforces a
+- **Constraints solving before objective optimization**: DnaWeaver currently enforces a
   resolution of problems in two steps: first solve the constraints and make sure
   that they all pass, then optimize the sequence with respect to the different
   objectives, while making sure that they all pass. While not to always yield
@@ -72,7 +72,7 @@ DnaAdvisor uses the following strategies to avoid exploring the whole search spa
   practical, as solving for the constraints first is generally very fast and directly
   informs on whether all constraints can be met.
 
-- **Localized searches:** When DnaAdvisor finds that a constraint is not
+- **Localized searches:** When DnaWeaver finds that a constraint is not
   verified, and if the constraint breaches are localized on the
   sequence (for instance, a forbidden restriction site at a given location),
   then it will attempt to solve each breach separately
@@ -82,9 +82,9 @@ DnaAdvisor uses the following strategies to avoid exploring the whole search spa
   on which segments of the sequence to focus the search.
 
 - **A mix of exhaustive searches and random searches:** for each localized
-  constraint problem, if the search space is small enough DnaAdvisor performs
+  constraint problem, if the search space is small enough DnaWeaver performs
   an exhaustive search (i.e. it tries every possible change of the sequence until
-  all constraints are resolved), else DnaAdvisor performs a random search where
+  all constraints are resolved), else DnaWeaver performs a random search where
   if create random valid variations of the sequence until one meets all the
   constraints. The optimization of objectives functions in a similar way.
 
@@ -92,7 +92,7 @@ DnaAdvisor uses the following strategies to avoid exploring the whole search spa
 Installation
 -------------
 
-You can install DnaAdvisor through PIP
+You can install DnaWeaver through PIP
 ::
     sudo pip install dnachisel
 
@@ -106,5 +106,5 @@ Alternatively, you can unzip the sources in a folder and type
 Contribute
 ----------
 
-DnaAdvisor is an open-source library originally written at the Edinburgh Genome Foundry by Zulko_.
+DnaWeaver is an open-source library originally written at the Edinburgh Genome Foundry by Zulko_.
 It is released on Github under the MIT licence, everyone is welcome to contribute.

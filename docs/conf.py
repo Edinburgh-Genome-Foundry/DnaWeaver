@@ -41,7 +41,7 @@ source_suffix = ['.rst']
 master_doc = 'index'
 
 # General information about the project.
-project = u'DnaAdvisor'
+project = u'DnaWeaver'
 copyright = u'2015, Edinburgh Genome Foundry'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -98,7 +98,7 @@ pygments_style = 'sphinx'
 
 import sphinx_rtd_theme
 sys.path.append(os.path.abspath('_themes'))
-sys.path.append("../dnaadvisor")
+sys.path.append("../dnaweaver")
 #html_theme_path = ['_themes']
 html_theme = "sphinx_rtd_theme" # formerly 'kr'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
@@ -178,7 +178,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'DnaAdvisordoc'
+htmlhelp_basename = 'DnaWeaverdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -197,7 +197,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'DnaAdvisor.tex', u'DnaAdvisor Documentation',
+  ('index', 'DnaWeaver.tex', u'DnaWeaver Documentation',
    u'Zulko', 'manual'),
 ]
 
@@ -227,7 +227,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'DnaAdvisor', u'PACKAGE_NAME Documentation',
+    ('index', 'DnaWeaver', u'PACKAGE_NAME Documentation',
      [u'Zulko'], 1)
 ]
 
@@ -241,8 +241,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'DnaAdvisor', u'DnaAdvisor Documentation',
-   u'Zulko', 'DnaAdvisor', 'One line description of project.',
+  ('index', 'DnaWeaver', u'DnaWeaver Documentation',
+   u'Zulko', 'DnaWeaver', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -262,7 +262,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'DnaAdvisor'
+epub_title = u'DnaWeaver'
 epub_author = u'Zulko'
 epub_publisher = u'Zulko'
 epub_copyright = u'2016, Zulko'

@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import defaultdict
 from dnachisel.constraints import Constraint
 from dnachisel import DnaCanvas
 from .optimization import NoSolutionFoundError
@@ -17,13 +18,15 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 import itertools as itt
 
+
 class AssemblyOperation:
     """A class to represent assembly operation to model, analyze and report
     assembly trees."""
+
     def __init__(self, id, quote, segments, deadline=None):
         self.id = id
         self.quote = quote
-        self.segments=segments
+        self.segments = segments
         self.deadline = deadline
 
     def return_tree_as_list(self):
@@ -45,11 +48,29 @@ class AssemblyOperation:
                                      for _, child in self.segments.items())
         return self.quote.lead_time - children_lead_time
 
+    def compute_assembly_levels(self):
+
+        levels = defaultdict(lambda: [])
+        edges = []
+
+        def rec(subtree, depth=0):
+
+            levels[depth].append(subtree)
+
+            if hasattr(subtree, "segments"):
+                for other in subtree.segments.values():
+                    edges.append((other, subtree))
+                    rec(other, depth + 1)
+        rec(self)
+        levels = [levels[i] for i in sorted(levels.keys())][::-1]
+        levels = [sorted(level, key=lambda e: e.id)[::-1] for level in levels]
+        return edges, levels
+
 
 class DnaQuote:
 
-    def __init__(self, source, sequence, price=None, accepted=True, lead_time=None,
-                 ordering_plan=None, metadata={}, message=""):
+    def __init__(self, source, sequence, price=None, accepted=True,
+                 lead_time=None, ordering_plan=None, metadata={}, message=""):
         self.source = source
         self.accepted = accepted
         self.price = price
@@ -75,7 +96,7 @@ class DnaQuote:
         def rec(quote):
             source = quote.source
             if (hasattr(quote.source, "dna_source") or
-                hasattr(quote.source, "primers_dna_source")):
+                    hasattr(quote.source, "primers_dna_source")):
                 if quote.ordering_plan is None:
                     quote = source.get_quote(quote.sequence,
                                              max_lead_time=quote.lead_time,
@@ -87,13 +108,13 @@ class DnaQuote:
                            key=lambda it: it[0])
                 }
                 return AssemblyOperation(
-                    id="%s%04d" %(id_prefix, counter.next()),
+                    id="%s%04d" % (id_prefix, counter.next()),
                     quote=quote,
                     segments=segments
                 )
             else:
                 return AssemblyOperation(
-                    id="%s%04d" %(id_prefix, counter.next()),
+                    id="%s%04d" % (id_prefix, counter.next()),
                     quote=quote,
                     segments={}
                 )

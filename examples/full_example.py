@@ -1,5 +1,5 @@
 
-from dnaadvisor import (ExternalDnaOffer,
+from dnaweaver import (ExternalDnaOffer,
                         DnaAssemblyStation,
                         GibsonAssemblyMethod,
                         GoldenGateAssemblyMethod,

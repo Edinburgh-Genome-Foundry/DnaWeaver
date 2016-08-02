@@ -324,7 +324,7 @@ class PcrOutStation(DnaSource):
                                     perc_identity=100,
                                     word_size=self.blast_word_size)
             return [
-                (hit.sbjct, (hit.query_start, hit.query_end))
+                (alignment.hit_id, (hit.query_start, hit.query_end))
                 for alignment in record.alignments
                 for hit in alignment.hsps
             ]
@@ -373,7 +373,8 @@ class PcrOutStation(DnaSource):
                                 lead_time=overall_lead_time,
                                 price=total_price,
                                 ordering_plan=ordering_plan,
-                                metadata={"subject": subject})
+                                metadata={"subject": subject,
+                                          "location": (hit_start, hit_end)})
 
         return DnaQuote(self, sequence, accepted=False,
                         message="No valid match found")

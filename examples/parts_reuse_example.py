@@ -1,5 +1,5 @@
 import pandas as pd
-from dnaadvisor import (GoldenGateAssemblyMethod, plot_ordering_tree,
+from dnaweaver import (GoldenGateAssemblyMethod, plot_ordering_tree,
                         PartsLibrary, PcrOutStation,
                         DnaAssemblyStation,
                         ExternalDnaOffer, DnaSourcesComparator,

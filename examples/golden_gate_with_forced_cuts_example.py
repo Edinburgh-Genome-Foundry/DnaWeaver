@@ -1,4 +1,4 @@
-"""Advanced Golden Gate cutting example for DnaAdvisor.
+"""Advanced Golden Gate cutting example for DnaWeaver.
 
 This example is the continuation of golden_gate_simple_examples.py.
 
@@ -11,7 +11,7 @@ As a solution, we locate these sites and forced the solver to cut in the middle
 of these sites.
 """
 
-from dnaadvisor import (ExternalDnaOffer, DnaAssemblyStation,
+from dnaweaver import (ExternalDnaOffer, DnaAssemblyStation,
                         GoldenGateAssemblyMethod)
 from dnachisel import (random_dna_sequence, enzyme_pattern,
                        NoPatternConstraint, homopolymer_pattern)

@@ -1,4 +1,4 @@
-"""An example of cutting with DNA Advisor using real DNA companies rules .
+"""An example of cutting with DNA Weaver using real DNA companies rules .
 
 Problem
 --------
@@ -27,10 +27,10 @@ Company TDI charges 0.20$/bp and applies the following constraints:
 What we show
 ------------
 - We show that the company constraints can be modelled using DnaChisel
-- We show that in this example DnaAdvisor finds the smartest solution.
+- We show that in this example DnaWeaver finds the smartest solution.
 """
 
-from dnaadvisor import *
+from dnaweaver import *
 from dnachisel import random_compatible_dna_sequence, patterns
 import dnachisel.constraints as cst
 import numpy as np

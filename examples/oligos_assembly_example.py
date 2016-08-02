@@ -1,4 +1,4 @@
-"""Example of oligo design for oligo assembly using DnaAdvisor
+"""Example of oligo design for oligo assembly using DnaWeaver
 
 Problem
 --------
@@ -16,7 +16,7 @@ What we show
   produce overlaps with the right Tm
 - We show how to use `segments_filter` to filter out segments which will
   produce oligos with too strong a secondary structure.
-- We show that DnaAdvisor can come to a nice solution under these conditions.
+- We show that DnaWeaver can come to a nice solution under these conditions.
 
 Technical note
 --------------
@@ -25,7 +25,7 @@ ViennaRNA) is the bottleneck of computations.
 """
 
 
-from dnaadvisor import (ExternalDnaOffer, DnaAssemblyStation,
+from dnaweaver import (ExternalDnaOffer, DnaAssemblyStation,
                         BuildAGenomeAssemblyMethod)
 from dnachisel import random_dna_sequence
 import primer3   # primer3 Python binding

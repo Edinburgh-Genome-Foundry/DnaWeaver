@@ -7,16 +7,16 @@ except ImportError:
         import ez_setup
         ez_setup.use_setuptools()
     except ImportError:
-        raise ImportError("DnaAdvisor could not be installed, probably because"
+        raise ImportError("DnaWeaver could not be installed, probably because"
                           " neither setuptools nor ez_setup are installed on"
                           "this computer. \nInstall ez_setup "
                           "([sudo] pip install ez_setup) and try again.")
 
 from setuptools import setup, find_packages
 
-exec(open('dnaadvisor/version.py').read())  # loads __version__
+exec(open('dnaweaver/version.py').read())  # loads __version__
 
-setup(name='DnaAdvisor',
+setup(name='DnaWeaver',
       version=__version__,
       author='Zulko',
       description='Make ordering and assembly plans for DNA sequences',

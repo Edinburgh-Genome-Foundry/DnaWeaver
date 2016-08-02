@@ -1,4 +1,4 @@
-"""DnaAdvisor, a Python package for optimal DNA sequence decomposition and
+"""DnaWeaver, a Python package for optimal DNA sequence decomposition and
 ordering."""
 
 from DnaSource import (ExternalDnaOffer,

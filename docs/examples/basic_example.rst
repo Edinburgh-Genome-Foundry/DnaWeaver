@@ -15,7 +15,7 @@ As our sequence has 2 BsaI sites, some fragments will have to be ordered to
 The obvious solution is to order just the fragments around BsaI to *DeluxeDNA.com* and
 all the rest to *CheapDNA.com*
 
-This example shows that DnaAdvisor will come to that solution. You can also use this
+This example shows that DnaWeaver will come to that solution. You can also use this
 example to play around with the `cuts_number_penalty` parameter, which has for effect to
 yield solutions with less fragments to order (but a higher total price).
 

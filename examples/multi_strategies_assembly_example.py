@@ -1,4 +1,4 @@
-from dnaadvisor import (DnaOffer, DnaAssemblyOffer, DnaOrderingProblem,
+from dnaweaver import (DnaOffer, DnaAssemblyOffer, DnaOrderingProblem,
                         GoldenGateAssemblyMethod, GibsonAssemblyMethod)
 from dnachisel import random_dna_sequence
 import dnachisel.constraints as cst

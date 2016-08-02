@@ -1,4 +1,4 @@
-"""Simple Golden Gate cutting example for DnaAdvisor.
+"""Simple Golden Gate cutting example for DnaWeaver.
 
 Problem
 --------
@@ -12,7 +12,7 @@ the segments are assembled by Gibson Assembly.
 
 What we show
 ------------
-- Here we show that DnaAdvisor can come to that solution with no guidance.
+- Here we show that DnaWeaver can come to that solution with no guidance.
 - We also demonstrate the use of `locations_filters` to filter out locations
   which would be unsuitable for Golden Gate assembly cuts (with a GC content of
   100%).
@@ -28,7 +28,7 @@ In and other example (golden_gate_with_forced_cuts_example.py) we show a
 smarter way to solve this problem by forcing the location of certain cuts.
 """
 
-from dnaadvisor import *
+from dnaweaver import *
 from dnachisel import random_dna_sequence, enzyme_pattern, NoPatternConstraint
 from dnachisel.biotools import gc_content
 import numpy as np

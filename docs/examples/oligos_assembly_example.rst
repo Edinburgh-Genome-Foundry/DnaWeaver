@@ -1,6 +1,6 @@
 .. oligos_assembly_example:
 
-Oligos assembly design with DnaAdvisor
+Oligos assembly design with DnaWeaver
 ---------------------------------------
 
 .. literalinclude:: ../../examples/oligos_assembly_example.py

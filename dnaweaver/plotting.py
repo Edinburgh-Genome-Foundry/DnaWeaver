@@ -297,7 +297,7 @@ def _matplotlib_plot_assembly_timeline(assembly_tree, deadline=None, ax=None,
             ec="none"
         )
 
-        ax.plot([0, assembly.deadline], [i, i], c="k", alpha=0.3, lw=.5 * scale,
+        ax.plot([0, assembly.deadline], [i, i], c="k", alpha=0.3, lw=.5*scale,
                 zorder=-1000, ls="-")
         ax.add_patch(patch)
 

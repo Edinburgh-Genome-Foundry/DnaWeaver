@@ -9,7 +9,7 @@ What we show
 
 """
 
-from dnaadvisor import (DnaOffer, DnaOrderingProblem,
+from dnaweaver import (DnaOffer, DnaOrderingProblem,
                         BuildAGenomeAssemblyMethod, GibsonAssemblyMethod)
 from dnachisel import random_dna_sequence
 import dnachisel.constraints as cst

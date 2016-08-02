@@ -1,28 +1,28 @@
 .. reference ::
 
-DnaAdvisor Reference manual
+DnaWeaver Reference manual
 ==========================
 
 DnaOrderingProblem
 --------------------
 
-.. autoclass:: dnaadvisor.DnaOrderingProblem
+.. autoclass:: dnaweaver.DnaOrderingProblem
    :members:
 
 Optimization
 ------------
 
-.. automodule:: dnaadvisor.optimization
+.. automodule:: dnaweaver.optimization
    :members:
 
 DnaOffer, DnaOrderingPlan, etc.
 -------------------------------
 
-.. automodule:: dnaadvisor.DnaOffer
+.. automodule:: dnaweaver.DnaOffer
   :members:
 
 Assembly methods
 ----------------
 
-.. automodule:: dnaadvisor.AssemblyMethod
+.. automodule:: dnaweaver.AssemblyMethod
    :members:

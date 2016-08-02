@@ -1,4 +1,4 @@
-"""Basic example for Dna Advisor: ordering DNA from 2 different companies
+"""Basic example for Dna Weaver: ordering DNA from 2 different companies
 
 Problem
 --------
@@ -16,7 +16,7 @@ sites, and company 1 for the rest.
 
 What we show
 ------------
-We show that DnaAdvisor can come to the best solution with no guidance.
+We show that DnaWeaver can come to the best solution with no guidance.
 
 Technical note
 --------------
@@ -26,7 +26,7 @@ For instance if you increase `cuts_number_penalty` to 500 you will see the
 number of segments to order fall from 7 to just 3.
 """
 
-from dnaadvisor import *
+from dnaweaver import *
 from dnachisel import (random_dna_sequence, enzyme_pattern,
                        NoPatternConstraint, SequenceLengthConstraint)
 import numpy as np
