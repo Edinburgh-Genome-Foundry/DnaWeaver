@@ -5,6 +5,8 @@ from tqdm import tqdm
 import itertools as itt
 import networkx as nx
 from networkx.algorithms.shortest_paths import bidirectional_dijkstra
+from heapq import heappush, heappop
+from itertools import count
 
 
 class NoSolutionFoundError(Exception):
@@ -12,13 +14,20 @@ class NoSolutionFoundError(Exception):
     no solution."""
     pass
 
-from heapq import heappush, heappop
-from itertools import count
 
 def astar_path(G, source, target, heuristic=None, weight=None):
     """Return a list of nodes in a shortest path between source and target
     using the A* ("A-star") algorithm.
     There may be more than one shortest path.  This returns only one.
+
+    This function is taken from the Networkx project, with modifications for
+    lazy weight computations (weight can now be a function).
+    This function is therefore placed under the BSD licence.
+
+    TO DO: submit that change to the NetworkX project so that this rewrite
+    can be avoided.
+
+
     Parameters
     ----------
     G : NetworkX graph
@@ -32,10 +41,12 @@ def astar_path(G, source, target, heuristic=None, weight=None):
        two nodes arguments and must return a number.
     weight: string, optional (default='weight')
        Edge data key corresponding to the edge weight.
+
     Raises
     ------
     NetworkXNoPath
         If no path exists between source and target.
+
     Examples
     --------
     >>> G=nx.path_graph(5)
@@ -48,6 +59,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     ...    return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
     >>> print(nx.astar_path(G,(0,0),(2,2),dist))
     [(0, 0), (0, 1), (1, 1), (1, 2), (2, 2)]
+
     See Also
     --------
     shortest_path, dijkstra_path
@@ -61,7 +73,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
         def heuristic(u, v):
             return 0
     if weight is None:
-        weight = lambda *a:0
+        weight = lambda *a: 0
 
     push = heappush
     pop = heappop
@@ -111,7 +123,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
     """Find the sequence cuts which optimize the sum of segments scores.
 
     This is a very generic method meant to be applied to any sequence cutting
-    problem.
+    optimization problem.
 
     Parameters
     ----------
@@ -128,11 +140,37 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       A penalty that can be applied to each segment to reduce the number of
       segments.
 
-
     location_filters
-
+      List or tuple of functions `int -> bool` which return for each location
+      whether the location should be considered as a cutting site (True) or
+      discarded (False) in the decomposition of the sequence.
+      The locations considered are the locations which pass every filter
+      in the `location_filters` list.
 
     segment_filters
+      List or tuple of functions `(int, int) -> bool` which return for each
+      segment `(start, end)` whether the segment is a valid segment for the
+      decomposition of the sequence or whether it should be forbidden.
+      The segmentss considered are the segments which pass every filter
+      in the `segments_filters` list.
+
+    forced_cuts
+      List of locations at which the decomposition must imperatively cut, even
+      if these cuts do not comply with the `location_filters`.
+
+    max_segment_length
+      Maximal length of the segments. Even though this could be specified using
+      a filter in `segments_filters`, in practice providing this parameter
+      accelerates computations as it allows to reduce the number
+      of segments considered.
+
+    a_star_factor
+      If 0, the classical Dijkstra algorithm is used for path finding. Else,
+      the a_star algorithm is used with a heuristic `h(x)=a_start_factor*(L-x)`
+      where x is the location of a cutting point and L the length of the
+      sequence. See the original DNAWeaver article for clearer explanations.
+      Using a high A* factor can improve computing times several folds but
+      yields suboptimal decompositions.
 
 
     Returns
@@ -191,7 +229,12 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
         graph.add_edges_from(segments)
         d = {}
+
         def compute_weight(start, end, props):
+            """Compute the weight (cost) for segment (start, end).
+
+            Parameter `props` is useless and is there for compatibility reasons
+            """
             segment = tuple(sorted((start, end)))
             if segment in d:
                 return d[segment]
@@ -206,7 +249,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
         try:
             best_cuts = astar_path(graph, 0, sequence_length,
                                    heuristic=lambda n1, n2: abs(
-                                                      a_star_factor*(n2-n1)),
+                                       a_star_factor * (n2 - n1)),
                                    weight=compute_weight)
         except (KeyError, nx.NetworkXNoPath):
             raise NoSolutionFoundError("Could not find a solution in "
@@ -226,14 +269,60 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
     replace each cut by a nearby location to see if it minimizes further the
     total segment score.
 
+    Parameters
+    ----------
+
+    sequence_length
+      Length of the Dna sequence to decompose
+
     cuts
       List of indices indicating the initial cutting pattern to improve
 
     radius
-      Radius of the region to consider around each original cut for optimization
+      Radius of the region to consider around each original cut for
+      optimization
 
-    segment_score function
-      function (star)
+    segment_score_function
+      Function `(start, end) -> score` yielding a score for a given sub-segment
+      of the sequence (e.g. price of the segment)
+
+    location_filters
+      List or tuple of functions `int -> bool` which return for each location
+      whether the location should be considered as a cutting site (True) or
+      discarded (False) in the decomposition of the sequence.
+      The locations considered are the locations which pass every filter
+      in the `location_filters` list.
+
+    segment_filters
+      List or tuple of functions `(int, int) -> bool` which return for each
+      segment `(start, end)` whether the segment is a valid segment for the
+      decomposition of the sequence or whether it should be forbidden.
+      The segmentss considered are the segments which pass every filter
+      in the `segments_filters` list.
+
+    nucleotide_resolution
+      Nucleotide resolution to use for the refinement. Not necessarily 1, but
+      should be smaller than the nucleotide resolution used for the
+      coarse-grain optimization.
+
+    progress_bars
+      If `progress_bars` is non-zero and `a_star_factor` is zero, a progress
+      bar is shown as the edges of the problem are being evaluated
+
+    a_star_factor
+      If 0, the classical Dijkstra algorithm is used for path finding. Else,
+      the A* algorithm is used with a heuristic `h(x)=a_start_factor*(L-x)`
+      where x is the location of a cutting point and L the length of the
+      sequence. See the original DNAWeaver article for clearer explanations.
+      Using a high A* factor can improve computing times several folds but
+      yields suboptimal decompositions.
+      Note that using the A* algorithm doesnt play well with time constraints
+      and number-of-fragments limits etc. Use with care
+
+    Notes
+    -----
+
+    See original DNA Weaver article for clearer explanations of the method
     """
 
     nodes = [
@@ -282,8 +371,6 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
                           weight=compute_weight)
 
 
-
-
 def optimize_cuts_with_graph_twostep(sequence_length,
                                      segment_score_function,
                                      cuts_number_penalty=0,
@@ -296,23 +383,77 @@ def optimize_cuts_with_graph_twostep(sequence_length,
                                      forced_cuts=(),
                                      a_star_factor=0,
                                      progress_bars=True):
-    """Find optimal sequence cuts with coarse-grain search + refinement step.
+    """Find optimal sequence cuts in two steps: first coarse-grain search with
+    a nucleotide resolution > 1, then a refinement step.
+
+    This function calls `optimize_cuts_with_graph` followed by
+    `refine_cuts_with_graph`.
+    In practice, this means that at first only every N-th nucleotide of the
+    sequence is considered as a possible cut point, then a refinement around
+    the solution found is operated using local searches.
 
 
     Parameters
     ----------
 
+    sequence_length
+      Length of the sequence to decompose.
+
+    segment_score_function
+      Function `(start, end) -> score` yielding a score for a given sub-segment
+      of the sequence (e.g. price of the segment)
+
+    cuts_number_penalty
+      Soon deprecated, never mind
+
+    location_filters
+      List or tuple of functions `int -> bool` which return for each location
+      whether the location should be considered as a cutting site (True) or
+      discarded (False) in the decomposition of the sequence.
+      The locations considered are the locations which pass every filter
+      in the `location_filters` list.
+
+    segment_filters
+      List or tuple of functions `(int, int) -> bool` which return for each
+      segment `(start, end)` whether the segment is a valid segment for the
+      decomposition of the sequence or whether it should be forbidden.
+      The segmentss considered are the segments which pass every filter
+      in the `segments_filters` list.
+
     initial_resolution
+      Nucleotide resolution to use for the coarse-grain search, see function
+      `optimize_cuts_with_graph`.
 
     min_segment_length
+      Min length of the segments (this will be translated as an additional
+      filter in `segments_filters`)
 
     max_segment_length
+       Max length of the segments (this will be translated as an additional
+       filter in `segments_filters`)
 
     refine_resolution
+      nucleotide resolution to use during the local refinement step (see
+      `refine_cuts_with_graph`).
 
-    other parameters
-      Other parameters will be passed to functions optimize_cuts_with_graph and
-      refine_cuts_with_graph.
+    forced_cuts
+      List of locations at which the decomposition must imperatively cut, even
+      if these cuts do not comply with the `location_filters`.
+
+    a_star_factor
+      If 0, the classical Dijkstra algorithm is used for path finding. Else,
+      the A* algorithm is used with a heuristic `h(x)=a_start_factor*(L-x)`
+      where x is the location of a cutting point and L the length of the
+      sequence. See the original DNAWeaver article for clearer explanations.
+      Using a high A* factor can improve computing times several folds but
+      yields suboptimal decompositions.
+      Note that using the A* algorithm doesnt play well with time constraints
+      and number-of-fragments limits etc. Use with care
+
+
+    progress_bars
+      If `progress_bars` is non-zero and `a_star_factor` is zero, a progress
+      bar is shown as the edges of the problem are being evaluated
 
     Returns
     -------
@@ -326,15 +467,25 @@ def optimize_cuts_with_graph_twostep(sequence_length,
       The list of optimal cuts (includes 0 and len(sequence)), which minimizes
       the total score of all the segments corresponding to the cuts.
 
+    Notes
+    -----
+
+    See original DnaWeaver article for more explanations
+
     """
+
     def is_resolution_location(location):
+        """Return True iff the location is a N-th nucleotide, where N
+        N is the nucleotide resolution of the problem."""
         return location % initial_resolution == 0
 
     new_location_filters = [is_resolution_location] + list(location_filters)
 
     def size_is_valid(segment):
+        """Return True iff the segment's length is in interval
+        [min_length, max_length]"""
         segment_length = segment[1] - segment[0]
-        return min_segment_length < segment_length < max_segment_length
+        return min_segment_length <= segment_length <= max_segment_length
 
     new_segment_filters = [size_is_valid] + list(segment_filters)
 

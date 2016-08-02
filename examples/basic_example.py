@@ -27,54 +27,39 @@ number of segments to order fall from 7 to just 3.
 """
 
 from dnaweaver import *
-from dnachisel import (random_dna_sequence, enzyme_pattern,
-                       NoPatternConstraint, SequenceLengthConstraint)
-import numpy as np
 
-np.random.seed(123)  # Set the randomizer's seed to ensure reproducibility.
-
-sequence = random_dna_sequence(10000)
-
-enzyme_site = enzyme_pattern("BsaI")
-print ("BsaI site found at positions %s" % enzyme_site.find_matches(sequence))
+sequence = random_dna_sequence(10000, seed=123)
 
 cheap_dna_offer = ExternalDnaOffer(
     name="CheapDNA.com",
-    sequence_constraints=[NoPatternConstraint(enzyme_site),
-                          SequenceLengthConstraint(max_length=4000)],
-    price_function=lambda sequence: 0.10 * len(sequence),
-    lead_time=10
+    sequence_constraints=[
+        lambda seq: "GGTCTC" not in seq,
+        lambda seq: "GGTCTC" not in reverse_complement(seq),
+        lambda seq: len(seq) < 4000
+    ],
+    price_function=lambda seq: 0.10 * len(seq),
 )
 
 deluxe_dna_offer = ExternalDnaOffer(
     name="DeluxeDNA.com",
-    sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
-    price_function=lambda sequence: 0.20 * len(sequence),
-    lead_time=5
+    sequence_constraints=[lambda seq: len(seq) < 3000],
+    price_function=lambda seq: 0.20 * len(seq),
 )
 
 assembly_station = DnaAssemblyStation(
     name="Gibson Assembly Station",
-    assembly_method=GibsonAssemblyMethod(
-        homology_arm_length=20,
-        min_segment_length=2000,
-        max_segment_length=4000,
-        duration=7
-    ),
-    dna_source=DnaSourcesComparator([
-        cheap_dna_offer,
-        deluxe_dna_offer
-    ]),
+    assembly_method=GibsonAssemblyMethod(homology_arm_length=20,
+                                         min_segment_length=2000,
+                                         max_segment_length=4000),
+    dna_source=DnaSourcesComparator([cheap_dna_offer, deluxe_dna_offer]),
     nucleotide_resolution=5,
     refine_resolution=False
 )
 
-quote = assembly_station.get_quote(sequence, time_limit=18,
-                                   with_ordering_plan=True)
+# optimize with respect to price
+quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
 
-print (quote)
-if quote.accepted:
-    print (quote.ordering_plan.summary())
+print (quote.ordering_plan.summary())
 
 
 # This will print:

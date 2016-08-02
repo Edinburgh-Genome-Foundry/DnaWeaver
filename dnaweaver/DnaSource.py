@@ -2,7 +2,7 @@ from copy import copy
 from .optimization import (optimize_cuts_with_graph_twostep,
                            NoSolutionFoundError)
 from dnachisel import Constraint, DnaCanvas
-from biotools import blast_sequence, largest_substring, reverse_complement
+from biotools import blast_sequence, largest_common_substring, reverse_complement
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
 import numpy as np
 import networkx as nx
@@ -314,7 +314,7 @@ class PcrOutStation(DnaSource):
         if self.sequences is not None:
             result = []
             for dna_name, seq in self.sequences:
-                match_coords = largest_substring(sequence, seq,
+                match_coords = largest_common_substring(sequence, seq,
                                                  self.max_overhang_length)
                 if match_coords:
                     result.append((dna_name, match_coords))

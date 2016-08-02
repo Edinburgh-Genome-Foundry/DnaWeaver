@@ -2,8 +2,6 @@ from dnachisel.biotools import reverse_complement
 
 class AssemblyMethod:
     """General class for assembly methods.
-
-    Yeah that class is useless right now but bear with me.
     """
     name = "None"
     def __init__(self, duration=0, cost=0, location_filters=(),
@@ -20,11 +18,12 @@ class AssemblyMethod:
         if callable(force_cuts):
             self.force_cuts = force_cuts
         else:
+            # means the forced cuts are a constant
             self.force_cuts = lambda *a: force_cuts
 
 
 class OverlapingAssemblyMethod(AssemblyMethod):
-    """Gibson Assembly Method.
+    """General class for all overlaping assembly methods.
 
     Parameters
     ----------
@@ -34,7 +33,7 @@ class OverlapingAssemblyMethod(AssemblyMethod):
       consecutive segments will overlap by 2*L
 
     """
-    name= "Overlap"
+    name= "Overlaping Assembly"
 
     def __init__(self, homology_arm_length=20, **properties):
         AssemblyMethod.__init__(self, **properties)
@@ -64,11 +63,11 @@ class OverlapingAssemblyMethod(AssemblyMethod):
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
-    name = "Gibson"
+    name = "Gibson Assembly"
 
 class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     """The Build-a-Genome Assembly Method. Just another overlap-method"""
-    name = "BaG"
+    name = "Build-a-Genome"
 
 class GoldenGateAssemblyMethod(AssemblyMethod):
     """The Golden Gate Assembly Method.
@@ -100,7 +99,7 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
     >>> )
 
     """
-    name = "Golden Gate"
+    name = "Golden Gate Assembly"
 
     enzymes_dict = {
         "BsaI": "GGTCTC",

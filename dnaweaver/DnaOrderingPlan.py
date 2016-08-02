@@ -1,3 +1,5 @@
+"""Classes to represent assembly strategies in DnaWeaver"""
+
 from copy import deepcopy
 from collections import defaultdict
 from dnachisel.constraints import Constraint
@@ -19,55 +21,14 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation
 import itertools as itt
 
 
-class AssemblyOperation:
-    """A class to represent assembly operation to model, analyze and report
-    assembly trees."""
-
-    def __init__(self, id, quote, segments, deadline=None):
-        self.id = id
-        self.quote = quote
-        self.segments = segments
-        self.deadline = deadline
-
-    def return_tree_as_list(self):
-        return [self] + sum([child.return_tree_as_list()
-                             for segment, child in self.segments.items()], [])
-
-    def propagate_deadline(self, deadline):
-        self.deadline = deadline
-        children_deadline = deadline - self.step_duration
-        for segment, child in self.segments.items():
-            child.propagate_deadline(children_deadline)
-
-    @property
-    def step_duration(self):
-        if self.segments == {}:
-            children_lead_time = 0
-        else:
-            children_lead_time = max(child.quote.lead_time
-                                     for _, child in self.segments.items())
-        return self.quote.lead_time - children_lead_time
-
-    def compute_assembly_levels(self):
-
-        levels = defaultdict(lambda: [])
-        edges = []
-
-        def rec(subtree, depth=0):
-
-            levels[depth].append(subtree)
-
-            if hasattr(subtree, "segments"):
-                for other in subtree.segments.values():
-                    edges.append((other, subtree))
-                    rec(other, depth + 1)
-        rec(self)
-        levels = [levels[i] for i in sorted(levels.keys())][::-1]
-        levels = [sorted(level, key=lambda e: e.id)[::-1] for level in levels]
-        return edges, levels
-
 
 class DnaQuote:
+    """Class to represent the Quote returned by a DNA source in response to
+    a quote request for a given DNA sequence.
+
+    Parameters
+    -----------
+    """
 
     def __init__(self, source, sequence, price=None, accepted=True,
                  lead_time=None, ordering_plan=None, metadata={}, message=""):
@@ -120,6 +81,86 @@ class DnaQuote:
                 )
 
         return rec(quote)
+
+class AssemblyOperation:
+    """A class to represent assembly operation to model, analyze and report
+    assembly trees.
+
+    AssemblyOperations contain "segments" which can originate from other
+    AssemblyOperations, so that an AssemblyOperation instance can be the
+    root of a tree-like structure.
+
+    Parameters
+    ----------
+
+    id
+      A string identifying uniquely the assembly operation
+
+    quote
+      DnaQuote associated with the operation, indicating price, leadtime,
+      sequence, etc.
+
+    segments
+      A dict of the form { (start1, end1): op1, (start2, end2): op2, ...}
+      where the `(start, end)` represent sub-segments of the final sequence and
+      `op1, op2` represent the AssemblyOperations that create the corresponding
+      fragments
+
+    deadline
+      Deadline for the operation (see the `propagate_deadline` method for this
+      class)
+
+    """
+
+    def __init__(self, id, quote, segments, deadline=None):
+        self.id = id
+        self.quote = quote
+        self.segments = segments
+        self.deadline = deadline
+
+    def return_tree_as_list(self):
+        """Return a list containing the current AssemblyOperation and all its
+        sub-operations and their respective sub-operations.
+
+        Said otherwise, it flattens the assembly tree into the list of all
+        nodes.
+        """
+        return [self] + sum([child.return_tree_as_list()
+                             for segment, child in self.segments.items()], [])
+
+    def propagate_deadline(self, deadline):
+        self.deadline = deadline
+        children_deadline = deadline - self.step_duration
+        for segment, child in self.segments.items():
+            child.propagate_deadline(children_deadline)
+
+    @property
+    def step_duration(self):
+        if self.segments == {}:
+            children_lead_time = 0
+        else:
+            children_lead_time = max(child.quote.lead_time
+                                     for _, child in self.segments.items())
+        return self.quote.lead_time - children_lead_time
+
+    def compute_assembly_levels(self):
+
+        levels = defaultdict(lambda: [])
+        edges = []
+
+        def rec(subtree, depth=0):
+
+            levels[depth].append(subtree)
+
+            if hasattr(subtree, "segments"):
+                for other in subtree.segments.values():
+                    edges.append((other, subtree))
+                    rec(other, depth + 1)
+        rec(self)
+        levels = [levels[i] for i in sorted(levels.keys())][::-1]
+        levels = [sorted(level, key=lambda e: e.id)[::-1] for level in levels]
+        return edges, levels
+
 
 
 class DnaOrderingPlan:

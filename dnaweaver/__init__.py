@@ -17,4 +17,6 @@ __all__ = ("ExternalDnaOffer",
            "DnaAssemblyStation",
            "BuildAGenomeAssemblyMethod",
            "GibsonAssemblyMethod",
-           "GoldenGateAssemblyMethod")
+           "GoldenGateAssemblyMethod",
+           "random_dna_sequence",
+           "reverse_complement")

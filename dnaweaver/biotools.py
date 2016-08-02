@@ -113,7 +113,32 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     return blast_record
 
 
-def largest_substring(query, target, max_overhang):
+def largest_common_substring(query, target, max_overhang):
+    """Return the largest common substring between `query` and `target`.
+
+    If the common substring is too much smaller than `query` False is returned,
+    else the location `(start, end)` of the substring in `target` is returned.
+
+    Parameters:
+    -----------
+
+    query (str)
+      The sequence to be found in target (minus some overhangs possibly)
+
+    target (str)
+      The sequence in which to find `query`
+
+    max_overhang
+      Maximal size allowed for the flanking regions of `query` that would
+      not be contained in `target`.
+
+    Notes:
+    ------
+
+    This is intended for finding whether `query` can be extracted from `target`
+    using PCR. See the PcrOutStation implementation in DNASource.py.
+
+    """
     start, end = max_overhang, len(query) - max_overhang
     if query[start:end] not in target:
         return False

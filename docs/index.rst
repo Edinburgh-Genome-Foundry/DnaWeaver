@@ -13,13 +13,30 @@
 DNA Weaver
 ============
 
-DnaWeaver is a Python library to determine which DNA fragments to orders from
-synthesis company in order to assemble large DNA sequences using Gibson Assembly,
-Golden Gate assembly, etc..
+DnaWeaver is a Python library to find optimal strategies to assemble large synthetic DNA fragments.
 
-Provided a DNA sequence and a list of offers (i.e. pricings and constraints) from
-different DNA companies, DnaWeaver returns the list of fragments orders which
-minimizes the total cost.
+A DNA assembly problem is defined by:
+
+- The desired DNA sequence.
+- A set of DNA sources (commercial offers, parts libraries) from which sub-fragments can be obtained.
+- A set of assembly methods (Gibson Assembly, Golden Gate Assembly, etc.) that can be used to assemble the sub-fragments.
+
+Given such a problem, DnaWeaver produces a report (example) describing an optimized assembly
+plan: what sub-fragments should be ordered and from which companies, what fragments should be
+re-used (i.e. extracted from existing constructs), what assembly methods should be used for each step, etc.
+
+DnaWeaver was written with versatility and extensibility in mind:
+each DNA source and assembly method can be customized, and assembly plans can
+be optimized with respect to total price, overall duration of the assembly,
+or assembly success probabilities.
+
+DnaWeaver can also export the result as interactive widgets for web applications, and
+as Json for automated assembly platforms.
+
+
+How it works
+------------
+
 
 DnaWeaver uses decomposition optimization techniques based on graphs, see
 :ref:`howitworks` for more details on how it works.
@@ -27,20 +44,21 @@ DnaWeaver uses decomposition optimization techniques based on graphs, see
 DnaWeaver can be easily extended to include new offers and constraints from DNA company,
 or to take into account objectives other than just price.
 
-Minimal example
----------------
+Minimal code example
+---------------------
 ::
 
     from dnaweaver import *
-    from dnachisel import PROVIDERS_CONSTRAINTS
     offer_1 = DnaOrderingProblem("offer 1",
-                                 constraints=PROVIDERS_CONSTRAINTS["IDT"],
+                                 constraints=[lambda seq: len(seq) < 5000],
                                  pricing=lambda sequence: 0.1 * len(sequence))
     offer_2 = DnaOrderingProblem("offer 2",
-                                 constraints=PROVIDERS_CONSTRAINTS["gen9"],
-                                 pricing=lambda sequence: 0.2 * len(sequence))
+                                 constraints=[lambda seq: len(seq) < 5000,
+                                              lambda seq: "ATTGTG" not in seq],
+                                 pricing=lambda seq: 0.2 * len(seq))
     sequence = open("sequence.txt","r").read()
-    problem = DnaOrderingProblem(sequence, offers=[offer_1, offer_2],
+    problem = DnaOrderingProblem(sequence=open("sequence.txt","r").read(),
+                                 offers=[offer_1, offer_2],
                                  assembly_method=GibsonAssemblyMethod(20))
     solution = problem.solve(min_segment_length=100, max_segment_length=4000)
     print (solution.summary())
@@ -55,6 +73,12 @@ You can install DnaWeaver through PIP
 Alternatively, you can unzip the sources in a folder and type
 ::
   sudo python setup.py install
+
+
+  Cite
+  ----------
+
+  If you are using DnaWeaver consider advertizing it or citing the original paper:
 
 
 Contribute
