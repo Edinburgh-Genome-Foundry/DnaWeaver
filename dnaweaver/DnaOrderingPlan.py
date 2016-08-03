@@ -1,11 +1,7 @@
 """Classes to represent assembly strategies in DnaWeaver"""
-
+import itertools as itt
 from copy import deepcopy
 from collections import defaultdict
-from dnachisel.constraints import Constraint
-from dnachisel import DnaCanvas
-from .optimization import NoSolutionFoundError
-from copy import copy
 
 try:
     import pandas as pd
@@ -18,9 +14,8 @@ from Bio.Seq import Seq
 from Bio.Alphabet import DNAAlphabet
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
-import itertools as itt
 
-
+from .optimization import NoSolutionFoundError
 
 class DnaQuote:
     """Class to represent the Quote returned by a DNA source in response to
@@ -28,6 +23,23 @@ class DnaQuote:
 
     Parameters
     -----------
+
+     source
+
+     sequence
+
+     price
+
+     accepted
+
+     lead_time
+
+     ordering_plan
+
+     metadata
+
+     message
+
     """
 
     def __init__(self, source, sequence, price=None, accepted=True,

@@ -11,7 +11,6 @@ def complement(dna_sequence):
     """Return the complement of the DNA sequence.
 
     For instance ``complement("ATGCCG")`` returns ``"TACGGC"``.
-
     Uses BioPython for speed.
     """
     return str(Seq(dna_sequence).complement())
@@ -21,7 +20,6 @@ def reverse_complement(sequence):
     """Return the reverse-complement of the DNA sequence.
 
     For instance ``complement("ATGCCG")`` returns ``"GCCGTA"``.
-
     Uses BioPython for speed.
     """
     return complement(sequence)[::-1]

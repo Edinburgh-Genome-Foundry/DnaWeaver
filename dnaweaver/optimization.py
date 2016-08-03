@@ -162,7 +162,7 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
     """Compute the graph's shortest path whose number of edges is below a limit
 
     The algorithm applies various penalties to the graph's weights to reduce
-    the number of edges in the shortest path. It uses a dichotomic search to
+    the number of edges in the shortest path. It uses a bisection search to
     find the optimal penalty (yielding a shortest path with a number of edges
     smaller but as close as possible from `size_limit`)
 
@@ -182,7 +182,7 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
       Maximal number of edges in acceptable paths
 
     min_step
-      Step size after which to stop the penalty dichotomy.
+      Step size after which to stop the penalty bisection.
 
     Returns:
     --------
@@ -219,7 +219,7 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
 
 
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
-                             cuts_number_penalty=0, location_filters=(),
+                             location_filters=(),
                              segment_filters=(), forced_cuts=(),
                              max_segment_length=None, a_star_factor=0,
                              path_size_limit=None, path_size_min_step=0.001,
@@ -239,10 +239,6 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       A function f( (start, end) ) -> score where (start, end) refers to the
       sequence segment start:end, and score is a float. The algorithm will
       produce cuts which minimize the total scores of the segments.
-
-    cuts_number_penalty
-      A penalty that can be applied to each segment to reduce the number of
-      segments.
 
     location_filters
       List or tuple of functions `int -> bool` which return for each location
@@ -281,7 +277,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       Only works with `a_star_factor=0`
 
     path_size_min_step
-      Minimal step for the dichotomic search when `path_size_limit` is not None
+      Minimal step for the bisection search when `path_size_limit` is not None
       (see `dijkstra_path_with_size_limit`)
 
 
@@ -291,7 +287,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
     graph
       The graph of the problem (a Networkx DiGraph whose nodes are indices of
       locations in the sequence and the "weight" of edge [i][j] is given by
-      segment_score_function(segment[i][j] + cuts_number_penalty)).
+      segment_score_function(segment[i][j])).
 
     best_cuts
       The list of optimal cuts (includes 0 and len(sequence)), which minimizes
@@ -330,7 +326,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
                            tqdm(segments, desc='Computing edges')):
             weight = segment_score_function((start, end))
             if weight >= 0:
-                graph.add_edge(start, end, weight=weight + cuts_number_penalty)
+                graph.add_edge(start, end, weight=weight)
 
         try:
             if path_size_limit is not None:
@@ -492,7 +488,6 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
 
 def optimize_cuts_with_graph_twostep(sequence_length,
                                      segment_score_function,
-                                     cuts_number_penalty=0,
                                      location_filters=(),
                                      segment_filters=(),
                                      initial_resolution=1,
@@ -501,6 +496,8 @@ def optimize_cuts_with_graph_twostep(sequence_length,
                                      refine_resolution=1,
                                      forced_cuts=(),
                                      a_star_factor=0,
+                                     path_size_limit=None,
+                                     path_size_min_step=0.001,
                                      progress_bars=True):
     """Find optimal sequence cuts in two steps: first coarse-grain search with
     a nucleotide resolution > 1, then a refinement step.
@@ -521,9 +518,6 @@ def optimize_cuts_with_graph_twostep(sequence_length,
     segment_score_function
       Function `(start, end) -> score` yielding a score for a given sub-segment
       of the sequence (e.g. price of the segment)
-
-    cuts_number_penalty
-      Soon deprecated, never mind
 
     location_filters
       List or tuple of functions `int -> bool` which return for each location
@@ -569,6 +563,13 @@ def optimize_cuts_with_graph_twostep(sequence_length,
       Note that using the A* algorithm doesnt play well with time constraints
       and number-of-fragments limits etc. Use with care
 
+    path_size_limit
+      Maximal number of edges for acceptable paths. None means no limit.
+      Only works with `a_star_factor=0`
+
+    path_size_min_step
+      Minimal step for the bisection search when `path_size_limit` is not None
+      (see `dijkstra_path_with_size_limit`)
 
     progress_bars
       If `progress_bars` is non-zero and `a_star_factor` is zero, a progress
@@ -580,7 +581,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
     graph
       The graph of the problem (a Networkx DiGraph whose nodes are indices of
       locations in the sequence and the "weight" of edge [i][j] is given by
-      segment_score_function(segment[i][j] + cuts_number_penalty)).
+      segment_score_function(segment[i][j]).
 
     best_cuts
       The list of optimal cuts (includes 0 and len(sequence)), which minimizes
@@ -611,13 +612,14 @@ def optimize_cuts_with_graph_twostep(sequence_length,
     graph, best_cuts = optimize_cuts_with_graph(
         sequence_length,
         segment_score_function=segment_score_function,
-        cuts_number_penalty=cuts_number_penalty,
         location_filters=new_location_filters,
         segment_filters=new_segment_filters,
         forced_cuts=forced_cuts,
         max_segment_length=max_segment_length,
         a_star_factor=a_star_factor,
-        progress_bars=progress_bars
+        progress_bars=progress_bars,
+        path_size_limit=path_size_limit,
+        path_size_min_step=path_size_min_step
     )
     if (initial_resolution > 1) and refine_resolution:
         best_cuts = refine_cuts_with_graph(

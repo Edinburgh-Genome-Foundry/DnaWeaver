@@ -1,17 +1,59 @@
 from copy import copy
 from .optimization import (optimize_cuts_with_graph_twostep,
                            NoSolutionFoundError)
-from dnachisel import Constraint, DnaCanvas
+
 from biotools import blast_sequence, largest_common_substring, reverse_complement
 from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
 import numpy as np
 import networkx as nx
 from collections import defaultdict
 
+# Attempt import of optional module DNA Chisel
+try:
+    from dnachisel import Constraint, DnaCanvas
+    DNACHISEL_AVAILABLE = True
+except:
+    DNACHISEL_AVAILABLE = False
+
+
 class DnaSource:
+    """Base class for all DnaSources, which are the elements of the supply
+    networks used to define assembly problems in DnaWeaver."""
 
     def get_quote(self, sequence, max_lead_time=None, max_price=None,
                   with_ordering_plan=False, time_resolution=1.0):
+        """Return a DnaQuote with price, lead time, etc. for a given sequence.
+
+        Parameters
+        ----------
+
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        max_price (float)
+          If provided, the quote returned is the least-lead-time quote
+          whose price is below or equal to `max_price`.
+          This is done using bisection and can be slow as it requires to
+          re-compute the problem many times
+          Note that either this parameter or `max_lead_time` must be None
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+
+        time_resolution
+          Time resolution for the bisecting search if `max_price` is not None.
+
+        Returns
+        -------
+
+        A DnaQuote object.
+
+        """
 
         if max_lead_time is None:
             max_lead_time = np.inf
@@ -52,7 +94,30 @@ class DnaSource:
     def get_best_lead_time_under_price_limit(self, sequence, max_price,
                                              time_resolution,
                                              with_ordering_plan=None):
-        """dichotomize, kind of"""
+        """Return the quote with fastest lead time under the budget constraint
+
+        Parameters
+        ----------
+
+
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_price (float)
+          If provided, the quote returned is the least-lead-time quote
+          whose price is below or equal to `max_price`.
+          This is done using bisection and can be slow as it requires to
+          re-compute the problem many times
+          Note that either this parameter or `max_lead_time` must be None
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+
+        time_resolution
+          Time resolution for the bisecting search if `max_price` is not None.
+
+        """
         def f(max_lead_time):
             return self.get_quote(sequence, max_lead_time=max_lead_time,
                                   with_ordering_plan=with_ordering_plan)
@@ -77,6 +142,12 @@ class DnaSource:
         return best_quote
 
     def verify_constraints(self, sequence):
+        """Return True iff `sequence` passes all `self.sequence_constraints`
+
+        Will automatically process DNA-Chisel constraints that would be in
+        `self.sequence_constraints`
+
+        """
         constraints = self.sequence_constraints
         dnachisel_constraints = [
             constraint for constraint in constraints
@@ -84,6 +155,9 @@ class DnaSource:
         ]
 
         if dnachisel_constraints != []:
+            if not DNACHISEL_AVAILABLE:
+                raise ImportError("Spotted DNA Chisel constraints, while "
+                                  "DNA Chisel is not installed.")
             canvas = DnaCanvas(sequence, dnachisel_constraints)
             constraints = [
                 constraint for constraint in constraints
@@ -94,6 +168,21 @@ class DnaSource:
 
 
     def compute_supply_graph(self):
+        """Return elements to plot the supply graph underlying this DnaSource
+
+        Returns
+        -------
+
+        edges
+          A list [(s1,s2), (s1,s3), (s2, s5)...] of couples of DnaSources in a
+          supplier-supplied relationship.
+
+        levels
+          A list of lists [[s1,s2], [s4,s8,s9]...] of sources. The first
+          sublist (first level) are all sources at the farthest distance from
+          the current source in the supply graph, and the last sublist contains
+          only the current DnaSource.
+        """
 
         seen_sources = set()
         levels = defaultdict(lambda: [])
@@ -122,6 +211,24 @@ class DnaSource:
 
 
 class DnaSourcesComparator(DnaSource):
+    """Special source that compares quotes from other DnaSources.
+
+    Upon receiving a sequence, that source will submit the sequence to
+    Downstream sources, which deliver each one optimal quote. The comparator
+    then returns the one quote with the lowest price.
+
+    Parameters
+    ----------
+
+    dna_sources
+      List of `DnaSources` that
+
+    memoize
+      Whether the quotes should be kept in memory to avoid re-computing the
+      same quote several times. Can accelerate computations but is
+      RAM-expensive.
+
+    """
 
     def __init__(self, dna_sources, memoize=False):
         self.dna_sources = dna_sources
@@ -131,6 +238,21 @@ class DnaSourcesComparator(DnaSource):
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
+        """Returns a price-optimal DnaQuote for the given sequence.
+
+        Parameters
+        ----------
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+        """
         quotes = [
             source.get_quote(sequence, max_lead_time=max_lead_time,
                              with_ordering_plan=with_ordering_plan)
@@ -216,7 +338,8 @@ class DnaAssemblyStation(DnaSource):
             initial_resolution=nucleotide_resolution,
             refine_resolution=refine_resolution,
             progress_bars=progress_bars,
-            a_star_factor=a_star_factor
+            a_star_factor=a_star_factor,
+            max_fragments=assembly.max_fragments
         )
         ordering_plan = self.get_ordering_plan_from_cuts(
             sequence, best_cuts,
@@ -229,6 +352,21 @@ class DnaAssemblyStation(DnaSource):
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
+        """Returns a price-optimal DnaQuote for the given sequence.
+
+        Parameters
+        ----------
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+        """
 
         if (max_lead_time is not None):
             max_lead_time = max_lead_time - self.extra_time
@@ -271,6 +409,22 @@ class ExternalDnaOffer(DnaSource):
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
 
+        """Returns a price-optimal DnaQuote for the given sequence.
+
+        Parameters
+        ----------
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+        """
+
         lead_time = self.lead_time(sequence)
         price = self.price_function(sequence)
         accepted = (max_lead_time is None) or (lead_time <= max_lead_time)
@@ -286,6 +440,43 @@ class ExternalDnaOffer(DnaSource):
 
 
 class PcrOutStation(DnaSource):
+    """Class to represent databases of constructs which can be (in part) reused
+
+    A blast database contains the sequences of all available constructs.
+    Given a sequence, the PcrOutStation finds whether it is possible to order
+    two primers to extract this sequence from the constructs in the BLAST
+    database.
+
+    Parameters
+    ----------
+
+    name
+      Name of the PCR station (e.g. "Lab constructs PCR station")
+
+    primers_dna_source
+      DnaSource providing the primers (will typically be an ExternalDnaOffer)
+
+    blast_database
+
+    sequences
+
+    pcr_homology_length
+
+    max_overhang_length
+
+    extra_cost
+
+    extra_time
+
+    max_amplicon_length
+
+    blast_word_size
+
+    memoize
+
+    sequence_constraints
+
+    """
 
     def __init__(self, name, primers_dna_source, blast_database=None,
                  sequences=None, pcr_homology_length=25,
@@ -311,11 +502,13 @@ class PcrOutStation(DnaSource):
         self.sequences = sequences
 
     def get_hits(self, sequence):
+        """Return the hits of the given sequence against the blast database
+        (in Biopython format)"""
         if self.sequences is not None:
             result = []
             for dna_name, seq in self.sequences:
                 match_coords = largest_common_substring(sequence, seq,
-                                                 self.max_overhang_length)
+                                                        self.max_overhang_length)
                 if match_coords:
                     result.append((dna_name, match_coords))
             return result
@@ -331,6 +524,25 @@ class PcrOutStation(DnaSource):
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
+        """Return a price-optimal DnaQuote for the given sequence.
+
+        It will find a possible hit in the blast database, find the primers to
+        order for the PCR, compute the overall price and lead time, and return
+        a quote.
+
+        Parameters
+        ----------
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+        """
 
         for subject, (hit_start, hit_end) in self.get_hits(sequence):
 
@@ -380,7 +592,23 @@ class PcrOutStation(DnaSource):
                         message="No valid match found")
 
     def pre_blast(self, sequence):
-        self.sequences = None
+        """Pre-compute the BLAST of the current sequence against the database.
+
+        Once a pre-blast has been performed, this PcrOutStation becomes
+        specialized on that sequence and its subsequences, do not feed it with
+        another different sequence. Do `self.sequences=None` to reinitialize
+        and de-specialize this PcrOutStation.
+
+        Examples
+        --------
+
+        >>> pcr_station = PcrOutStation("some_blast_database")
+        >>> top_station = # some assembly station depending on pcr_station
+        >>> pcr_station.pre-blast(my_sequence)
+        >>> top_station.get_quote(my_sequence)
+        >>> pcr_station.sequences=None # de-specializes the pcr station.
+        """
+        self.sequences = None  # destroy current pre-blast (used by get_hits)
         self.sequences = [
             (subject, sequence[start:end])
             for subject, (start, end) in self.get_hits(sequence)
@@ -388,6 +616,7 @@ class PcrOutStation(DnaSource):
 
 
 class PartsLibrary(DnaSource):
+    """Class for collections of ready-to-assemble parts"""
 
     def __init__(self, name, parts_dict, memoize=False):
         self.name = name
@@ -397,6 +626,21 @@ class PartsLibrary(DnaSource):
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_ordering_plan=False):
+        """Returns a price-optimal DnaQuote for the given sequence.
+
+        Parameters
+        ----------
+
+        sequence (str)
+          The sequence submitted to the Dna Source for a quots
+
+        max_lead_time (float)
+          If provided, the quote returned is the best quote (price-wise) whose
+          lead time is less or equal to max_lead_time.
+
+        with_ordering_plan
+          If True, the ordering plan is added to the quote
+       """
         if sequence in self.parts_dict:
             return DnaQuote(self, sequence, accepted=True,
                             price=0, lead_time=0,
