@@ -1,6 +1,7 @@
 """Optimization techniques"""
 
 import numpy as np
+from copy import deepcopy
 from tqdm import tqdm
 import itertools as itt
 import networkx as nx
@@ -115,10 +116,113 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     raise nx.NetworkXNoPath("Node %s not reachable from %s" % (source, target))
 
 
+def dijkstra_path_with_penalty(graph, start, end, penalty=0):
+    """Compute the graph's shortest path after adding a penalty to each edge.
+
+    A copy of the graph is done and each edge weight receives a additional
+    constant penalty. As a result, paths with less edges are more likely to
+    be the shortest paths with respect to total weight.
+
+    Parameters:
+    -----------
+
+    graph
+      A networkX directed graph
+
+    start
+      Starting node for the path
+
+    end
+      Target node for the path
+
+    penalty
+      Additional weight applied to all edges before computing the shortest
+      path. The original graph remains unchanged.
+
+    Returns:
+    --------
+
+    A path [node1, node2, node3...], or raises NoSolutionFoundError if no
+    path was found
+
+    """
+    _, _, edge_datas = zip(*graph.edges(data=True))
+    for data in edge_datas:
+        data["weight"] += penalty
+    try:
+        path = nx.dijkstra_path(graph, start, end)
+    except nx.NetworkXNoPath:
+        for data in edge_datas:
+            data["weight"] -= penalty
+        raise NoSolutionFoundError()
+    return path
+
+
+def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
+    """Compute the graph's shortest path whose number of edges is below a limit
+
+    The algorithm applies various penalties to the graph's weights to reduce
+    the number of edges in the shortest path. It uses a dichotomic search to
+    find the optimal penalty (yielding a shortest path with a number of edges
+    smaller but as close as possible from `size_limit`)
+
+    Parameters:
+    -----------
+
+    graph
+      A networkX directed graph
+
+    start
+      Starting node for the path
+
+    end
+      Target node for the path
+
+    size_limit
+      Maximal number of edges in acceptable paths
+
+    min_step
+      Step size after which to stop the penalty dichotomy.
+
+    Returns:
+    --------
+
+    A path [node1, node2, node3...], or raises NoSolutionFoundError if no
+    path was found
+
+
+    """
+    def f(penalty):
+        path = dijkstra_path_with_penalty(graph, start, end, penalty)
+        if path == False:  # means no solution found
+            return False
+        return path, len(path) - 1
+
+    penalty = max(data["weight"] for _, _, data in graph.edges(data=True))
+    step = -0.5 * penalty
+
+    best_path, best_path_size = f(penalty)
+    if best_path_size > size_limit:
+        return False
+
+    while abs(step) > min_step:
+        penalty = penalty + step
+        path, path_size = f(penalty)
+        if path_size == size_limit:
+            return path
+        elif path_size > size_limit:
+            step = 0.5 * abs(step)
+        else:  # path_size < size_limit
+            step = -0.5 * abs(step)
+            best_path = path
+    return best_path
+
+
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
                              cuts_number_penalty=0, location_filters=(),
                              segment_filters=(), forced_cuts=(),
                              max_segment_length=None, a_star_factor=0,
+                             path_size_limit=None, path_size_min_step=0.001,
                              progress_bars=False):
     """Find the sequence cuts which optimize the sum of segments scores.
 
@@ -172,6 +276,14 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       Using a high A* factor can improve computing times several folds but
       yields suboptimal decompositions.
 
+    path_size_limit
+      Maximal number of edges for acceptable paths. None means no limit.
+      Only works with `a_star_factor=0`
+
+    path_size_min_step
+      Minimal step for the dichotomic search when `path_size_limit` is not None
+      (see `dijkstra_path_with_size_limit`)
+
 
     Returns
     -------
@@ -221,7 +333,13 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
                 graph.add_edge(start, end, weight=weight + cuts_number_penalty)
 
         try:
-            best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
+            if path_size_limit is not None:
+                best_cuts = dijkstra_path_with_size_limit(
+                    graph, 0, sequence_length, size_limit=path_size_limit,
+                    min_step=path_size_min_step
+                )
+            else:
+                best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
         except (KeyError, nx.NetworkXNoPath):
             raise NoSolutionFoundError("Could not find a solution in "
                                        "optimize_cuts_with_graph")
@@ -348,6 +466,7 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
             weight = segment_score_function((start, end))
             if weight >= 0:
                 graph.add_edge(start, end, weight=weight)
+
         return nx.dijkstra_path(graph, 0, sequence_length)
     else:
         graph.add_edges_from(segments)
