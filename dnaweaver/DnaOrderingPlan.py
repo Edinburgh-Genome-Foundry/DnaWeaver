@@ -120,7 +120,8 @@ class AssemblyOperation:
 
     deadline
       Deadline for the operation (see the `propagate_deadline` method for this
-      class)
+      class) i.e. in how many time units it should be finished. This is for
+      drawing assembly timelines.
 
     """
 
@@ -148,6 +149,11 @@ class AssemblyOperation:
 
     @property
     def step_duration(self):
+        """Duration of the current assembly step.
+
+        Inferred by substracting the lead time of children operations to the
+        lead time of this operation.
+        """
         if self.segments == {}:
             children_lead_time = 0
         else:
@@ -156,6 +162,9 @@ class AssemblyOperation:
         return self.quote.lead_time - children_lead_time
 
     def compute_assembly_levels(self):
+        """Return edges and levels for drawing the assembly graph nicely.
+
+        """
 
         levels = defaultdict(lambda: [])
         edges = []

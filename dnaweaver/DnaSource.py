@@ -324,14 +324,10 @@ class DnaAssemblyStation(DnaSource):
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
-            location_filters=[
-                lambda location: fl(sequence, location)
-                for fl in assembly.location_filters
-            ],
-            segment_filters=[
-                lambda (start, end): fl(sequence, start, end)
-                for fl in assembly.segment_filters
-            ],
+            location_filters=[lambda location: fl(sequence, location)
+                              for fl in assembly.location_filters],
+            segment_filters=[lambda (start, end): fl(sequence, start, end)
+                             for fl in assembly.segment_filters],
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
