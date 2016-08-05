@@ -1,12 +1,11 @@
 from copy import copy
+from collections import defaultdict
 from .optimization import (optimize_cuts_with_graph_twostep,
                            NoSolutionFoundError)
-
-from biotools import blast_sequence, largest_common_substring, reverse_complement
-from DnaOrderingPlan import DnaQuote, DnaOrderingPlan
+from biotools import (blast_sequence, largest_common_substring,
+                      reverse_complement)
+from DnaQuote import DnaQuote
 import numpy as np
-import networkx as nx
-from collections import defaultdict
 
 # Attempt import of optional module DNA Chisel
 try:
@@ -21,7 +20,7 @@ class DnaSource:
     networks used to define assembly problems in DnaWeaver."""
 
     def get_quote(self, sequence, max_lead_time=None, max_price=None,
-                  with_ordering_plan=False, time_resolution=1.0):
+                  with_assembly_plan=False, time_resolution=1.0):
         """Return a DnaQuote with price, lead time, etc. for a given sequence.
 
         Parameters
@@ -42,8 +41,8 @@ class DnaSource:
           re-compute the problem many times
           Note that either this parameter or `max_lead_time` must be None
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
 
         time_resolution
           Time resolution for the bisecting search if `max_price` is not None.
@@ -59,7 +58,7 @@ class DnaSource:
             max_lead_time = np.inf
 
         if self.memoize:
-            args = (sequence, max_lead_time, max_price, with_ordering_plan)
+            args = (sequence, max_lead_time, max_price, with_assembly_plan)
             quote = self.memoize_dict.get(args, None)
             if quote is not None:
                 return quote
@@ -73,14 +72,14 @@ class DnaSource:
                 sequence,
                 max_price=max_price,
                 time_resolution=time_resolution,
-                with_ordering_plan=with_ordering_plan,
+                with_assembly_plan=with_assembly_plan,
 
             )
         else:
             quote = self.get_best_price(
                 sequence,
                 max_lead_time=max_lead_time,
-                with_ordering_plan=with_ordering_plan
+                with_assembly_plan=with_assembly_plan
             )
 
         if self.memoize:
@@ -93,7 +92,7 @@ class DnaSource:
 
     def get_best_lead_time_under_price_limit(self, sequence, max_price,
                                              time_resolution,
-                                             with_ordering_plan=None):
+                                             with_assembly_plan=None):
         """Return the quote with fastest lead time under the budget constraint
 
         Parameters
@@ -111,8 +110,8 @@ class DnaSource:
           re-compute the problem many times
           Note that either this parameter or `max_lead_time` must be None
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
 
         time_resolution
           Time resolution for the bisecting search if `max_price` is not None.
@@ -120,7 +119,7 @@ class DnaSource:
         """
         def f(max_lead_time):
             return self.get_quote(sequence, max_lead_time=max_lead_time,
-                                  with_ordering_plan=with_ordering_plan)
+                                  with_assembly_plan=with_assembly_plan)
         quote = f(None)
         if (not quote.accepted) or (quote.price > max_price):
             return DnaQuote(
@@ -237,7 +236,7 @@ class DnaSourcesComparator(DnaSource):
         self.memoize_dict = {}
 
     def get_best_price(self, sequence, max_lead_time=None,
-                       with_ordering_plan=False):
+                       with_assembly_plan=False):
         """Returns a price-optimal DnaQuote for the given sequence.
 
         Parameters
@@ -250,12 +249,12 @@ class DnaSourcesComparator(DnaSource):
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
         """
         quotes = [
             source.get_quote(sequence, max_lead_time=max_lead_time,
-                             with_ordering_plan=with_ordering_plan)
+                             with_assembly_plan=with_assembly_plan)
             for source in self.dna_sources
         ]
         accepted_quotes = [quote for quote in quotes if quote.accepted]
@@ -289,17 +288,17 @@ class DnaAssemblyStation(DnaSource):
         return self.dna_source.get_quote(fragment_to_order,
                                          max_lead_time=max_lead_time)
 
-    def get_ordering_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
+    def get_assembly_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
         cuts = sorted(cuts)
-        return DnaOrderingPlan({
+        return {
             segment: self.get_quote_for_sequence_segment(
                 sequence, segment,
                 max_lead_time=max_lead_time
             )
             for segment in zip(cuts, cuts[1:])
-        })
+        }
 
-    def get_ordering_plan_for_sequence(self, sequence, max_lead_time=None,
+    def get_assembly_plan_for_sequence(self, sequence, max_lead_time=None,
                                        return_graph=False,
                                        nucleotide_resolution=None,
                                        refine_resolution=None,
@@ -335,19 +334,19 @@ class DnaAssemblyStation(DnaSource):
             refine_resolution=refine_resolution,
             progress_bars=progress_bars,
             a_star_factor=a_star_factor,
-            max_fragments=assembly.max_fragments
+            path_size_limit=assembly.max_fragments
         )
-        ordering_plan = self.get_ordering_plan_from_cuts(
+        assembly_plan = self.get_assembly_plan_from_cuts(
             sequence, best_cuts,
             max_lead_time=max_lead_time
         )
         if return_graph:
-            return graph, ordering_plan
+            return graph, assembly_plan
         else:
-            return ordering_plan
+            return assembly_plan
 
     def get_best_price(self, sequence, max_lead_time=None,
-                       with_ordering_plan=False):
+                       with_assembly_plan=False):
         """Returns a price-optimal DnaQuote for the given sequence.
 
         Parameters
@@ -360,31 +359,34 @@ class DnaAssemblyStation(DnaSource):
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
         """
 
         if (max_lead_time is not None):
             max_lead_time = max_lead_time - self.extra_time
             if max_lead_time < 0:
                 return DnaQuote(self, sequence, accepted=False,
-                                message="Time limit too short")
+                                message="Lead time limit too short")
         try:
-            ordering_plan = self.get_ordering_plan_for_sequence(
+            assembly_plan = self.get_assembly_plan_for_sequence(
                 sequence, max_lead_time=max_lead_time, **self.solve_kwargs
             )
         except NoSolutionFoundError:
             return DnaQuote(self, sequence, accepted=False,
                             message="No solution found !")
-        total_price = ordering_plan.total_price() + self.extra_cost
-        lead_time = ordering_plan.overall_lead_time()
-        total_duration = (None if lead_time is None else
-                          lead_time + self.extra_time)
-        if not with_ordering_plan:
-            ordering_plan = None
-        return DnaQuote(self, sequence, price=total_price,
-                        lead_time=total_duration,
-                        ordering_plan=ordering_plan)
+
+        # A solution has been found ! Now compute overall time and lead time.
+        quote = DnaQuote(self, sequence, assembly_plan=assembly_plan)
+        quote.price = quote.children_total_price() + self.extra_cost
+        children_lead_time = quote.children_overall_lead_time()
+        if (children_lead_time is None) or (self.extra_time is None):
+            quote.lead_time = None
+        else:
+            quote.lead_time = children_lead_time + self.extra_time
+        if not with_assembly_plan:
+            self.assembly_plan = None
+        return quote
 
 
 class ExternalDnaOffer(DnaSource):
@@ -403,7 +405,7 @@ class ExternalDnaOffer(DnaSource):
         return self.name
 
     def get_best_price(self, sequence, max_lead_time=None,
-                       with_ordering_plan=False):
+                       with_assembly_plan=False):
 
         """Returns a price-optimal DnaQuote for the given sequence.
 
@@ -417,8 +419,8 @@ class ExternalDnaOffer(DnaSource):
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
         """
 
         lead_time = self.lead_time(sequence)
@@ -519,7 +521,7 @@ class PcrOutStation(DnaSource):
             ]
 
     def get_best_price(self, sequence, max_lead_time=None,
-                       with_ordering_plan=False):
+                       with_assembly_plan=False):
         """Return a price-optimal DnaQuote for the given sequence.
 
         It will find a possible hit in the blast database, find the primers to
@@ -536,8 +538,8 @@ class PcrOutStation(DnaSource):
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
         """
 
         for subject, (hit_start, hit_end) in self.get_hits(sequence):
@@ -570,17 +572,17 @@ class PcrOutStation(DnaSource):
                 total_price = (sum(quote.price for quote in quotes) +
                                self.extra_cost)
 
-                if with_ordering_plan:
-                    ordering_plan = DnaOrderingPlan({
+                if with_assembly_plan:
+                    assembly_plan = {
                         (0, primer_l_end): quotes[0],
-                        (primer_r_end, len(sequence)): quotes[0]
-                    })
+                        (primer_r_end, len(sequence)): quotes[1]
+                    }
                 else:
-                    ordering_plan = None
+                    assembly_plan = None
                 return DnaQuote(self, sequence, accepted=True,
                                 lead_time=overall_lead_time,
                                 price=total_price,
-                                ordering_plan=ordering_plan,
+                                assembly_plan=assembly_plan,
                                 metadata={"subject": subject,
                                           "location": (hit_start, hit_end)})
 
@@ -621,7 +623,7 @@ class PartsLibrary(DnaSource):
         self.memoize = False
 
     def get_best_price(self, sequence, max_lead_time=None,
-                       with_ordering_plan=False):
+                       with_assembly_plan=False):
         """Returns a price-optimal DnaQuote for the given sequence.
 
         Parameters
@@ -634,8 +636,8 @@ class PartsLibrary(DnaSource):
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
-        with_ordering_plan
-          If True, the ordering plan is added to the quote
+        with_assembly_plan
+          If True, the assembly plan is added to the quote
        """
         if sequence in self.parts_dict:
             return DnaQuote(self, sequence, accepted=True,

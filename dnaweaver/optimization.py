@@ -619,7 +619,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
         a_star_factor=a_star_factor,
         progress_bars=progress_bars,
         path_size_limit=path_size_limit,
-        path_size_min_step=path_size_min_step
+        path_size_min_step=path_size_min_step,
     )
     if (initial_resolution > 1) and refine_resolution:
         best_cuts = refine_cuts_with_graph(
