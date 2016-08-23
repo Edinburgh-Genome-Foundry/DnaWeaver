@@ -113,7 +113,7 @@ class DnaQuote:
             self.id = id_prefix + "%05d" % counter.next()
 
     def compute_fragments_final_locations(self):
-        """
+        """Compute the final location of the fragments.
 
         Examples
         --------
@@ -156,6 +156,42 @@ class DnaQuote:
                 for segment, child in self.assembly_plan.items()
             ], [])
         return result
+
+    def tree_as_JSON(self):
+        """Return a JSON version of the nested tree.
+
+        Returns
+        -------
+
+        JSON
+          {
+          "id": self.id,
+          "source": self.source.name,
+          "price": self.price,
+          "lead_time": self.lead_time,
+          "sequence": self.sequence,
+          "message": self.message,
+          "metadata" = self.metadata,
+          "assembly_plan": { (start1, end1): {(subquote_1)},
+                             (start2, end2): {(subquote_2)},
+                           }
+         }
+        """
+        return {
+            "id": self.id,
+            "source": self.source.name,
+            "price": self.price,
+            "lead_time": self.lead_time,
+            "sequence": self.sequence,
+            "message": self.message,
+            "metadata": self.metadata,
+            "assembly_plan": {} if self.assembly_plan is None else {
+                                 segment: quote.tree_as_JSON()
+                                 for (segment, quote) in self.assembly_plan
+                             }
+        }
+
+
 
     def propagate_deadline(self, deadline):
         self.deadline = deadline

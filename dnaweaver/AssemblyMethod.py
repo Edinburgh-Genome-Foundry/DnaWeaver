@@ -164,7 +164,8 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         self.right_overhang_rev = reverse_complement(self.right_overhang)
         if avoid_enzyme_in_segments:
             self.segment_filters = list(self.segment_filters) + [
-                lambda seq, start, end: (enzyme_site not in seq[start:end])
+                lambda seq: (lambda start, end:
+                                 (enzyme_site not in seq[start:end]))
             ]
 
     def compute_fragment_sequence(self, sequence, segment):

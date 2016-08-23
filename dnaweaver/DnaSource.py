@@ -282,6 +282,12 @@ class DnaAssemblyStation(DnaSource):
     def get_quote_for_sequence_segment(self, sequence, segment,
                                        max_lead_time=None,
                                        **kwargs):
+        """Return the cost of the segment
+
+        Is used as the "cost" function for a segment during decomposition
+        optimization
+
+        """
         fragment_to_order = self.assembly_method.compute_fragment_sequence(
             sequence, segment, **kwargs
         )
@@ -289,6 +295,8 @@ class DnaAssemblyStation(DnaSource):
                                          max_lead_time=max_lead_time)
 
     def get_assembly_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
+        """Return a plan {(seg,ment): quote, ...} based on the cut positions.
+        """
         cuts = sorted(cuts)
         return {
             segment: self.get_quote_for_sequence_segment(
@@ -302,8 +310,9 @@ class DnaAssemblyStation(DnaSource):
                                        return_graph=False,
                                        nucleotide_resolution=None,
                                        refine_resolution=None,
-                                       a_star_factor=0,
-                                       progress_bars=True):
+                                       a_star_factor=0, progress_bars=True):
+        """Return the plan {(seg,ment): quote, ...} of the optimal strategy
+        for the sequence's decomposition."""
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
                 sequence, segment, max_lead_time=max_lead_time
@@ -323,9 +332,9 @@ class DnaAssemblyStation(DnaSource):
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
-            location_filters=[lambda location: fl(sequence, location)
+            location_filters=[fl(sequence)
                               for fl in assembly.location_filters],
-            segment_filters=[lambda (start, end): fl(sequence, start, end)
+            segment_filters=[fl(sequence)
                              for fl in assembly.segment_filters],
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,

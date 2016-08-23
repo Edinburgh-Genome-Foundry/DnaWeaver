@@ -317,7 +317,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
         for end in nodes[i + 1:]:
             if end - start > max_segment_length:
                 break
-            elif all(fl((start, end)) for fl in segment_filters):
+            elif all(fl(start, end) for fl in segment_filters):
                 segments.append((start, end))
     graph = nx.DiGraph()
 
@@ -601,10 +601,10 @@ def optimize_cuts_with_graph_twostep(sequence_length,
 
     new_location_filters = [is_resolution_location] + list(location_filters)
 
-    def size_is_valid(segment):
+    def size_is_valid(start, end):
         """Return True iff the segment's length is in interval
         [min_length, max_length]"""
-        segment_length = segment[1] - segment[0]
+        segment_length = end - start
         return min_segment_length <= segment_length <= max_segment_length
 
     new_segment_filters = [size_is_valid] + list(segment_filters)
