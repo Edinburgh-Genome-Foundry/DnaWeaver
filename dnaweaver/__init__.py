@@ -1,16 +1,16 @@
 """DnaWeaver, a Python package for optimal DNA sequence decomposition and
 ordering."""
 
-from DnaSource import (ExternalDnaOffer,
-                       DnaSourcesComparator,
-                       DnaAssemblyStation,
-                       PcrOutStation,
-                       PartsLibrary)
-from AssemblyMethod import (GibsonAssemblyMethod,
-                            BuildAGenomeAssemblyMethod,
-                            GoldenGateAssemblyMethod)
-from plotting import plot_assembly_tree
-from biotools import random_dna_sequence, reverse_complement
+from .DnaSource import (ExternalDnaOffer,
+                        DnaSourcesComparator,
+                        DnaAssemblyStation,
+                        PcrOutStation,
+                        PartsLibrary)
+from .AssemblyMethod import (GibsonAssemblyMethod,
+                             BuildAGenomeAssemblyMethod,
+                             GoldenGateAssemblyMethod)
+from .biotools import (random_dna_sequence, reverse_complement,
+                       no_pattern_constraint)
 
 __all__ = ("ExternalDnaOffer",
            "DnaSourcesComparator",
@@ -19,4 +19,6 @@ __all__ = ("ExternalDnaOffer",
            "GibsonAssemblyMethod",
            "GoldenGateAssemblyMethod",
            "random_dna_sequence",
-           "reverse_complement")
+           "reverse_complement",
+           "no_pattern_constraint",
+           )

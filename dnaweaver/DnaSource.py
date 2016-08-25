@@ -1,18 +1,22 @@
 from copy import copy
 from collections import defaultdict
-from .optimization import (optimize_cuts_with_graph_twostep,
-                           NoSolutionFoundError)
-from biotools import (blast_sequence, largest_common_substring,
-                      reverse_complement)
-from DnaQuote import DnaQuote
+
 import numpy as np
+import networkx as nx
 
 # Attempt import of optional module DNA Chisel
 try:
     from dnachisel import Constraint, DnaCanvas
     DNACHISEL_AVAILABLE = True
 except:
+    Constraint = type("BLANK")  # meant to be a fake type that matches nothing
     DNACHISEL_AVAILABLE = False
+
+from .optimization import (optimize_cuts_with_graph_twostep,
+                           NoSolutionFoundError)
+from .biotools import (blast_sequence, largest_common_substring,
+                       reverse_complement)
+from .DnaQuote import DnaQuote
 
 
 class DnaSource:
@@ -165,7 +169,6 @@ class DnaSource:
 
         return all(constraint(sequence) for constraint in constraints)
 
-
     def compute_supply_graph(self):
         """Return elements to plot the supply graph underlying this DnaSource
 
@@ -198,6 +201,9 @@ class DnaSource:
             if hasattr(source, "dna_source"):
                 edges.append((source.dna_source, source))
                 rec(source.dna_source, depth + 1)
+            elif hasattr(source, "primers_dna_source"):
+                edges.append((source.primers_dna_source, source))
+                rec(source.primers_dna_source, depth + 1)
 
             if hasattr(source, "dna_sources"):
                 for other in source.dna_sources:
@@ -205,6 +211,20 @@ class DnaSource:
                     rec(other, depth + 1)
 
         rec(self)
+
+        # Alternative solution using shortest paths to determine levels.
+        # doesnt work much better
+        # g = nx.Graph()
+        # g.add_edges_from(edges)
+        # result = nx.single_source_shortest_path(g, self)
+        # max_depth = max(len(path) for path in result.values())
+        # levels = {
+        #     i: [source for source, path in result.items() if len(path)==i]
+        #     for i in range(1, max_depth+1)
+        # }
+        # levels[0] = [self]
+        #
+
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
 
@@ -415,7 +435,6 @@ class ExternalDnaOffer(DnaSource):
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
-
         """Returns a price-optimal DnaQuote for the given sequence.
 
         Parameters
@@ -434,7 +453,7 @@ class ExternalDnaOffer(DnaSource):
 
         lead_time = self.lead_time(sequence)
         price = self.price_function(sequence)
-        accepted = (max_lead_time is None) or (lead_time <= max_lead_time)
+        accepted = (max_lead_time == np.inf) or (lead_time <= max_lead_time)
         return DnaQuote(self, sequence, accepted=accepted,
                         lead_time=lead_time, price=price)
 

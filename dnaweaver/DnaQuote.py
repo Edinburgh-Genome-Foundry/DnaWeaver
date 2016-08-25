@@ -4,8 +4,10 @@ from copy import deepcopy
 from collections import defaultdict
 import tempfile
 import os
-from .biotools import blast_sequence
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError: # python 3
+    from io import StringIO
 
 try:
     import pandas as pd
@@ -20,6 +22,7 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
 from .optimization import NoSolutionFoundError
+from .biotools import blast_sequence
 
 
 class DnaQuote:
@@ -263,7 +266,7 @@ class DnaQuote:
     def cuts_indices(self):
         """Return the locations of the `cuts` where the sequence is assembled.
         """
-        return sorted([offer.segment[1] for offer in self.quotes.keys()])[:-1]
+        return sorted([segment[1] for segment in self.assembly_plan])[:-1]
 
     def to_SeqRecord(self, record=None, record_id=None):
         """Return a Biopython seqrecord of the quote.
@@ -306,6 +309,6 @@ class DnaQuote:
             with open(filename, "w+") as f:
                 SeqIO.write(record, f, "genbank")
         else:
-            output = StringIO.StringIO()
+            output = StringIO()
             SeqIO.write(record, output, "genbank")
             return output.getvalue()

@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import time
 import os
+import re
 
 
 def complement(dna_sequence):
@@ -56,7 +57,8 @@ def random_dna_sequence(length, probas=None, seed=None):
 
 
 def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
-                   perc_identity=80, num_alignments=1000, num_threads=3):
+                   perc_identity=80, num_alignments=1000, num_threads=3,
+                   use_megablast=True, ungapped=True):
     """Return a Biopython BLAST record of the given sequence BLASTed
     against the provided database.
 
@@ -86,7 +88,9 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         "-num_alignments", str(num_alignments),
         "-query", fasta_name] +
         (["-db", blast_db] if blast_db is not None
-         else ['-subject', subject]) + [
+         else ['-subject', subject]) +
+        (["-ungapped"] if ungapped else []) +
+        (["-task", "megablast"] if use_megablast else []) + [
         "-word_size", str(word_size),
         "-num_threads", str(num_threads),
         "-perc_identity", str(perc_identity)
@@ -149,7 +153,7 @@ def largest_common_substring(query, target, max_overhang):
     return start, end
 
 
-def gc_content(sequence, window_size = None):
+def gc_content(sequence, window_size=None):
     """Compute global or local GC content.
 
     Parameters
@@ -174,13 +178,33 @@ def gc_content(sequence, window_size = None):
     # The code is a little cryptic but speed gain is 300x
     # compared with pure-python string operations
 
-    arr = np.fromstring(sequence+"", dtype="uint8")
-    arr_GCs = (arr == 71) | (arr == 67) # 67=C, 71=G
+    arr = np.fromstring(sequence + "", dtype="uint8")
+    arr_GCs = (arr == 71) | (arr == 67)  # 67=C, 71=G
 
     if window_size is None:
         return 1.0 * arr_GCs.sum() / len(sequence)
     else:
         cs = np.cumsum(arr_GCs)
-        a = cs[window_size-1:]
-        b = np.hstack([[0],cs[:-window_size]])
-        return 1.0*(a-b) / window_size
+        a = cs[window_size - 1:]
+        b = np.hstack([[0], cs[:-window_size]])
+        return 1.0 * (a - b) / window_size
+
+
+def no_pattern_constraint(pattern, is_regex=False, with_revcomp=True):
+    if is_regex:
+        cm_pattern = re.compile(pattern)
+
+        def not_in_strand(sequence):
+            return (cm_pattern.search(sequence) is not None)
+    else:
+        def not_in_strand(sequence):
+            return pattern not in sequence
+    if with_revcomp:
+        def not_in_both_strands(sequence):
+            if not_in_strand(sequence):
+                if not_in_strand(reverse_complement(sequence)):
+                    return True
+            return False
+        return not_in_both_strands
+    else:
+        return not_in_strand
