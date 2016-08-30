@@ -107,13 +107,13 @@ class DnaQuote:
                 }
                 quote.assembly_plan = segments
             if id_prefix:
-                quote.id = id_prefix + "%05d" % counter.next()
+                quote.id = id_prefix + "%05d" % next(counter)
             return quote
 
         rec(self)
 
         if id_prefix:
-            self.id = id_prefix + "%05d" % counter.next()
+            self.id = id_prefix + "%05d" % next(counter)
 
     def compute_fragments_final_locations(self):
         """Compute the final location of the fragments.

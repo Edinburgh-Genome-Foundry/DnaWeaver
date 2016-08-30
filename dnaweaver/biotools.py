@@ -94,18 +94,21 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         "-word_size", str(word_size),
         "-num_threads", str(num_threads),
         "-perc_identity", str(perc_identity)
-    ], close_fds=True)
-    p.communicate()
+    ], close_fds=True, stderr=subprocess.PIPE)
+    res, blast_err = p.communicate()
+    print(blast_err)
     p.wait()
+    error = None
     for i in range(3):
         try:
             with open(xml_name, "r") as f:
                 blast_record = NCBIXML.read(f)
             break
-        except ValueError:
+        except ValueError as err:
+            error = err
             time.sleep(0.1)
     else:
-        raise ValueError("Problem reading the blast record.")
+        raise ValueError("Problem reading the blast record: " + str(error))
 
     os.fdopen(xml_file, 'w').close()
     os.fdopen(fasta_file, 'w').close()
