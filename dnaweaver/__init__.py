@@ -5,7 +5,8 @@ from .DnaSource import (ExternalDnaOffer,
                         DnaSourcesComparator,
                         DnaAssemblyStation,
                         PcrOutStation,
-                        PartsLibrary)
+                        PartsLibrary,
+                        GoldenGatePartsLibrary)
 from .AssemblyMethod import (GibsonAssemblyMethod,
                              BuildAGenomeAssemblyMethod,
                              GoldenGateAssemblyMethod)

@@ -203,7 +203,7 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
 
     best_path, best_path_size = f(penalty)
     if best_path_size > size_limit:
-        return False
+        raise NoSolutionFoundError()
 
     while abs(step) > min_step:
         penalty = penalty + step
@@ -221,6 +221,7 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
                              location_filters=(),
                              segment_filters=(), forced_cuts=(),
+                             suggested_cuts=(),
                              max_segment_length=None, a_star_factor=0,
                              path_size_limit=None, path_size_min_step=0.001,
                              progress_bars=False):
@@ -296,15 +297,18 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
     """
 
     forced_cuts = list(forced_cuts)
+    suggested_cuts = list(suggested_cuts)
+
     if max_segment_length is None:
         max_segment_length = sequence_length
 
-    # List all nodes, add 0 and seqlength, add forced cuts
+    # List all nodes, add 0 and seqlength, add forced+suggested cuts
     nodes = sorted(list(set([0, sequence_length] + [
         node
         for node in range(0, sequence_length)
         if all(fl(node) for fl in location_filters)
-    ] + forced_cuts)))
+    ] + forced_cuts + suggested_cuts)))
+
     if forced_cuts != []:
         def forced_cuts_filter(segment):
             start, end = segment
@@ -438,7 +442,6 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
 
     See original DNA Weaver article for clearer explanations of the method
     """
-
     nodes = [
         set([cut] + ([] if cut in forced_cuts else
                      list(range(max(0, cut - radius),
@@ -451,7 +454,7 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
         (start, end)
         for nodes_1, nodes_2 in zip(nodes, nodes[1:])
         for start, end in itt.product(nodes_1, nodes_2)
-        if all(fl((start, end)) for fl in segment_filters)
+        if all(fl(start, end) for fl in segment_filters)
     ]
 
     graph = nx.DiGraph()
@@ -494,6 +497,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
                                      min_segment_length=500,
                                      max_segment_length=2000,
                                      refine_resolution=1,
+                                     suggested_cuts=(),
                                      forced_cuts=(),
                                      a_star_factor=0,
                                      path_size_limit=None,
@@ -615,6 +619,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
         location_filters=new_location_filters,
         segment_filters=new_segment_filters,
         forced_cuts=forced_cuts,
+        suggested_cuts=suggested_cuts,
         max_segment_length=max_segment_length,
         a_star_factor=a_star_factor,
         progress_bars=progress_bars,

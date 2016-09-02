@@ -49,7 +49,7 @@ class AssemblyMethod:
     name = "None"
     def __init__(self, duration=0, cost=0, location_filters=(),
                  segment_filters=(), min_segment_length=None,
-                 max_segment_length=None, force_cuts=(),
+                 max_segment_length=None, force_cuts=(), suggest_cuts=(),
                  max_fragments = None,
                  sequence_constraints=()):
         self.duration = duration
@@ -60,6 +60,13 @@ class AssemblyMethod:
         self.max_segment_length = max_segment_length
         self.sequence_constraints = sequence_constraints
         self.max_fragments = max_fragments
+
+        if callable(suggest_cuts):
+            self.suggest_cuts = suggest_cuts
+        else:
+            # means the cuts are a constant
+            self.suggest_cuts = lambda *a: suggest_cuts
+
         if callable(force_cuts):
             self.force_cuts = force_cuts
         else:

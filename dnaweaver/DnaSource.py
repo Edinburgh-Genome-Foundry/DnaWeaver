@@ -359,6 +359,7 @@ class DnaAssemblyStation(DnaSource):
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
+            suggested_cuts=assembly.suggest_cuts(sequence),
             initial_resolution=nucleotide_resolution,
             refine_resolution=refine_resolution,
             progress_bars=progress_bars,
@@ -642,7 +643,12 @@ class PcrOutStation(DnaSource):
 
 
 class PartsLibrary(DnaSource):
-    """Class for collections of ready-to-assemble parts"""
+    """Class for collections of ready-to-assemble parts.
+
+
+    This class is admitedly under-developed and could be expanded-subclassed
+    to accomodate with the different kinds of registries etc.
+    """
 
     def __init__(self, name, parts_dict, memoize=False):
         self.name = name
@@ -674,3 +680,24 @@ class PartsLibrary(DnaSource):
 
         return DnaQuote(self, sequence, accepted=False,
                         message="Sequence not in the library")
+
+
+class GoldenGatePartsLibrary(PartsLibrary):
+
+    def __init__(self, name, parts_dict, flanks_length=7, memoize=False):
+        self.name = name
+        self.sequence_constraints = []
+        self.parts_dict = parts_dict
+        self.flanks_length = flanks_length
+        self.memoize = False
+
+    def suggest_cuts(self, sequence):
+        suggested_cuts = []
+        flank = self.flanks_length + 2  # + 2 is because the cut falls in the
+        # middle of the 4bp linker
+        for part in self.parts_dict:
+            segment = part[flank:-flank]
+            i = sequence.find(segment)
+            if i != -1:
+                suggested_cuts += [i, i + len(segment)]
+        return sorted(list(set(suggested_cuts)))
