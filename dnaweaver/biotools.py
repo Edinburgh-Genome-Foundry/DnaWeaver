@@ -82,10 +82,19 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     with open(fasta_name, "w+") as f:
         f.write(">seq\n" + sequence)
 
+
     if subject is not None:
-        fasta2_file, fasta_subject_name = tempfile.mkstemp(".fa")
-        with open(fasta_subject_name, "w+") as f:
-            f.write(">subject\n" + subject)
+        close_subject = True
+        if not subject.endswith(".fa"):
+            remove_subject = True
+            subject_file, fasta_subject_name = tempfile.mkstemp(".fa")
+            with open(fasta_subject_name, "w+") as f:
+                f.write(">subject\n" + subject)
+            subject = fasta_subject_name
+        else:
+            remove_subject = False
+    else:
+        close_subject = False
 
     p = subprocess.Popen([
         "blastn", "-out", xml_name,
@@ -93,7 +102,7 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         "-num_alignments", str(num_alignments),
         "-query", fasta_name] +
         (["-db", blast_db] if blast_db is not None
-         else ['-subject', fasta_subject_name]) +
+         else ['-subject', subject]) +
         (["-ungapped"] if ungapped else []) +
         (["-task", "megablast"] if use_megablast else []) + [
         "-word_size", str(word_size),
@@ -118,6 +127,11 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     os.fdopen(fasta_file, 'w').close()
     os.remove(xml_name)
     os.remove(fasta_name)
+
+    if close_subject:
+        open(subject, 'w').close()
+        if remove_subject:
+            os.remove(subject)
 
     return blast_record
 
