@@ -133,16 +133,26 @@ class DnaQuote:
         with open(temp_fasta, "w+") as f:
             for quote in quotes:
                 f.write(">%s\n%s\n" % (quote.id, quote.sequence))
+        print("temp fasta", temp_fasta)
         results = blast_sequence(self.sequence,
                                  subject=temp_fasta,
                                  word_size=10, perc_identity=99)
 
-        for al in results.alignments:
-            hit = max(al.hsps, key=lambda hit: hit.align_length)
-            final_location = sorted((hit.query_start, hit.query_end))
-            quotes_dict[al.hit_id].final_location = final_location
-            matching_segment = sorted((hit.sbjct_start, hit.sbjct_end))
-            quotes_dict[al.hit_id].matching_segment = matching_segment
+        for record in results:
+            for al in record.alignments:
+                print(al.hit_def)
+                hit = max(al.hsps, key=lambda hit: hit.align_length)
+                final_location = sorted((hit.query_start, hit.query_end))
+                quotes_dict[al.hit_def].final_location = final_location
+                matching_segment = sorted((hit.sbjct_start, hit.sbjct_end))
+                quotes_dict[al.hit_def].matching_segment = matching_segment
+        #
+        # for al in results.alignments:
+        #     hit = max(al.hsps, key=lambda hit: hit.align_length)
+        #     final_location = sorted((hit.query_start, hit.query_end))
+        #     quotes_dict[al.hit_id].final_location = final_location
+        #     matching_segment = sorted((hit.sbjct_start, hit.sbjct_end))
+        #     quotes_dict[al.hit_id].matching_segment = matching_segment
         os.remove(temp_fasta)
 
     def tree_as_list(self):

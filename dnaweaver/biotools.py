@@ -95,6 +95,7 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
             remove_subject = False
     else:
         close_subject = False
+    print (fasta_name, subject)
 
     p = subprocess.Popen([
         "blastn", "-out", xml_name,
@@ -111,11 +112,16 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     ], close_fds=True, stderr=subprocess.PIPE)
     res, blast_err = p.communicate()
     p.wait()
+    print(("wwwww", xml_name))
     error = None
     for i in range(3):
         try:
             with open(xml_name, "r") as f:
-                blast_record = NCBIXML.read(f)
+                res = list(NCBIXML.parse(f))
+                if len(res) == 1:
+                    return res[0]
+                else:
+                    return res
             break
         except ValueError as err:
             error = err
