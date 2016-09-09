@@ -370,9 +370,11 @@ class DnaAssemblyStation(DnaSource):
             sequence, best_cuts,
             max_lead_time=max_lead_time
         )
+
         if return_graph:
             return graph, assembly_plan
         else:
+            del graph
             return assembly_plan
 
     def get_best_price(self, sequence, max_lead_time=None,
