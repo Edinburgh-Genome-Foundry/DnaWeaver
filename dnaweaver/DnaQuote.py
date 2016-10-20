@@ -137,8 +137,12 @@ class DnaQuote:
         results = blast_sequence(self.sequence,
                                  subject=temp_fasta,
                                  word_size=10, perc_identity=99)
+        if isinstance(results, list):
+            alignments = sum([rec.alignments for rec in results], [])
+        else:
+            alignments = results.alignments
 
-        for al in results.alignments:
+        for al in alignments:
             print(al.hit_def)
             hit = max(al.hsps, key=lambda hit: hit.align_length)
             final_location = sorted((hit.query_start, hit.query_end))

@@ -11,7 +11,7 @@ from .AssemblyMethod import (GibsonAssemblyMethod,
                              BuildAGenomeAssemblyMethod,
                              GoldenGateAssemblyMethod)
 from .biotools import (random_dna_sequence, reverse_complement,
-                       no_pattern_constraint)
+                       no_pattern_constraint, gc_content)
 
 __all__ = ("ExternalDnaOffer",
            "DnaSourcesComparator",
@@ -22,4 +22,5 @@ __all__ = ("ExternalDnaOffer",
            "random_dna_sequence",
            "reverse_complement",
            "no_pattern_constraint",
+           "gc_content"
            )

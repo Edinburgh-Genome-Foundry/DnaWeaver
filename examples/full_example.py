@@ -1,13 +1,11 @@
 
 from dnaweaver import (ExternalDnaOffer,
-                        DnaAssemblyStation,
-                        GibsonAssemblyMethod,
-                        GoldenGateAssemblyMethod,
-                        BuildAGenomeAssemblyMethod,
-                        DnaSourcesComparator)
-from dnachisel import random_dna_sequence
-import dnachisel.constraints as cst
-import numpy
+                       DnaAssemblyStation,
+                       GibsonAssemblyMethod,
+                       GoldenGateAssemblyMethod,
+                       BuildAGenomeAssemblyMethod,
+                       DnaSourcesComparator)
+from dnaweaver.biotools import random_dna_sequence
 
 
 # OLIGO COMPANIES
@@ -119,15 +117,12 @@ chunks_assembly_station = DnaAssemblyStation(
     dna_source=blocks_assembly_comparator,
     nucleotide_resolution=2000,
     refine_resolution=False,
-    progress_bars=True
+    progress_bars=False
 )
 
-
-numpy.random.seed(1234)
-sequence = random_dna_sequence(50000)
-
-quote = chunks_assembly_station.get_quote(sequence,  with_ordering_plan=True)
-
-print (quote)
-if quote.accepted:
-    print (quote.ordering_plan.summary())
+import time
+t0 = time.time()
+sequence = random_dna_sequence(50000, seed=1234)
+quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
+print(quote.assembly_step_summary())
+print("Finished in %.02fs" % (time.time()-t0))
