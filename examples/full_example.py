@@ -1,12 +1,11 @@
 
 from dnaweaver import (ExternalDnaOffer,
-                        DnaAssemblyStation,
-                        GibsonAssemblyMethod,
-                        GoldenGateAssemblyMethod,
-                        BuildAGenomeAssemblyMethod,
-                        DnaSourcesComparator)
-from dnachisel import random_dna_sequence
-import dnachisel.constraints as cst
+                       DnaAssemblyStation,
+                       GibsonAssemblyMethod,
+                       GoldenGateAssemblyMethod,
+                       BuildAGenomeAssemblyMethod,
+                       DnaSourcesComparator)
+from dnaweaver.biotools import no_pattern_constraint, random_dna_sequence
 import numpy
 
 
@@ -14,7 +13,7 @@ import numpy
 
 cheap_dna_com = ExternalDnaOffer(
     name="CheapDNA.com",
-    sequence_constraints=[lambda seq: "GGTCTC" not in seq,
+    sequence_constraints=[no_pattern_constraint("GGTCTC"),
                           lambda seq: len(seq) < 200],
     price_function=lambda sequence: 0.10 * len(sequence),
     lead_time=10,
@@ -72,30 +71,29 @@ blocks_sources_comparator = DnaSourcesComparator(
 
 
 blocks_assembly_comparator = DnaSourcesComparator([
-    DnaAssemblyStation(
-        name="Blocks Assembly (Gibson)",
-        assembly_method=GibsonAssemblyMethod(
-            homology_arm_length=40,
-            min_segment_length=2000,
-            max_segment_length=4000,
-            duration=8,
-            cost=10
-        ),
-        dna_source=blocks_sources_comparator,
-        nucleotide_resolution=300,
-        refine_resolution=False,
-        memoize=True,
-        progress_bars=True
-    ),
+    # DnaAssemblyStation(
+    #     name="Blocks Assembly (Gibson)",
+    #     assembly_method=GibsonAssemblyMethod(
+    #         homology_arm_length=40,
+    #         min_segment_length=2000,
+    #         max_segment_length=4000,
+    #         duration=8,
+    #         cost=10
+    #     ),
+    #     dna_source=blocks_sources_comparator,
+    #     nucleotide_resolution=300,
+    #     refine_resolution=False,
+    #     memoize=True,
+    #     progress_bars=True
+    # ),
     DnaAssemblyStation(
         name="Blocks Assembly (Golden Gate)",
         assembly_method=GoldenGateAssemblyMethod(
-            left_overhang='[BsaI]A',
+            enzyme='BsaI',
             min_segment_length=2000,
             max_segment_length=4000,
             duration=5,
-            cost=2,
-            segment_filters=(lambda seq: "GGTCTC" not in seq,)
+            cost=2
         ),
         dna_source=blocks_sources_comparator,
         nucleotide_resolution=400,
@@ -126,8 +124,8 @@ chunks_assembly_station = DnaAssemblyStation(
 numpy.random.seed(1234)
 sequence = random_dna_sequence(50000)
 
-quote = chunks_assembly_station.get_quote(sequence,  with_ordering_plan=True)
+quote = chunks_assembly_station.get_quote(sequence,  with_assembly_plan=True)
 
 print (quote)
 if quote.accepted:
-    print (quote.ordering_plan.summary())
+    print (quote.assembly_step_summary())

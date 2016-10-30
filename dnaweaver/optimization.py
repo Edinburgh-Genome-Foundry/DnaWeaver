@@ -115,8 +115,26 @@ def astar_path(G, source, target, heuristic=None, weight=None):
 
     raise nx.NetworkXNoPath("Node %s not reachable from %s" % (source, target))
 
+def shortest_compatible_path(graph, start, end, nodes_constraints=(),
+                             compatibility_search_cutoff=100):
 
-def dijkstra_path_with_penalty(graph, start, end, penalty=0):
+    if len(nodes_constraints) == 0:
+        return nx.dijkstra_path(graph, start, end)
+    shortest_paths = nx.shortest_simple_paths(graph, start, end)
+    for i in range(compatibility_search_cutoff):
+        print("YEAH")
+        shortest_path = next(shortest_paths)
+        if all([nodes_constraint(shortest_path)
+                for nodes_constraint in nodes_constraints]):
+            return shortest_path
+    return nx.NetworkXNoPath("Could not find a solution verifying the cuts"
+                             " set constraints, after %d tries." % cutoffs)
+
+
+
+def shortest_compatible_path_with_penalty(graph, start, end, penalty=0,
+                                          nodes_constraints=(),
+                                          compatibility_search_cutoff=100):
     """Compute the graph's shortest path after adding a penalty to each edge.
 
     A copy of the graph is done and each edge weight receives a additional
@@ -150,7 +168,11 @@ def dijkstra_path_with_penalty(graph, start, end, penalty=0):
     for data in edge_datas:
         data["weight"] += penalty
     try:
-        path = nx.dijkstra_path(graph, start, end)
+        path = shortest_compatible_path(
+            graph, start, end,
+            compatibility_search_cutoff=compatibility_search_cutoff,
+            nodes_constraints=nodes_constraints
+        )
     except nx.NetworkXNoPath:
         for data in edge_datas:
             data["weight"] -= penalty
@@ -158,7 +180,9 @@ def dijkstra_path_with_penalty(graph, start, end, penalty=0):
     return path
 
 
-def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
+def shortest_compatible_path_with_size_limit(graph, start, end, size_limit,
+                                             min_step, nodes_constraints=(),
+                                             compatibility_search_cutoff=100):
     """Compute the graph's shortest path whose number of edges is below a limit
 
     The algorithm applies various penalties to the graph's weights to reduce
@@ -193,7 +217,11 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
 
     """
     def f(penalty):
-        path = dijkstra_path_with_penalty(graph, start, end, penalty)
+        path = shortest_compatible_path_with_penalty(
+            graph, start, end, penalty,
+            nodes_constraints=nodes_constraints,
+            compatibility_search_cutoff=100
+        )
         if path == False:  # means no solution found
             return False
         return path, len(path) - 1
@@ -219,9 +247,10 @@ def dijkstra_path_with_size_limit(graph, start, end, size_limit, min_step):
 
 
 def optimize_cuts_with_graph(sequence_length, segment_score_function,
-                             location_filters=(),
-                             segment_filters=(), forced_cuts=(),
+                             cut_location_constraints=(),
+                             segment_constraints=(), forced_cuts=(),
                              suggested_cuts=(),
+                             cuts_set_constraints=(),
                              max_segment_length=None, a_star_factor=0,
                              path_size_limit=None, path_size_min_step=0.001,
                              progress_bars=False):
@@ -241,14 +270,14 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
       sequence segment start:end, and score is a float. The algorithm will
       produce cuts which minimize the total scores of the segments.
 
-    location_filters
+    cut_location_constraints
       List or tuple of functions `int -> bool` which return for each location
       whether the location should be considered as a cutting site (True) or
       discarded (False) in the decomposition of the sequence.
       The locations considered are the locations which pass every filter
-      in the `location_filters` list.
+      in the `cut_location_constraints` list.
 
-    segment_filters
+    segment_constraints
       List or tuple of functions `(int, int) -> bool` which return for each
       segment `(start, end)` whether the segment is a valid segment for the
       decomposition of the sequence or whether it should be forbidden.
@@ -257,7 +286,7 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
     forced_cuts
       List of locations at which the decomposition must imperatively cut, even
-      if these cuts do not comply with the `location_filters`.
+      if these cuts do not comply with the `cut_location_constraints`.
 
     max_segment_length
       Maximal length of the segments. Even though this could be specified using
@@ -306,14 +335,14 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
     nodes = sorted(list(set([0, sequence_length] + [
         node
         for node in range(0, sequence_length)
-        if all(fl(node) for fl in location_filters)
+        if all(fl(node) for fl in cut_location_constraints)
     ] + forced_cuts + suggested_cuts)))
 
     if forced_cuts != []:
         def forced_cuts_filter(segment):
             start, end = segment
             return not any((start < cut < end) for cut in forced_cuts)
-        segment_filters = [forced_cuts_filter] + list(segment_filters)
+        segment_constraints = [forced_cuts_filter] + list(segment_constraints)
 
     segments = []
     for i, start in enumerate(nodes if not progress_bars else
@@ -321,11 +350,12 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
         for end in nodes[i + 1:]:
             if end - start > max_segment_length:
                 break
-            elif all(fl(start, end) for fl in segment_filters):
+            elif all(fl(start, end) for fl in segment_constraints):
                 segments.append((start, end))
     graph = nx.DiGraph()
 
-    if a_star_factor == 0:
+    if (len(cuts_set_constraints) > 0) or (a_star_factor == 0):
+
         for start, end in (segments if not progress_bars else
                            tqdm(segments, desc='Computing edges')):
             weight = segment_score_function((start, end))
@@ -334,16 +364,21 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
         try:
             if path_size_limit is not None:
-                best_cuts = dijkstra_path_with_size_limit(
+
+                best_cuts = shortest_compatible_path_with_size_limit(
                     graph, 0, sequence_length, size_limit=path_size_limit,
-                    min_step=path_size_min_step
+                    min_step=path_size_min_step,
+                    nodes_constraints=cuts_set_constraints
                 )
             else:
-                best_cuts = nx.dijkstra_path(graph, 0, sequence_length)
+                best_cuts = shortest_compatible_path(
+                    graph, 0, sequence_length,
+                    nodes_constraints=cuts_set_constraints
+                )
         except (KeyError, nx.NetworkXNoPath):
             raise NoSolutionFoundError("Could not find a solution in "
                                        "optimize_cuts_with_graph")
-    else:
+    else:  # a_factor > 0 means use the A* algorithm
 
         graph.add_edges_from(segments)
         d = {}
@@ -377,9 +412,10 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
 
 
 def refine_cuts_with_graph(sequence_length, cuts, radius,
-                           segment_score_function, location_filters=(),
-                           segment_filters=(), nucleotide_resolution=1,
+                           segment_score_function, cut_location_constraints=(),
+                           segment_constraints=(), nucleotide_resolution=1,
                            forced_cuts=(), progress_bars=True,
+                           cuts_set_constraints=(),
                            a_star_factor=0):
     """Refines the cuts to optimize a cutting problem, using a local search.
 
@@ -404,14 +440,14 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
       Function `(start, end) -> score` yielding a score for a given sub-segment
       of the sequence (e.g. price of the segment)
 
-    location_filters
+    cut_location_constraints
       List or tuple of functions `int -> bool` which return for each location
       whether the location should be considered as a cutting site (True) or
       discarded (False) in the decomposition of the sequence.
       The locations considered are the locations which pass every filter
-      in the `location_filters` list.
+      in the `cut_location_constraints` list.
 
-    segment_filters
+    segment_constraints
       List or tuple of functions `(int, int) -> bool` which return for each
       segment `(start, end)` whether the segment is a valid segment for the
       decomposition of the sequence or whether it should be forbidden.
@@ -454,7 +490,7 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
         (start, end)
         for nodes_1, nodes_2 in zip(nodes, nodes[1:])
         for start, end in itt.product(nodes_1, nodes_2)
-        if all(fl(start, end) for fl in segment_filters)
+        if all(fl(start, end) for fl in segment_constraints)
     ]
 
     graph = nx.DiGraph()
@@ -466,7 +502,10 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
             if weight >= 0:
                 graph.add_edge(start, end, weight=weight)
 
-        return nx.dijkstra_path(graph, 0, sequence_length)
+        return shortest_compatible_path(
+            graph, 0, sequence_length,
+            nodes_constraints=cuts_set_constraints
+        )
     else:
         graph.add_edges_from(segments)
         d = {}
@@ -491,14 +530,15 @@ def refine_cuts_with_graph(sequence_length, cuts, radius,
 
 def optimize_cuts_with_graph_twostep(sequence_length,
                                      segment_score_function,
-                                     location_filters=(),
-                                     segment_filters=(),
+                                     cut_location_constraints=(),
+                                     segment_constraints=(),
                                      initial_resolution=1,
                                      min_segment_length=500,
                                      max_segment_length=2000,
                                      refine_resolution=1,
                                      suggested_cuts=(),
                                      forced_cuts=(),
+                                     cuts_set_constraints=(),
                                      a_star_factor=0,
                                      path_size_limit=None,
                                      path_size_min_step=0.001,
@@ -523,19 +563,19 @@ def optimize_cuts_with_graph_twostep(sequence_length,
       Function `(start, end) -> score` yielding a score for a given sub-segment
       of the sequence (e.g. price of the segment)
 
-    location_filters
+    location_constraints
       List or tuple of functions `int -> bool` which return for each location
       whether the location should be considered as a cutting site (True) or
       discarded (False) in the decomposition of the sequence.
-      The locations considered are the locations which pass every filter
-      in the `location_filters` list.
+      The locations considered are the locations which pass every constraint
+      in the `location_constraints` list.
 
-    segment_filters
+    segment_constraints
       List or tuple of functions `(int, int) -> bool` which return for each
       segment `(start, end)` whether the segment is a valid segment for the
       decomposition of the sequence or whether it should be forbidden.
-      The segmentss considered are the segments which pass every filter
-      in the `segments_filters` list.
+      The segmentss considered are the segments which pass every constraint
+      in the `segments_constraints` list.
 
     initial_resolution
       Nucleotide resolution to use for the coarse-grain search, see function
@@ -543,11 +583,11 @@ def optimize_cuts_with_graph_twostep(sequence_length,
 
     min_segment_length
       Min length of the segments (this will be translated as an additional
-      filter in `segments_filters`)
+      constraint in `segments_constraints`)
 
     max_segment_length
        Max length of the segments (this will be translated as an additional
-       filter in `segments_filters`)
+       constraint in `segments_constraints`)
 
     refine_resolution
       nucleotide resolution to use during the local refinement step (see
@@ -555,7 +595,7 @@ def optimize_cuts_with_graph_twostep(sequence_length,
 
     forced_cuts
       List of locations at which the decomposition must imperatively cut, even
-      if these cuts do not comply with the `location_filters`.
+      if these cuts do not comply with the `location_constraints`.
 
     a_star_factor
       If 0, the classical Dijkstra algorithm is used for path finding. Else,
@@ -603,7 +643,8 @@ def optimize_cuts_with_graph_twostep(sequence_length,
         N is the nucleotide resolution of the problem."""
         return location % initial_resolution == 0
 
-    new_location_filters = [is_resolution_location] + list(location_filters)
+    new_location_constraints = ([is_resolution_location] +
+                                list(cut_location_constraints))
 
     def size_is_valid(start, end):
         """Return True iff the segment's length is in interval
@@ -611,20 +652,21 @@ def optimize_cuts_with_graph_twostep(sequence_length,
         segment_length = end - start
         return min_segment_length <= segment_length <= max_segment_length
 
-    new_segment_filters = [size_is_valid] + list(segment_filters)
+    new_segment_constraints = [size_is_valid] + list(segment_constraints)
 
     graph, best_cuts = optimize_cuts_with_graph(
         sequence_length,
         segment_score_function=segment_score_function,
-        location_filters=new_location_filters,
-        segment_filters=new_segment_filters,
+        cut_location_constraints=new_location_constraints,
+        segment_constraints=new_segment_constraints,
         forced_cuts=forced_cuts,
+        cuts_set_constraints=cuts_set_constraints,
         suggested_cuts=suggested_cuts,
         max_segment_length=max_segment_length,
         a_star_factor=a_star_factor,
         progress_bars=progress_bars,
         path_size_limit=path_size_limit,
-        path_size_min_step=path_size_min_step,
+        path_size_min_step=path_size_min_step
     )
     if (initial_resolution > 1) and refine_resolution:
         best_cuts = refine_cuts_with_graph(
@@ -633,9 +675,10 @@ def optimize_cuts_with_graph_twostep(sequence_length,
             radius=int(initial_resolution / 2),
             segment_score_function=segment_score_function,
             nucleotide_resolution=refine_resolution,
-            segment_filters=segment_filters,
-            location_filters=location_filters,
+            segment_constraints=segment_constraints,
+            cut_location_constraints=cut_location_constraints,
             forced_cuts=forced_cuts,
+            cuts_set_constraints=cuts_set_constraints,
             a_star_factor=a_star_factor,
             progress_bars=progress_bars
         )

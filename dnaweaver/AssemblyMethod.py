@@ -1,4 +1,8 @@
-from dnaweaver.biotools import reverse_complement
+from .biotools import reverse_complement, gc_content, find_enzyme_sites
+from .tools import memoize
+from Bio import Restriction
+import itertools
+
 
 class AssemblyMethod:
     """General class for assembly methods.
@@ -12,20 +16,20 @@ class AssemblyMethod:
       Duration required for the assembly (e.g. an estimated upper bound). The
       time unit is left at the choice of the user.
 
-    location_filters
+    cut_location_constraints
       List or tuple of functions `(sequence, int) -> bool` which return for
       a sequence and an index (cut location) whether the location should be
       considered as a cutting site compatible with this assembly method (True)
       or not.
       The locations considered in fine are the locations which pass every
-      filter in the `location_filters` list.
+      constraint in the `cut_location_contraints` list.
 
-    segment_filters
+    segment_constraints
       List or tuple of functions `(sequence, start, end) -> bool` which returns
       for a subsegment `(start, end)` whether the segment is a valid segment
       for the assembly.
-      The segments considered in fine are the segments which pass every filter
-      in the `segments_filters` list.
+      The segments considered in fine are the segments which pass every
+      constraint in the `segments_constraints` list.
 
     min_segment_length
       Minimal length of the fragments that this assembly method allows
@@ -47,19 +51,22 @@ class AssemblyMethod:
       these constraints returns False the sequence is refused.
     """
     name = "None"
-    def __init__(self, duration=0, cost=0, location_filters=(),
-                 segment_filters=(), min_segment_length=None,
+
+    def __init__(self, duration=0, cost=0, cut_location_constraints=(),
+                 segment_constraints=(), min_segment_length=None,
                  max_segment_length=None, force_cuts=(), suggest_cuts=(),
-                 max_fragments = None,
-                 sequence_constraints=()):
+                 max_fragments=None,
+                 sequence_constraints=(),
+                 cuts_set_constraints=()):
         self.duration = duration
         self.cost = cost
-        self.location_filters = location_filters
-        self.segment_filters = segment_filters
+        self.cut_location_constraints = list(cut_location_constraints)
+        self.segment_constraints = list(segment_constraints)
         self.min_segment_length = min_segment_length
         self.max_segment_length = max_segment_length
-        self.sequence_constraints = sequence_constraints
+        self.sequence_constraints = list(sequence_constraints)
         self.max_fragments = max_fragments
+        self.cuts_set_constraints = list(cuts_set_constraints)
 
         if callable(suggest_cuts):
             self.suggest_cuts = suggest_cuts
@@ -85,14 +92,11 @@ class OverlapingAssemblyMethod(AssemblyMethod):
       consecutive segments will overlap by 2*L
 
     """
-    name= "Overlaping Assembly"
+    name = "Overlaping Assembly"
 
     def __init__(self, homology_arm_length=20, **properties):
         AssemblyMethod.__init__(self, **properties)
         self.homology_arm_length = homology_arm_length
-
-
-
 
     def compute_fragment_sequence(self, sequence, segment):
         """Return the segment's sequence with flanking sequences.
@@ -113,13 +117,16 @@ class OverlapingAssemblyMethod(AssemblyMethod):
         return sequence[max(0, start - self.homology_arm_length):
                         min(L, end + self.homology_arm_length)]
 
+
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
     name = "Gibson Assembly"
 
+
 class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     """The Build-a-Genome Assembly Method. Just another overlap-method"""
     name = "Build-a-Genome"
+
 
 class GoldenGateAssemblyMethod(AssemblyMethod):
     """The Golden Gate Assembly Method.
@@ -160,20 +167,72 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
     }
 
     def __init__(self, enzyme="BsaI", wildcard_basepair="A",  left_overhang="",
-                 right_overhang="", avoid_enzyme_in_segments=False,
-                 **properties):
+                 right_overhang="", refuse_sequences_with_enzyme_site=True,
+                 min_overhangs_gc=0, max_overhangs_gc=1,
+                 min_overhangs_differences=1,  **properties):
+        if enzyme not in self.enzymes_dict:
+            return ValueError("Enzyme should be one of %s" %
+                              self.enzymes_dict.keys())
         AssemblyMethod.__init__(self, **properties)
         self.enzyme = enzyme
-        enzyme_site = self.enzymes_dict[enzyme]
-        enzyme_site_plus_basepair = enzyme_site + wildcard_basepair
+        self.enzyme_site = self.enzymes_dict[enzyme]
+        enzyme_site_plus_basepair = self.enzyme_site + wildcard_basepair
         self.left_overhang = left_overhang + enzyme_site_plus_basepair
         self.right_overhang = right_overhang + enzyme_site_plus_basepair
         self.right_overhang_rev = reverse_complement(self.right_overhang)
-        if avoid_enzyme_in_segments:
-            self.segment_filters = list(self.segment_filters) + [
-                lambda seq: (lambda start, end:
-                                 (enzyme_site not in seq[start:end]))
-            ]
+        self.min_overhangs_gc = 0
+        self.max_overhangs_gc = 1.0
+        self.min_overhangs_differences = min_overhangs_differences
+
+        def get_overhang(sequence, cut_location):
+            overhang_start = min(max(0, cut_location - 2), len(sequence) - 4)
+            overhang_end = max(min(len(sequence), cut_location + 2), 4)
+            return sequence[overhang_start:overhang_end]
+
+        # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
+
+        if refuse_sequences_with_enzyme_site:
+            def no_site_in_sequence(sequence):
+                sites = find_enzyme_sites(sequence, enzyme_name=self.enzyme)
+                return sites == []
+            self.sequence_constraints.append(no_site_in_sequence)
+
+        # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
+
+        def location_has_valid_gc_content(sequence):
+            def f(cut_location):
+                gc = gc_content(get_overhang(sequence, cut_location))
+                return (self.min_overhangs_gc < gc < self.max_overhangs_gc)
+            return f
+        self.cut_location_constraints.append(location_has_valid_gc_content)
+
+        # CUTS SET CONSTRAINT: ALL OVERHANGS MUST BE COMPATIBLE
+
+        def overhangs_are_compatible(o1, o2):
+            diffs = len([a for a, b in zip(o1, o2) if a != b])
+            if diffs >= self.min_overhangs_differences:
+                rev_o2 = reverse_complement(o2)
+                rev_diffs = len([a for a, b in zip(o1, rev_o2) if a != b])
+                return rev_diffs >= self.min_overhangs_differences
+            return False
+
+        overhangs_are_compatible = memoize(overhangs_are_compatible)
+
+        def all_overhangs_are_compatible(sequence):
+            def f(cut_locations):
+                overhangs = sorted([
+                    get_overhang(sequence, cut_location)
+                    for cut_location in cut_locations
+                ])
+                return all([
+                    overhangs_are_compatible(o1, o2)
+                    for o1, o2 in itertools.combinations(overhangs, 2)
+                ])
+            return f
+
+        self.cuts_set_constraints.append(all_overhangs_are_compatible)
+
+
 
     def compute_fragment_sequence(self, sequence, segment):
         """Return the segment's sequence with flanking sequences for

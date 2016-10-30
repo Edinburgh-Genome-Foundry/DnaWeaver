@@ -212,19 +212,6 @@ class DnaSource:
 
         rec(self)
 
-        # Alternative solution using shortest paths to determine levels.
-        # doesnt work much better
-        # g = nx.Graph()
-        # g.add_edges_from(edges)
-        # result = nx.single_source_shortest_path(g, self)
-        # max_depth = max(len(path) for path in result.values())
-        # levels = {
-        #     i: [source for source, path in result.items() if len(path)==i]
-        #     for i in range(1, max_depth+1)
-        # }
-        # levels[0] = [self]
-        #
-
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
 
@@ -286,6 +273,16 @@ class DnaSourcesComparator(DnaSource):
 
 
 class DnaAssemblyStation(DnaSource):
+    """DNA Assembly stations assemble together DNA fragments using a specific
+    assembly method.
+
+    Parameters
+    ----------
+
+    assembly_method
+      An AssemblyMethod object specifying how the fragments are assembled,
+      what sequences can be assembled, what fragments can be used, etc.
+    """
 
     def __init__(self, name, assembly_method, dna_source, memoize=False,
                  **solve_kwargs):
@@ -296,6 +293,7 @@ class DnaAssemblyStation(DnaSource):
         self.extra_time = assembly_method.duration
         self.extra_cost = assembly_method.cost
         self.sequence_constraints = assembly_method.sequence_constraints
+        self.cuts_set_constraints = assembly_method.cuts_set_constraints
         self.memoize = memoize
         self.memoize_dict = {}
 
@@ -352,10 +350,14 @@ class DnaAssemblyStation(DnaSource):
         graph, best_cuts = optimize_cuts_with_graph_twostep(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
-            location_filters=[fl(sequence)
-                              for fl in assembly.location_filters],
-            segment_filters=[fl(sequence)
-                             for fl in assembly.segment_filters],
+            cut_location_constraints=[
+                cs(sequence)
+                for cs in assembly.cut_location_constraints
+            ],
+            segment_constraints=[
+                cs(sequence)
+                for cs in assembly.segment_constraints
+            ],
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
@@ -364,7 +366,11 @@ class DnaAssemblyStation(DnaSource):
             refine_resolution=refine_resolution,
             progress_bars=progress_bars,
             a_star_factor=a_star_factor,
-            path_size_limit=assembly.max_fragments
+            path_size_limit=assembly.max_fragments,
+            cuts_set_constraints=[
+                cs(sequence)
+                for cs in assembly.cuts_set_constraints
+            ]
         )
         assembly_plan = self.get_assembly_plan_from_cuts(
             sequence, best_cuts,
@@ -683,7 +689,7 @@ class PartsLibrary(DnaSource):
 
 
 class GoldenGatePartsLibrary(PartsLibrary):
-
+    """Library of parts for Golden Gate Assembly"""
     def __init__(self, name, parts_dict, flanks_length=7, memoize=False):
         self.name = name
         self.sequence_constraints = []
@@ -693,11 +699,21 @@ class GoldenGatePartsLibrary(PartsLibrary):
 
     def suggest_cuts(self, sequence):
         suggested_cuts = []
-        flank = self.flanks_length + 2  # + 2 is because the cut falls in the
-        # middle of the 4bp linker
+        # + 2 is because the cut falls in the middle of the 4bp linker:
+        flank = self.flanks_length + 2
         for part in self.parts_dict:
             segment = part[flank:-flank]
             i = sequence.find(segment)
             if i != -1:
                 suggested_cuts += [i, i + len(segment)]
         return sorted(list(set(suggested_cuts)))
+
+class FragmentAmplifier(DnaSource):
+    """PCR-Out a fragment from a vector to linearize it for use in subsequent
+    assemblies such as Gibson assembly."""
+
+    def __init__(self, fragment_dna_source,  primers_dna_source,
+                 primer_melting_temperature=50):
+        self.fragment_dna_source = fragment_dna_source
+        self.primers_dna_source = primers_dna_source
+        self.primer_melting_temperature = primer_melting_temperature

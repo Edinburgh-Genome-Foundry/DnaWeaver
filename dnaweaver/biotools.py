@@ -1,5 +1,6 @@
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
+from Bio import Restriction
 import numpy as np
 import subprocess
 import tempfile
@@ -95,7 +96,6 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
             remove_subject = False
     else:
         close_subject = False
-    print (fasta_name, subject)
 
     p = subprocess.Popen([
         "blastn", "-out", xml_name,
@@ -112,7 +112,6 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     ], close_fds=True, stderr=subprocess.PIPE)
     res, blast_err = p.communicate()
     p.wait()
-    print(("wwwww", xml_name))
     error = None
     for i in range(3):
         try:
@@ -218,20 +217,37 @@ def gc_content(sequence, window_size=None):
 
 
 def no_pattern_constraint(pattern, is_regex=False, with_revcomp=True):
+    """Return a function f(sequence)-> True/False whether the sequence contains
+    the pattern.
+
+    Can be useful for defining constraints in DNA assembly methods or
+    DNA providers.
+    """
     if is_regex:
         cm_pattern = re.compile(pattern)
-
-        def not_in_strand(sequence):
-            return (cm_pattern.search(sequence) is not None)
-    else:
-        def not_in_strand(sequence):
-            return pattern not in sequence
-    if with_revcomp:
-        def not_in_both_strands(sequence):
-            if not_in_strand(sequence):
-                if not_in_strand(reverse_complement(sequence)):
+        def not_in_sequence(sequence):
+            if (cm_pattern.search(sequence) is not None):
+                if with_revcomp:
+                    sequence_rev = reverse_complement(sequence)
+                    return (cm_pattern.search(sequence_rev) is not None)
+                else:
                     return True
-            return False
-        return not_in_both_strands
+            else:
+                return False
     else:
-        return not_in_strand
+        pattern_rev = reverse_complement(pattern)
+        def not_in_sequence(sequence):
+            if pattern not in sequence:
+                if with_revcomp:
+                    return (pattern_rev not in sequence)
+                else:
+                    return True
+            else:
+                return False
+
+    return not_in_sequence
+
+def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
+    padding = padding*padding_nuc
+    sequence = Seq(padding + sequence + padding)
+    return Restriction.__dict__[enzyme_name].search(sequence)
