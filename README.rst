@@ -41,38 +41,35 @@ Here is the Python code to solve the problem with DnaWeaver:
 ::
     from dnaweaver import *
 
-    sequence = random_dna_sequence(10000, seed=123)
-
     cheap_dna_offer = ExternalDnaOffer(
         name="CheapDNA.com",
         sequence_constraints=[
-            lambda seq: "GGTCTC" not in seq,
-            lambda seq: "GGTCTC" not in reverse_complement(seq),
+            no_pattern_constraint("GGTCTC"),
             lambda seq: len(seq) < 4000
         ],
-        price_function=lambda seq: 0.10 * len(seq)
+        price_function=lambda seq: 0.10 * len(seq),
     )
 
     deluxe_dna_offer = ExternalDnaOffer(
         name="DeluxeDNA.com",
         sequence_constraints=[lambda seq: len(seq) < 3000],
-        price_function=lambda seq: 0.20 * len(seq),
+        price_function=(lambda seq: 0.20 * len(seq)),
     )
 
     assembly_station = DnaAssemblyStation(
         name="Gibson Assembly Station",
         assembly_method=GibsonAssemblyMethod(homology_arm_length=20,
-                                             min_segment_length=2000,
+                                             min_segment_length=500,
                                              max_segment_length=4000),
         dna_source=DnaSourcesComparator([cheap_dna_offer, deluxe_dna_offer]),
-        nucleotide_resolution=5,
+        nucleotide_resolution=10,
         refine_resolution=False
     )
 
-    # optimize with respect to price
-    quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
+    sequence = random_dna_sequence(10000, seed=123)
+    quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
 
-    print (quote.ordering_plan.summary())
+    print (quote.assembly_step_summary())
 
 Result:
 ::

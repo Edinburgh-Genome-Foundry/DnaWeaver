@@ -27,8 +27,6 @@ number of segments to order fall from 7 to just 3.
 """
 from dnaweaver import *
 
-sequence = random_dna_sequence(10000, seed=123)
-
 cheap_dna_offer = ExternalDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[
@@ -54,22 +52,22 @@ assembly_station = DnaAssemblyStation(
     refine_resolution=False
 )
 
-# optimize with respect to price
+
+print("Now finding a price-optimal assembly strategy for a 10kb sequence")
+sequence = random_dna_sequence(10000, seed=123)
+import time
+t0 = time.time()
 quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
-
 print (quote.assembly_step_summary())
-
+print("Finished in %.02fs" % (time.time()-t0))
 
 # This will print:
 # ----------------
 #
-# BsaI site found at positions [(4435, 4441), (5307, 5313)]
 # Ordering plan:
-#   (0, 449) CheapDNA.com 48.90$
-#   (449, 4369) CheapDNA.com 400.00$
-#   (4369, 4476) DeluxeDNA.com 37.40$
-#   (4476, 5249) CheapDNA.com 85.30$
-#   (5249, 5350) DeluxeDNA.com 36.20$
-#   (5350, 6040) CheapDNA.com 77.00$
-#   (6040, 10000) CheapDNA.com 400.00$
-#   Total:1084$
+#   (0, 500): From CheapDNA.com, price 52.00
+#   (500, 4420): From CheapDNA.com, price 396.00
+#   (4420, 5330): From DeluxeDNA.com, price 190.00
+#   (5330, 6030): From CheapDNA.com, price 74.00
+#   (6030, 10000): From CheapDNA.com, price 399.00
+#   Price:1111.00

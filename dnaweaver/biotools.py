@@ -117,6 +117,15 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         try:
             with open(xml_name, "r") as f:
                 res = list(NCBIXML.parse(f))
+                os.fdopen(xml_file, 'w').close()
+                os.fdopen(fasta_file, 'w').close()
+                os.remove(xml_name)
+                os.remove(fasta_name)
+
+                if close_subject:
+                    open(subject, 'w').close()
+                    if remove_subject:
+                        os.remove(subject)
                 if len(res) == 1:
                     return res[0]
                 else:
@@ -128,17 +137,7 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     else:
         raise ValueError("Problem reading the blast record: " + str(error))
 
-    os.fdopen(xml_file, 'w').close()
-    os.fdopen(fasta_file, 'w').close()
-    os.remove(xml_name)
-    os.remove(fasta_name)
 
-    if close_subject:
-        open(subject, 'w').close()
-        if remove_subject:
-            os.remove(subject)
-
-    return blast_record
 
 
 def largest_common_substring(query, target, max_overhang):

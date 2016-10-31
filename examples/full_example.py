@@ -9,6 +9,7 @@ from dnaweaver.biotools import NoPatternConstraint, random_dna_sequence
 import numpy
 
 
+
 # OLIGO COMPANIES
 
 cheap_dna_com = ExternalDnaOffer(
@@ -117,9 +118,8 @@ chunks_assembly_station = DnaAssemblyStation(
     dna_source=blocks_assembly_comparator,
     nucleotide_resolution=2000,
     refine_resolution=False,
-    progress_bars=True
+    progress_bars=False
 )
-
 
 numpy.random.seed(1234)
 sequence = random_dna_sequence(50000)

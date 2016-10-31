@@ -407,7 +407,6 @@ def optimize_cuts_with_graph(sequence_length, segment_score_function,
         except (KeyError, nx.NetworkXNoPath):
             raise NoSolutionFoundError("Could not find a solution in "
                                        "optimize_cuts_with_graph")
-
     return graph, best_cuts
 
 
