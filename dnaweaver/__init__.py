@@ -10,16 +10,6 @@ from .DnaSource import (ExternalDnaOffer,
 from .AssemblyMethod import (GibsonAssemblyMethod,
                              BuildAGenomeAssemblyMethod,
                              GoldenGateAssemblyMethod)
-from .biotools import (random_dna_sequence, reverse_complement,
-                       no_pattern_constraint)
-
-__all__ = ("ExternalDnaOffer",
-           "DnaSourcesComparator",
-           "DnaAssemblyStation",
-           "BuildAGenomeAssemblyMethod",
-           "GibsonAssemblyMethod",
-           "GoldenGateAssemblyMethod",
-           "random_dna_sequence",
-           "reverse_complement",
-           "no_pattern_constraint",
-           )
+from .biotools import (random_dna_sequence, reverse_complement)
+from .constraints import (NoPatternConstraint, PerBasepairPricing,
+                          SequenceLengthConstraint, GcContentConstraint)

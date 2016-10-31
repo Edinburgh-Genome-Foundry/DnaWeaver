@@ -215,38 +215,6 @@ def gc_content(sequence, window_size=None):
         b = np.hstack([[0], cs[:-window_size]])
         return 1.0 * (a - b) / window_size
 
-
-def no_pattern_constraint(pattern, is_regex=False, with_revcomp=True):
-    """Return a function f(sequence)-> True/False whether the sequence contains
-    the pattern.
-
-    Can be useful for defining constraints in DNA assembly methods or
-    DNA providers.
-    """
-    if is_regex:
-        cm_pattern = re.compile(pattern)
-        def not_in_sequence(sequence):
-            if (cm_pattern.search(sequence) is not None):
-                if with_revcomp:
-                    sequence_rev = reverse_complement(sequence)
-                    return (cm_pattern.search(sequence_rev) is not None)
-                else:
-                    return True
-            else:
-                return False
-    else:
-        pattern_rev = reverse_complement(pattern)
-        def not_in_sequence(sequence):
-            if pattern not in sequence:
-                if with_revcomp:
-                    return (pattern_rev not in sequence)
-                else:
-                    return True
-            else:
-                return False
-
-    return not_in_sequence
-
 def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
     padding = padding*padding_nuc
     sequence = Seq(padding + sequence + padding)

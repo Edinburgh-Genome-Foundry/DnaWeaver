@@ -6,7 +6,7 @@ import tempfile
 import os
 try:
     from StringIO import StringIO
-except ImportError: # python 3
+except ImportError:  # python 3
     from io import StringIO
 
 try:
@@ -33,6 +33,9 @@ class DnaQuote:
     -----------
 
     source
+      The DnaSource which issued the quote
+
+
 
     sequence
 

@@ -5,7 +5,7 @@ from dnaweaver import (ExternalDnaOffer,
                        GoldenGateAssemblyMethod,
                        BuildAGenomeAssemblyMethod,
                        DnaSourcesComparator)
-from dnaweaver.biotools import no_pattern_constraint, random_dna_sequence
+from dnaweaver.biotools import NoPatternConstraint, random_dna_sequence
 import numpy
 
 
@@ -13,7 +13,7 @@ import numpy
 
 cheap_dna_com = ExternalDnaOffer(
     name="CheapDNA.com",
-    sequence_constraints=[no_pattern_constraint("GGTCTC"),
+    sequence_constraints=[NoPatternConstraint("GGTCTC"),
                           lambda seq: len(seq) < 200],
     price_function=lambda sequence: 0.10 * len(sequence),
     lead_time=10,
@@ -71,21 +71,21 @@ blocks_sources_comparator = DnaSourcesComparator(
 
 
 blocks_assembly_comparator = DnaSourcesComparator([
-    # DnaAssemblyStation(
-    #     name="Blocks Assembly (Gibson)",
-    #     assembly_method=GibsonAssemblyMethod(
-    #         homology_arm_length=40,
-    #         min_segment_length=2000,
-    #         max_segment_length=4000,
-    #         duration=8,
-    #         cost=10
-    #     ),
-    #     dna_source=blocks_sources_comparator,
-    #     nucleotide_resolution=300,
-    #     refine_resolution=False,
-    #     memoize=True,
-    #     progress_bars=True
-    # ),
+    DnaAssemblyStation(
+        name="Blocks Assembly (Gibson)",
+        assembly_method=GibsonAssemblyMethod(
+            homology_arm_length=40,
+            min_segment_length=2000,
+            max_segment_length=4000,
+            duration=8,
+            cost=10
+        ),
+        dna_source=blocks_sources_comparator,
+        nucleotide_resolution=300,
+        refine_resolution=False,
+        memoize=True,
+        progress_bars=True
+    ),
     DnaAssemblyStation(
         name="Blocks Assembly (Golden Gate)",
         assembly_method=GoldenGateAssemblyMethod(

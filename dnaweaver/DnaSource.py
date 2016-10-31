@@ -16,6 +16,8 @@ from .optimization import (optimize_cuts_with_graph_twostep,
                            NoSolutionFoundError)
 from .biotools import (blast_sequence, largest_common_substring,
                        reverse_complement)
+from .constraints import SequenceLengthConstraint
+from .tools import functions_list_to_string
 from .DnaQuote import DnaQuote
 
 
@@ -271,6 +273,13 @@ class DnaSourcesComparator(DnaSource):
         else:
             return min(accepted_quotes, key=lambda quote: quote.price)
 
+    def to_dict(self):
+        constraints = functions_list_to_string(self.sequence_constraints)
+        return dict(
+            dna_sources=[source.name for source in self.dna_sources],
+            sequences_constraints=constraints
+        )
+
 
 class DnaAssemblyStation(DnaSource):
     """DNA Assembly stations assemble together DNA fragments using a specific
@@ -424,6 +433,14 @@ class DnaAssemblyStation(DnaSource):
             self.assembly_plan = None
         return quote
 
+    def to_dict(self):
+        return dict(
+            name=self.name,
+            assembly_method=self.assembly_method.to_dict(),
+            dna_source=self.dna_source.name,
+            solve_kwargs=self.solve_kwargs,
+        )
+
 
 class ExternalDnaOffer(DnaSource):
 
@@ -470,6 +487,14 @@ class ExternalDnaOffer(DnaSource):
         price = self.price_function(sequence)
         return DnaQuote(self, sequence, price=price, lead_time=lead_time,
                         accepted=price < max_price)
+
+    def to_dict(self):
+        constraints = functions_list_to_string(self.sequence_constraints)
+        return dict(
+            name=self.name,
+            price_function=callable_to_string(self.price_function),
+            sequences_constraints=constraints
+        )
 
 
 class PcrOutStation(DnaSource):
@@ -526,8 +551,8 @@ class PcrOutStation(DnaSource):
         self.max_amplicon_length = max_amplicon_length
         self.blast_word_size = blast_word_size
         if max_amplicon_length is not None:
-            sequence_constraints = ([lambda seq: len(seq) <
-                                     max_amplicon_length] +
+            length_constraint = SequenceLengthConstraint(max_amplicon_length)
+            sequence_constraints = ([length_constraint] +
                                     list(sequence_constraints))
         self.sequence_constraints = sequence_constraints
         self.memoize = memoize
@@ -647,6 +672,22 @@ class PcrOutStation(DnaSource):
             for subject, (start, end) in self.get_hits(sequence)
         ]
 
+    def to_dict(self):
+        constraints = functions_list_to_string(self.sequence_constraints)
+        return dict(
+            name=self.name,
+            blast_database=self.blast_database,
+            primers_dna_source=self.primers_dna_source,
+            pcr_homology_length=self.pcr_homology_length
+            max_overhang_length=self.max_overhang_length
+            extra_time=self.extra_time
+            extra_cost=self.extra_cost
+            max_amplicon_length=self.max_amplicon_length
+            blast_word_size=self.blast_word_size,
+            sequence_constraints=constraints,
+            sequences="%d sequences" % len(self.sequences)
+        )
+
 
 class PartsLibrary(DnaSource):
     """Class for collections of ready-to-assemble parts.
@@ -687,9 +728,13 @@ class PartsLibrary(DnaSource):
         return DnaQuote(self, sequence, accepted=False,
                         message="Sequence not in the library")
 
+    def to_dict(self):
+        pass
+
 
 class GoldenGatePartsLibrary(PartsLibrary):
     """Library of parts for Golden Gate Assembly"""
+
     def __init__(self, name, parts_dict, flanks_length=7, memoize=False):
         self.name = name
         self.sequence_constraints = []
@@ -707,6 +752,7 @@ class GoldenGatePartsLibrary(PartsLibrary):
             if i != -1:
                 suggested_cuts += [i, i + len(segment)]
         return sorted(list(set(suggested_cuts)))
+
 
 class FragmentAmplifier(DnaSource):
     """PCR-Out a fragment from a vector to linearize it for use in subsequent
