@@ -168,8 +168,8 @@ class DnaQuote:
             ], [])
         return result
 
-    def tree_as_JSON(self):
-        """Return a JSON version of the nested tree.
+    def assembly_tree_as_dict(self):
+        """Return a JSON-like version of the nested tree.
 
         Returns
         -------
@@ -188,6 +188,13 @@ class DnaQuote:
                            }
          }
         """
+        assembly_plan = []
+        if self.assembly_plan is not None:
+            for (segment, quote) in self.assembly_plan.items():
+                quote_as_dict = quote.assembly_tree_as_dict()
+                quote_as_dict["segment_start"] = segment[0]
+                quote_as_dict["segment_end"] = segment[1]
+                assembly_plan.append(quote_as_dict)
         return {
             "id": self.id,
             "source": self.source.name,
@@ -196,10 +203,7 @@ class DnaQuote:
             "sequence": self.sequence,
             "message": self.message,
             "metadata": self.metadata,
-            "assembly_plan": {} if self.assembly_plan is None else {
-                                 segment: quote.tree_as_JSON()
-                                 for (segment, quote) in self.assembly_plan
-                             }
+            "assembly_plan": assembly_plan
         }
 
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from copy import copy
 from collections import defaultdict
 
@@ -217,6 +219,44 @@ class DnaSource:
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
 
+    def compute_dict_supply_graph(self):
+        sources = {}
+
+        def rec(source, depth=0):
+
+            if source in sources:
+                return
+            sources[source.name] = {"depth": depth,
+                                    "description": source.dict_description()}
+
+            providers = sources[source.name]["providers"] = []
+            if hasattr(source, "dna_source"):
+                providers.append(source.dna_source.name)
+                rec(source.dna_source, depth + 1)
+            elif hasattr(source, "primers_dna_source"):
+                providers.append(source.primers_dna_source.name)
+                rec(source.primers_dna_source, depth + 1)
+            if hasattr(source, "dna_sources"):
+                for other in source.dna_sources:
+                    providers.append(other.name)
+                    rec(other, depth + 1)
+        rec(self)
+        return sources
+
+    def dict_description(self):
+        result = {
+            "name": self.name,
+            "category": self.category,
+            "class": self.class_description,
+            "_report_color": self.report_color,
+            "_report_symbol": self.report_symbol
+        }
+        result.update(self.additional_dict_description())
+        return result
+
+    def additional_dict_description(self):
+        return {}
+
 
 class DnaSourcesComparator(DnaSource):
     """Special source that compares quotes from other DnaSources.
@@ -235,14 +275,19 @@ class DnaSourcesComparator(DnaSource):
       Whether the quotes should be kept in memory to avoid re-computing the
       same quote several times. Can accelerate computations but is
       RAM-expensive.
-
     """
+    class_description = "DNA sources comparator"
+    category = "comparator"
+    report_symbol = u""
+    report_color = "#000000"
 
-    def __init__(self, dna_sources, memoize=False):
+    def __init__(self, dna_sources, memoize=False, sequence_constraints=(),
+                 name="comparator"):
         self.dna_sources = dna_sources
-        self.sequence_constraints = ()
         self.memoize = memoize
+        self.sequence_constraints = sequence_constraints
         self.memoize_dict = {}
+        self.name = name
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -273,12 +318,10 @@ class DnaSourcesComparator(DnaSource):
         else:
             return min(accepted_quotes, key=lambda quote: quote.price)
 
-    def to_dict(self):
-        constraints = functions_list_to_string(self.sequence_constraints)
-        return dict(
-            dna_sources=[source.name for source in self.dna_sources],
-            sequences_constraints=constraints
-        )
+    def additional_dict_description(self):
+        return {
+            "dna sources": [source.name for source in self.dna_sources],
+        }
 
 
 class DnaAssemblyStation(DnaSource):
@@ -288,10 +331,20 @@ class DnaAssemblyStation(DnaSource):
     Parameters
     ----------
 
+    name
+      Name of the station (appears on reports)
+
     assembly_method
       An AssemblyMethod object specifying how the fragments are assembled,
       what sequences can be assembled, what fragments can be used, etc.
+
+    dna_source
+
     """
+    class_description = "DNA assembly station"
+    category = "assembly"
+    report_symbol = u""
+    report_color = "#eeeeff"
 
     def __init__(self, name, assembly_method, dna_source, memoize=False,
                  **solve_kwargs):
@@ -435,16 +488,25 @@ class DnaAssemblyStation(DnaSource):
             self.assembly_plan = None
         return quote
 
-    def to_dict(self):
-        return dict(
-            name=self.name,
-            assembly_method=self.assembly_method.to_dict(),
-            dna_source=self.dna_source.name,
-            solve_kwargs=self.solve_kwargs,
-        )
+    def additional_dict_description(self):
+        result = {
+            "dna source": self.dna_source.name,
+            "solver parameters": self.solve_kwargs,
+        }
+        result.update({
+            ("assembly method %s" % k): v
+            for k, v in self.assembly_method.dict_description().items()
+        })
+        return result
 
 
 class ExternalDnaOffer(DnaSource):
+    """External/Commercial source of DNA"""
+
+    class_description = "External DNA offer"
+    category = "external"
+    report_symbol = u""
+    report_color = "#ffeeee"
 
     def __init__(self, name, sequence_constraints, price_function,
                  lead_time=None, memoize=False):
@@ -490,13 +552,12 @@ class ExternalDnaOffer(DnaSource):
         return DnaQuote(self, sequence, price=price, lead_time=lead_time,
                         accepted=price < max_price)
 
-    def to_dict(self):
+    def additional_dict_description(self):
         constraints = functions_list_to_string(self.sequence_constraints)
-        return dict(
-            name=self.name,
-            price_function=callable_to_string(self.price_function),
-            sequences_constraints=constraints
-        )
+        return {
+            "price function": functions_list_to_string([self.price_function]),
+            "sequence constraints": constraints
+        }
 
 
 class PcrOutStation(DnaSource):
@@ -537,6 +598,10 @@ class PcrOutStation(DnaSource):
     sequence_constraints
 
     """
+    class_description = "PCR-out station"
+    category = "reuse"
+    report_symbol = u""
+    report_color = "#eeffee"
 
     def __init__(self, name, primers_dna_source, blast_database=None,
                  sequences=None, pcr_homology_length=25,
@@ -674,21 +739,19 @@ class PcrOutStation(DnaSource):
             for subject, (start, end) in self.get_hits(sequence)
         ]
 
-    def to_dict(self):
+    def additional_dict_description(self):
         constraints = functions_list_to_string(self.sequence_constraints)
-        return dict(
-            name=self.name,
-            blast_database=self.blast_database,
-            primers_dna_source=self.primers_dna_source,
-            pcr_homology_length=self.pcr_homology_length
-            max_overhang_length=self.max_overhang_length
-            extra_time=self.extra_time
-            extra_cost=self.extra_cost
-            max_amplicon_length=self.max_amplicon_length
-            blast_word_size=self.blast_word_size,
-            sequence_constraints=constraints,
-            sequences="%d sequences" % len(self.sequences)
-        )
+        return {
+            "BLAST database": self.blast_database,
+            "primers dna source": self.primers_dna_source.name,
+            "pcr homology length": self.pcr_homology_length,
+            "max overhang length": self.max_overhang_length,
+            "extra time": self.extra_time,
+            "extra cost": self.extra_cost,
+            "max amplicon length": self.max_amplicon_length,
+            "BLAST word size": self.blast_word_size,
+            "sequence constraints": constraints,
+        }
 
 
 class PartsLibrary(DnaSource):
@@ -698,10 +761,15 @@ class PartsLibrary(DnaSource):
     This class is admitedly under-developed and could be expanded-subclassed
     to accomodate with the different kinds of registries etc.
     """
+    class_description = "Parts Library"
+    category = "reuse"
+    report_symbol = u""
+    report_color = "#feeefe"
 
-    def __init__(self, name, parts_dict, memoize=False):
+    def __init__(self, name, parts_dict, memoize=False,
+                 sequence_constraints=()):
         self.name = name
-        self.sequence_constraints = []
+        self.sequence_constraints = sequence_constraints
         self.parts_dict = parts_dict
         self.memoize = False
 
@@ -730,16 +798,20 @@ class PartsLibrary(DnaSource):
         return DnaQuote(self, sequence, accepted=False,
                         message="Sequence not in the library")
 
-    def to_dict(self):
-        pass
+    def additional_dict_description(self):
+        return {
+            "flanks length": self.flanks_length
+        }
 
 
 class GoldenGatePartsLibrary(PartsLibrary):
     """Library of parts for Golden Gate Assembly"""
+    class_description = "Golden Gate parts library"
 
-    def __init__(self, name, parts_dict, flanks_length=7, memoize=False):
+    def __init__(self, name, parts_dict, flanks_length=7, memoize=False,
+                 sequence_constraints=()):
         self.name = name
-        self.sequence_constraints = []
+        self.sequence_constraints = sequence_constraints
         self.parts_dict = parts_dict
         self.flanks_length = flanks_length
         self.memoize = False
@@ -755,13 +827,29 @@ class GoldenGatePartsLibrary(PartsLibrary):
                 suggested_cuts += [i, i + len(segment)]
         return sorted(list(set(suggested_cuts)))
 
+    def additional_dict_description(self):
+        return {
+            "class": "Golden Gate parts library",
+            "category": "library",
+            "flanks length": self.flanks_length
+        }
 
-class FragmentAmplifier(DnaSource):
+
+class FragmentAmplificationStation(DnaSource):
     """PCR-Out a fragment from a vector to linearize it for use in subsequent
     assemblies such as Gibson assembly."""
+    report_symbol = u""
+    report_color="#eefefe"
 
     def __init__(self, fragment_dna_source,  primers_dna_source,
-                 primer_melting_temperature=50):
+                 primer_melting_temperature=50, sequence_constraints=()):
         self.fragment_dna_source = fragment_dna_source
         self.primers_dna_source = primers_dna_source
         self.primer_melting_temperature = primer_melting_temperature
+        self.sequence_constraints = sequence_constraints
+
+    def additional_dict_description(self):
+        return {
+            "primers DNA source": self.primers_dna_source.name,
+            "primers melting temp.": self.primer_melting_temperature
+        }

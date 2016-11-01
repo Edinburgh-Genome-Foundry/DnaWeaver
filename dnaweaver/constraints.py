@@ -72,9 +72,9 @@ class GcContentConstraint:
 
     def __str__(self):
         left_side = ("" if (self.min_gc == 0) else
-                     ("%.01f\% < " % (self.min_gc*100)))
+                     ("%.01f" % (self.min_gc*100) + "% < "))
         right_side =("" if (self.max_gc == 1) else
-                     (" < %.01f\%" % (self.max_gc*100)))
+                     (" < %.01f" % (self.max_gc*100) + "%"))
         return left_side + "GC" + right_side
 
 class PerBasepairPricing:

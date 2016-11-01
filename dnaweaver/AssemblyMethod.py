@@ -52,11 +52,11 @@ class AssemblyMethod:
     """
     name = "None"
 
-    def __init__(self, duration=0, cost=0, cut_location_constraints=(),
+    def __init__(self, duration=0, cost=0, reference=None,
+                 cut_location_constraints=(),
                  segment_constraints=(), min_segment_length=None,
                  max_segment_length=None, force_cuts=(), suggest_cuts=(),
-                 max_fragments=None,
-                 sequence_constraints=(),
+                 max_fragments=None, sequence_constraints=(),
                  cuts_set_constraints=()):
         self.duration = duration
         self.cost = cost
@@ -67,6 +67,7 @@ class AssemblyMethod:
         self.sequence_constraints = list(sequence_constraints)
         self.max_fragments = max_fragments
         self.cuts_set_constraints = list(cuts_set_constraints)
+        self.reference = reference
 
         if callable(suggest_cuts):
             self.suggest_cuts = suggest_cuts
@@ -79,6 +80,22 @@ class AssemblyMethod:
         else:
             # means the forced cuts are a constant
             self.force_cuts = lambda *a: force_cuts
+
+    def dict_description(self):
+        result = {
+            "name": self.name,
+            "minimum segment length": self.min_segment_length,
+            "maximum segment length": self.max_segment_length,
+            "maximal number of fragments": self.max_fragments,
+            "reference": self.reference,
+            "duration": self.duration,
+            "cost": self.cost
+        }
+        result.update(self.additional_dict_description())
+        return result
+
+    def additional_dict_description(self):
+        return {}
 
 
 class OverlapingAssemblyMethod(AssemblyMethod):
@@ -121,6 +138,8 @@ class OverlapingAssemblyMethod(AssemblyMethod):
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
     name = "Gibson Assembly"
+
+
 
 
 class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
@@ -183,6 +202,8 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         self.min_overhangs_gc = 0
         self.max_overhangs_gc = 1.0
         self.min_overhangs_differences = min_overhangs_differences
+        self.refuse_sequences_with_enzyme_site = \
+            refuse_sequences_with_enzyme_site
 
         def get_overhang(sequence, cut_location):
             overhang_start = min(max(0, cut_location - 2), len(sequence) - 4)
@@ -252,3 +273,16 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         start, end = segment
         segment = sequence[max(0, start - 2): min(L, end + 2)]
         return self.left_overhang + segment + self.right_overhang_rev
+
+    def additional_dict_description(self):
+        return {
+            "enzyme": self.enzyme,
+            "left overhang": self.left_overhang,
+            "right overhang": self.right_overhang,
+            "refuse sequences with enzyme site":
+                str(self.refuse_sequences_with_enzyme_site),
+            "overhangs gc content": "%d-%d" % (100*self.min_overhangs_gc,
+                                               100*self.max_overhangs_gc)
+                                     +"%",
+            "overhangs differences": self.min_overhangs_differences
+        }
