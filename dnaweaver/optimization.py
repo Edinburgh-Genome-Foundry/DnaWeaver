@@ -1,24 +1,23 @@
 """Optimization techniques"""
 
 import numpy as np
-from copy import deepcopy
 from tqdm import tqdm
 import itertools as itt
 import networkx as nx
-from networkx.algorithms.shortest_paths import bidirectional_dijkstra
 from heapq import heappush, heappop
 from itertools import count
 
 
 class NoSolutionFoundError(Exception):
-    """Error thrown when it appears the optimization problem has
-    no solution."""
+    """Error thrown when an optimization problem seems to have no solution."""
     pass
 
 
 def astar_path(G, source, target, heuristic=None, weight=None):
-    """Return a list of nodes in a shortest path between source and target
-    using the A* ("A-star") algorithm.
+    """Return a list of nodes, A* shortest path between source and target.
+
+    Uses the A* ("A-star") algorithm.
+
     There may be more than one shortest path.  This returns only one.
 
     This function is taken from the Networkx project, with modifications for
@@ -31,6 +30,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
 
     Parameters
     ----------
+
     G : NetworkX graph
     source : node
        Starting node for path
@@ -45,6 +45,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
 
     Raises
     ------
+
     NetworkXNoPath
         If no path exists between source and target.
 
@@ -115,6 +116,7 @@ def astar_path(G, source, target, heuristic=None, weight=None):
 
     raise nx.NetworkXNoPath("Node %s not reachable from %s" % (source, target))
 
+
 def shortest_compatible_path(graph, start, end, nodes_constraints=(),
                              compatibility_search_cutoff=100):
 
@@ -122,14 +124,13 @@ def shortest_compatible_path(graph, start, end, nodes_constraints=(),
         return nx.dijkstra_path(graph, start, end)
     shortest_paths = nx.shortest_simple_paths(graph, start, end)
     for i in range(compatibility_search_cutoff):
-        print("YEAH")
         shortest_path = next(shortest_paths)
         if all([nodes_constraint(shortest_path)
                 for nodes_constraint in nodes_constraints]):
             return shortest_path
     return nx.NetworkXNoPath("Could not find a solution verifying the cuts"
-                             " set constraints, after %d tries." % cutoffs)
-
+                             " set constraints, after %d tries." %
+                             compatibility_search_cutoff)
 
 
 def shortest_compatible_path_with_penalty(graph, start, end, penalty=0,

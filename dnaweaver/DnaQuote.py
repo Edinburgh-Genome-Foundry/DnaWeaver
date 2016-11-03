@@ -1,4 +1,5 @@
-"""Classes to represent assembly strategies in DnaWeaver"""
+"""Classes to represent assembly strategies in DnaWeaver."""
+
 import itertools as itt
 from copy import deepcopy
 from collections import defaultdict
@@ -9,19 +10,11 @@ try:
 except ImportError:  # python 3
     from io import StringIO
 
-try:
-    import pandas as pd
-    PANDAS_AVAILABLE = True
-except:
-    PANDAS_AVAILABLE = False
-
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio.Alphabet import DNAAlphabet
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
-
-from .optimization import NoSolutionFoundError
 from .biotools import blast_sequence
 
 

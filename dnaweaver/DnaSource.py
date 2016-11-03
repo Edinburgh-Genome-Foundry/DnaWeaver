@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from copy import copy
 from collections import defaultdict
 
 import numpy as np
-import networkx as nx
 
 # Attempt import of optional module DNA Chisel
 try:
