@@ -141,8 +141,8 @@ class DnaQuote:
         for al in alignments:
             hit = max(al.hsps, key=lambda hit: hit.align_length)
             final_location = sorted((hit.query_start, hit.query_end))
-            quotes_dict[al.hit_def].final_location = final_location
             matching_segment = sorted((hit.sbjct_start, hit.sbjct_end))
+            quotes_dict[al.hit_def].final_location = final_location
             quotes_dict[al.hit_def].matching_segment = matching_segment
         os.remove(temp_fasta)
 
@@ -161,13 +161,12 @@ class DnaQuote:
             ], [])
         return result
 
-    def assembly_tree_as_dict(self):
+    def assembly_tree_as_dict(self, with_sources=True):
         """Return a JSON-like version of the nested tree.
 
         Returns
         -------
 
-        JSON
           {
           "id": self.id,
           "source": self.source.name,
@@ -181,14 +180,21 @@ class DnaQuote:
                            }
          }
         """
+        final_location = (self.final_location if
+                          hasattr(self, "final_location")
+                          else None)
+        matching_segment = (self.matching_segment if
+                            hasattr(self, "matching_segment")
+                            else None)
+
         assembly_plan = []
         if self.assembly_plan is not None:
             for (segment, quote) in self.assembly_plan.items():
-                quote_as_dict = quote.assembly_tree_as_dict()
+                quote_as_dict = quote.assembly_tree_as_dict(with_sources=False)
                 quote_as_dict["segment_start"] = segment[0]
                 quote_as_dict["segment_end"] = segment[1]
                 assembly_plan.append(quote_as_dict)
-        return {
+        tree = {
             "id": self.id,
             "source": self.source.name,
             "price": self.price,
@@ -196,12 +202,25 @@ class DnaQuote:
             "sequence": self.sequence,
             "message": self.message,
             "metadata": self.metadata,
-            "assembly_plan": assembly_plan
+            "assembly_plan": assembly_plan,
+            "final_location": final_location,
+            "matching_segment": matching_segment
         }
 
+        if with_sources:
+            return tree, self.source.dict_supply_graph()
+        else:
+            return tree
 
 
     def propagate_deadline(self, deadline):
+        """Add a `deadline` attribute to the quote and propagate it to
+        the quote's children by taking into account the duration of operations
+
+        For instance if "self" has a duration of 5 and receives a deadline
+        of 8, the quotes that "self" depends on will receive a deadline of
+        8-5=3.
+        """
         self.deadline = deadline
         children_deadline = deadline - self.step_duration
         if self.assembly_plan is not None:
@@ -293,14 +312,16 @@ class DnaQuote:
 
         if self.assembly_plan is not None:
             features = [
-                SeqFeature( FeatureLocation(segment[0], segment[1], 1),
-                            type="Fragment",
-                            qualifiers={
-                                "name": quote.id,
-                                "Source": quote.source,
-                                "price": quote.price,
-                                "lead_time": quote.lead_time
-                            })
+                SeqFeature(
+                    FeatureLocation(segment[0], segment[1], 1),
+                    type="Feature",
+                    qualifiers={
+                        "name": quote.id,
+                        "source": quote.source,
+                        "price": quote.price,
+                        "lead_time": quote.lead_time
+                    }
+                )
                 for segment, quote in self.assembly_plan.items()
             ]
             record.features = features + record.features

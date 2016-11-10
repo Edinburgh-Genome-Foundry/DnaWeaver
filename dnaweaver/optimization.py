@@ -223,7 +223,7 @@ def shortest_compatible_path_with_size_limit(graph, start, end, size_limit,
             nodes_constraints=nodes_constraints,
             compatibility_search_cutoff=100
         )
-        if path == False:  # means no solution found
+        if path is False:  # means no solution found
             return False
         return path, len(path) - 1
 

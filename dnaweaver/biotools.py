@@ -6,7 +6,6 @@ import subprocess
 import tempfile
 import time
 import os
-import re
 
 
 def complement(dna_sequence):

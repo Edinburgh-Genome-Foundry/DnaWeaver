@@ -1,8 +1,8 @@
 from dnaweaver import (ExternalDnaOffer,
-                        DnaAssemblyStation,
-                        GibsonAssemblyMethod,
-                        BuildAGenomeAssemblyMethod,
-                        DnaSourcesComparator)
+                       DnaAssemblyStation,
+                       GibsonAssemblyMethod,
+                       BuildAGenomeAssemblyMethod,
+                       DnaSourcesComparator)
 from dnachisel import random_dna_sequence
 import dnachisel.constraints as cst
 import numpy

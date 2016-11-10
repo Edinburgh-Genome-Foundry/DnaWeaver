@@ -217,15 +217,15 @@ class DnaSource:
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
 
-    def compute_dict_supply_graph(self):
+    def dict_supply_graph(self):
         sources = {}
 
         def rec(source, depth=0):
 
             if source in sources:
                 return
-            sources[source.name] = {"depth": depth,
-                                    "description": source.dict_description()}
+            sources[source.name] = source.dict_description()
+            sources[source.name]["_depth"] = depth
 
             providers = sources[source.name]["providers"] = []
             if hasattr(source, "dna_source"):
@@ -244,7 +244,7 @@ class DnaSource:
     def dict_description(self):
         result = {
             "name": self.name,
-            "category": self.category,
+            "operation_type": self.operation_type,
             "class": self.class_description,
             "_report_color": self.report_color,
             "_report_symbol": self.report_symbol
@@ -275,7 +275,7 @@ class DnaSourcesComparator(DnaSource):
       RAM-expensive.
     """
     class_description = "DNA sources comparator"
-    category = "comparator"
+    operation_type = "comparison"
     report_symbol = u""
     report_color = "#000000"
 
@@ -340,7 +340,7 @@ class DnaAssemblyStation(DnaSource):
 
     """
     class_description = "DNA assembly station"
-    category = "assembly"
+    operation_type = "assembly"
     report_symbol = u""
     report_color = "#eeeeff"
 
@@ -502,7 +502,7 @@ class ExternalDnaOffer(DnaSource):
     """External/Commercial source of DNA"""
 
     class_description = "External DNA offer"
-    category = "external"
+    operation_type = "order"
     report_symbol = u""
     report_color = "#ffeeee"
 
@@ -597,8 +597,8 @@ class PcrOutStation(DnaSource):
 
     """
     class_description = "PCR-out station"
-    category = "reuse"
-    report_symbol = u""
+    operation_type = "PCR"
+    report_symbol = u""
     report_color = "#eeffee"
 
     def __init__(self, name, primers_dna_source, blast_database=None,
@@ -760,7 +760,7 @@ class PartsLibrary(DnaSource):
     to accomodate with the different kinds of registries etc.
     """
     class_description = "Parts Library"
-    category = "reuse"
+    operation_type = "library"
     report_symbol = u""
     report_color = "#feeefe"
 
@@ -828,7 +828,7 @@ class GoldenGatePartsLibrary(PartsLibrary):
     def additional_dict_description(self):
         return {
             "class": "Golden Gate parts library",
-            "category": "library",
+            "operation_type": "library",
             "flanks length": self.flanks_length
         }
 
@@ -836,8 +836,9 @@ class GoldenGatePartsLibrary(PartsLibrary):
 class FragmentAmplificationStation(DnaSource):
     """PCR-Out a fragment from a vector to linearize it for use in subsequent
     assemblies such as Gibson assembly."""
-    report_symbol = u""
+    report_symbol = u""
     report_color="#eefefe"
+    operation_type="PCR"
 
     def __init__(self, fragment_dna_source,  primers_dna_source,
                  primer_melting_temperature=50, sequence_constraints=()):
