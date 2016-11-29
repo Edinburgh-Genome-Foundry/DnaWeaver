@@ -12,8 +12,8 @@ except:
     Constraint = type("BLANK")  # meant to be a fake type that matches nothing
     DNACHISEL_AVAILABLE = False
 
-from .optimization import (optimize_cuts_with_graph_twostep,
-                           NoSolutionFoundError)
+from .shortest_path_algorithms import NoSolutionFoundError
+from .SequenceDecomposer import SequenceDecomposer
 from .biotools import (blast_sequence, largest_common_substring,
                        reverse_complement)
 from .constraints import SequenceLengthConstraint
@@ -98,7 +98,7 @@ class DnaSource:
 
     def get_best_lead_time_under_price_limit(self, sequence, max_price,
                                              time_resolution,
-                                             with_assembly_plan=None):
+                                             with_assembly_plan=False):
         """Return the quote with fastest lead time under the budget constraint
 
         Parameters
@@ -247,7 +247,8 @@ class DnaSource:
             "operation_type": self.operation_type,
             "class": self.class_description,
             "_report_color": self.report_color,
-            "_report_symbol": self.report_symbol
+            "_report_fa_symbol": self.report_fa_symbol,
+            "_report_fa_symbol_plain": self.report_fa_symbol_plain
         }
         result.update(self.additional_dict_description())
         return result
@@ -276,7 +277,8 @@ class DnaSourcesComparator(DnaSource):
     """
     class_description = "DNA sources comparator"
     operation_type = "comparison"
-    report_symbol = u""
+    report_fa_symbol = u""
+    report_fa_symbol_plain = u"circle-o"
     report_color = "#000000"
 
     def __init__(self, dna_sources, memoize=False, sequence_constraints=(),
@@ -341,11 +343,12 @@ class DnaAssemblyStation(DnaSource):
     """
     class_description = "DNA assembly station"
     operation_type = "assembly"
-    report_symbol = u""
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "flask"
     report_color = "#eeeeff"
 
     def __init__(self, name, assembly_method, dna_source, memoize=False,
-                 **solve_kwargs):
+                 decomposer_class=None, **solve_kwargs):
         self.name = name
         self.assembly_method = assembly_method
         self.dna_source = dna_source
@@ -355,11 +358,14 @@ class DnaAssemblyStation(DnaSource):
         self.sequence_constraints = assembly_method.sequence_constraints
         self.cuts_set_constraints = assembly_method.cuts_set_constraints
         self.memoize = memoize
+        if decomposer_class is None:
+            self.decomposer_class = SequenceDecomposer
+        else:
+            self.decomposer_class = decomposer_class
         self.memoize_dict = {}
 
     def get_quote_for_sequence_segment(self, sequence, segment,
-                                       max_lead_time=None,
-                                       **kwargs):
+                                       max_lead_time=None, **kwargs):
         """Return the cost of the segment
 
         Is used as the "cost" function for a segment during decomposition
@@ -385,10 +391,8 @@ class DnaAssemblyStation(DnaSource):
         }
 
     def get_assembly_plan_for_sequence(self, sequence, max_lead_time=None,
-                                       return_graph=False,
-                                       nucleotide_resolution=None,
-                                       refine_resolution=None,
-                                       a_star_factor=0, progress_bars=True):
+                                       coarse_grain=None, fine_grain=None,
+                                       a_star_factor=0, progress_bars=False):
         """Return the plan {(seg,ment): quote, ...} of the optimal strategy
         for the sequence's decomposition."""
         def segment_score(segment):
@@ -400,14 +404,12 @@ class DnaAssemblyStation(DnaSource):
             else:
                 return quote.price
         assembly = self.assembly_method
-        if nucleotide_resolution is None:
-            nucleotide_resolution = \
-                self.solve_kwargs.get("nucleotide_resolution", 1)
-        if refine_resolution is None:
-            refine_resolution = \
-                self.solve_kwargs.get("refine_resolution", 1)
+        if coarse_grain is None:
+            coarse_grain = self.solve_kwargs.get("coarse_grain", 1)
+        if fine_grain is None:
+            fine_grain = self.solve_kwargs.get("fine_grain", 1)
 
-        graph, best_cuts = optimize_cuts_with_graph_twostep(
+        self.decomposer = self.decomposer_class(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
             cut_location_constraints=[
@@ -422,8 +424,8 @@ class DnaAssemblyStation(DnaSource):
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
             suggested_cuts=assembly.suggest_cuts(sequence),
-            initial_resolution=nucleotide_resolution,
-            refine_resolution=refine_resolution,
+            coarse_grain=coarse_grain,
+            fine_grain=fine_grain,
             progress_bars=progress_bars,
             a_star_factor=a_star_factor,
             path_size_limit=assembly.max_fragments,
@@ -432,16 +434,9 @@ class DnaAssemblyStation(DnaSource):
                 for cs in assembly.cuts_set_constraints
             ]
         )
-        assembly_plan = self.get_assembly_plan_from_cuts(
-            sequence, best_cuts,
-            max_lead_time=max_lead_time
-        )
-
-        if return_graph:
-            return graph, assembly_plan
-        else:
-            del graph
-            return assembly_plan
+        best_cuts = self.decomposer.compute_optimal_cuts()
+        return self.get_assembly_plan_from_cuts(sequence, best_cuts,
+                                                max_lead_time=max_lead_time)
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -503,7 +498,8 @@ class ExternalDnaOffer(DnaSource):
 
     class_description = "External DNA offer"
     operation_type = "order"
-    report_symbol = u""
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "shopping-cart"
     report_color = "#ffeeee"
 
     def __init__(self, name, sequence_constraints, price_function,
@@ -598,7 +594,8 @@ class PcrOutStation(DnaSource):
     """
     class_description = "PCR-out station"
     operation_type = "PCR"
-    report_symbol = u""
+    report_fa_symbol = u"",
+    report_fa_symbol_plain = "exchange",
     report_color = "#eeffee"
 
     def __init__(self, name, primers_dna_source, blast_database=None,
@@ -615,11 +612,11 @@ class PcrOutStation(DnaSource):
         self.extra_cost = extra_cost
         self.max_amplicon_length = max_amplicon_length
         self.blast_word_size = blast_word_size
+        self.sequence_constraints = list(sequence_constraints)
         if max_amplicon_length is not None:
-            length_constraint = SequenceLengthConstraint(max_amplicon_length)
-            sequence_constraints = ([length_constraint] +
-                                    list(sequence_constraints))
-        self.sequence_constraints = sequence_constraints
+            c = SequenceLengthConstraint(max_length=max_amplicon_length)
+            self.sequence_constraints = [c] + self.sequence_constraints
+
         self.memoize = memoize
         self.memoize_dict = {}
         self.sequences = sequences
@@ -761,7 +758,9 @@ class PartsLibrary(DnaSource):
     """
     class_description = "Parts Library"
     operation_type = "library"
-    report_symbol = u""
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "book"
+
     report_color = "#feeefe"
 
     def __init__(self, name, parts_dict, memoize=False,
@@ -836,9 +835,10 @@ class GoldenGatePartsLibrary(PartsLibrary):
 class FragmentAmplificationStation(DnaSource):
     """PCR-Out a fragment from a vector to linearize it for use in subsequent
     assemblies such as Gibson assembly."""
-    report_symbol = u""
-    report_color="#eefefe"
-    operation_type="PCR"
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "exchange"
+    report_color = "#eefefe"
+    operation_type = "PCR"
 
     def __init__(self, fragment_dna_source,  primers_dna_source,
                  primer_melting_temperature=50, sequence_constraints=()):

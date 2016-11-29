@@ -5,6 +5,7 @@ from copy import deepcopy
 from collections import defaultdict
 import tempfile
 import os
+import json
 try:
     from StringIO import StringIO
 except ImportError:  # python 3
@@ -88,13 +89,17 @@ class DnaQuote:
         counter = itt.count()
 
         def rec(quote):
-            source = quote.source
+            if not quote.accepted:
+                return quote
+
             if any([hasattr(quote.source, attr) for attr in [
                    "dna_source", "primers_dna_source"]]):
                 if quote.assembly_plan is None:
-                    quote = source.get_quote(quote.sequence,
-                                             max_lead_time=quote.lead_time,
-                                             with_assembly_plan=True)
+                    quote = quote.source.get_quote(
+                        quote.sequence,
+                        max_lead_time=quote.lead_time,
+                        with_assembly_plan=True
+                    )
                 segments = {
                     segment: rec(subquote)
                     for segment, subquote in
@@ -161,8 +166,20 @@ class DnaQuote:
             ], [])
         return result
 
-    def assembly_tree_as_dict(self, with_sources=True):
+    def assembly_tree_as_dict(self, as_json=False, json_indent=None):
         """Return a JSON-like version of the nested tree.
+
+        Parameters
+        ----------
+
+        as_json
+          If True, a JSON string is returned, else the result is a dict object.
+
+        json_indent
+          number of spaces in the JSON indentation (for pretty printing). The
+          default None means that the JSON will be on one line (TODO: check).
+
+
 
         Returns
         -------
@@ -190,7 +207,7 @@ class DnaQuote:
         assembly_plan = []
         if self.assembly_plan is not None:
             for (segment, quote) in self.assembly_plan.items():
-                quote_as_dict = quote.assembly_tree_as_dict(with_sources=False)
+                quote_as_dict = quote.assembly_tree_as_dict()
                 quote_as_dict["segment_start"] = segment[0]
                 quote_as_dict["segment_end"] = segment[1]
                 assembly_plan.append(quote_as_dict)
@@ -204,11 +221,12 @@ class DnaQuote:
             "metadata": self.metadata,
             "assembly_plan": assembly_plan,
             "final_location": final_location,
-            "matching_segment": matching_segment
+            "matching_segment": matching_segment,
+            "accepted": self.accepted
         }
 
-        if with_sources:
-            return tree, self.source.dict_supply_graph()
+        if as_json:
+            return json.dumps(tree, indent=json_indent)
         else:
             return tree
 
@@ -282,7 +300,9 @@ class DnaQuote:
         if self.assembly_plan is None:
             return None
         lead_times = [quote.lead_time for quote in self.assembly_plan.values()]
-        if any(lead_time is None for lead_time in lead_times):
+        if len(lead_times) == 0:
+            return None
+        elif any(lead_time is None for lead_time in lead_times):
             return None
         else:
             return max(lead_times)

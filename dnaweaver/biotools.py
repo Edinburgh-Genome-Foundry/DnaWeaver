@@ -1,11 +1,19 @@
-from Bio.Blast import NCBIXML
-from Bio.Seq import Seq
-from Bio import Restriction
-import numpy as np
 import subprocess
 import tempfile
 import time
 import os
+import re
+try:
+    from StringIO import StringIO
+except ImportError:  # python 3
+    from io import StringIO
+
+from Bio.Blast import NCBIXML
+from Bio.Seq import Seq
+from Bio import Restriction
+from Bio import SeqIO
+import numpy as np
+
 
 
 def complement(dna_sequence):
@@ -81,7 +89,6 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     fasta_file, fasta_name = tempfile.mkstemp(".fa")
     with open(fasta_name, "w+") as f:
         f.write(">seq\n" + sequence)
-
 
     if subject is not None:
         close_subject = True
@@ -217,3 +224,26 @@ def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
     padding = padding*padding_nuc
     sequence = Seq(padding + sequence + padding)
     return Restriction.__dict__[enzyme_name].search(sequence)
+
+def string_to_sequence(string):
+    """Convert a string of a fasta, genbank... into a simple ATGC string.
+
+    Can also be used to detect a format.
+
+    """
+    matches = re.match("([ATGC][ATGC]*)", string)
+    if (matches is not None) and (matches.groups()[0] == string):
+        return (string, "ATGC")
+
+    for fmt in ("fasta", "genbank"):
+        try:
+            stringio = StringIO(string)
+            return (str(SeqIO.read(stringio, fmt).seq), fmt)
+        except:
+            pass
+    raise ValueError("Invalid sequence format")
+
+def file_to_sequence(filename):
+    """Import a file in fasta, genbank... as a simple ATGC string."""
+    with open(filename, "r") as f:
+        return string_to_sequence(f.read())

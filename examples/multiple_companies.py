@@ -25,20 +25,23 @@ to reduce the number of cuts in the proposed solution.
 For instance if you increase `cuts_number_penalty` to 500 you will see the
 number of segments to order fall from 7 to just 3.
 """
-from dnaweaver import *
+from dnaweaver import (ExternalDnaOffer, SequenceLengthConstraint,
+                       PerBasepairPricing, NoPatternConstraint,
+                       DnaAssemblyStation, GibsonAssemblyMethod,
+                       DnaSourcesComparator, random_dna_sequence)
 
 cheap_dna_offer = ExternalDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[
         NoPatternConstraint("GGTCTC"),
-        lambda seq: len(seq) < 4000
+        SequenceLengthConstraint(max_length=4000)
     ],
     price_function=PerBasepairPricing(per_basepair_price=0.10),
 )
 
 deluxe_dna_offer = ExternalDnaOffer(
     name="DeluxeDNA.com",
-    sequence_constraints=[lambda seq: len(seq) < 3000],
+    sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
     price_function=PerBasepairPricing(per_basepair_price=0.20),
 )
 
@@ -47,9 +50,13 @@ assembly_station = DnaAssemblyStation(
     assembly_method=GibsonAssemblyMethod(homology_arm_length=20,
                                          min_segment_length=500,
                                          max_segment_length=4000),
-    dna_source=DnaSourcesComparator([cheap_dna_offer, deluxe_dna_offer]),
-    nucleotide_resolution=10,
-    refine_resolution=False
+    dna_source=DnaSourcesComparator(
+        name="cmp",
+        dna_sources=[cheap_dna_offer, deluxe_dna_offer]
+    ),
+    coarse_grain=10,
+    fine_grain=2,
+    progress_bars=True
 )
 
 
