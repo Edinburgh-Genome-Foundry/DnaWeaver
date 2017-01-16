@@ -247,3 +247,6 @@ def file_to_sequence(filename):
     """Import a file in fasta, genbank... as a simple ATGC string."""
     with open(filename, "r") as f:
         return string_to_sequence(f.read())
+
+def gc_content_to_tm(seq_length, gc_content, gc_tm=4, nongc_tm=2):
+    return seq_length * (gc_content * gc_tm + (1 - gc_content) * nongc_tm)

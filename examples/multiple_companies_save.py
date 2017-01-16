@@ -28,8 +28,7 @@ number of segments to order fall from 7 to just 3.
 from dnaweaver import (ExternalDnaOffer, SequenceLengthConstraint,
                        PerBasepairPricing, NoPatternConstraint,
                        DnaAssemblyStation, GibsonAssemblyMethod,
-                       DnaSourcesComparator, random_dna_sequence,
-                       TmOverhangSelector)
+                       DnaSourcesComparator, random_dna_sequence)
 
 cheap_dna_offer = ExternalDnaOffer(
     name="CheapDNA.com",
@@ -48,20 +47,16 @@ deluxe_dna_offer = ExternalDnaOffer(
 
 assembly_station = DnaAssemblyStation(
     name="Gibson Assembly Station",
-    assembly_method=GibsonAssemblyMethod(
-        overhang_selector=TmOverhangSelector(
-            min_size=18, max_size=22, min_tm=55, max_tm=65,
-            precompute_overhangs=True
-        ),
-        min_segment_length=500,
-        max_segment_length=4000),
+    assembly_method=GibsonAssemblyMethod(homology_arm_length=20,
+                                         min_segment_length=500,
+                                         max_segment_length=4000),
     dna_source=DnaSourcesComparator(
         name="cmp",
         dna_sources=[cheap_dna_offer, deluxe_dna_offer]
     ),
     coarse_grain=10,
     fine_grain=2,
-    progress_bars=True,
+    progress_bars=True
 )
 
 

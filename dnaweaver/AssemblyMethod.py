@@ -1,6 +1,7 @@
-from .biotools import reverse_complement, gc_content, find_enzyme_sites
+from .biotools import (reverse_complement, find_enzyme_sites,
+                       gc_content_to_tm)
+from .OverhangSelector import TmOverhangSelector
 from .tools import memoize
-from Bio import Restriction
 import itertools
 
 
@@ -49,6 +50,9 @@ class AssemblyMethod:
       General constraints on the sequence so that it can be built with this
       assembly method. It is a list of functions `seq->bool`. If one of
       these constraints returns False the sequence is refused.
+
+    reference
+      Reference to e.g. a paper or a protocol describing the method.
     """
     name = "None"
 
@@ -111,28 +115,38 @@ class OverlapingAssemblyMethod(AssemblyMethod):
     """
     name = "Overlaping Assembly"
 
-    def __init__(self, homology_arm_length=20, **properties):
+    def __init__(self, overhang_selector, **properties):
         AssemblyMethod.__init__(self, **properties)
-        self.homology_arm_length = homology_arm_length
+        self.overhang_selector = overhang_selector
+        self.cut_location_constraints.append(
+            overhang_selector.location_filter_method)
+        self.compute_sequence_fragment = overhang_selector.compute_sequence_fragment
 
-    def compute_fragment_sequence(self, sequence, segment):
-        """Return the segment's sequence with flanking sequences.
 
-        Parameters
-        ----------
-
-        segment
-          A pair of integers (start, end) delimiting the subfragment
-          sequence[start:stop]
-
-        sequence
-          An "ATGC" DNA sequence string
-
-        """
-        L = len(sequence)
-        start, end = segment
-        return sequence[max(0, start - self.homology_arm_length):
-                        min(L, end + self.homology_arm_length)]
+    # def compute_fragment_sequence(self, sequence):
+    #     """Return the segment's sequence with flanking sequences.
+    #
+    #     Parameters
+    #     ----------
+    #
+    #     segment
+    #       A pair of integers (start, end) delimiting the subfragment
+    #       sequence[start:stop]
+    #
+    #     sequence
+    #       An "ATGC" DNA sequence string
+    #
+    #     """
+    #
+    #
+    #     def f(segment):
+    #
+    #     return self.overhang_selector.compute_fragment_sequence(sequence,
+    #                                                             segment)
+    #     L = len(sequence)
+    #     start, end = segment
+    #     return sequence[max(0, start - self.homology_arm_length):
+    #                     min(L, end + self.homology_arm_length)]
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
@@ -147,7 +161,7 @@ class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     name = "Build-a-Genome"
 
 
-class GoldenGateAssemblyMethod(AssemblyMethod):
+class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
     """The Golden Gate Assembly Method.
 
     This method adds overhangs with a Type IIS REase site to the segments.
@@ -166,16 +180,6 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
       Be careful, I said 5'-3' !!!
       If left to None, will be equal to left_overhang.
 
-    Examples
-    --------
-
-    >>> #  The fragments will have an overhang with an homology region, a BsaI
-    >>> #  site, and a "T" for the wildcard
-    >>> assembly_method = GoldenGateAssemblyMethod(
-    >>>  left_overhang = "ATGTGTCGTGTGTGCGTA[BsaI]T",
-    >>>  right_overhang = "TTCTCTCGATAAATGGCC[BsaI]T"
-    >>> )
-
     """
     name = "Golden Gate Assembly"
 
@@ -188,27 +192,34 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
     def __init__(self, enzyme="BsaI", wildcard_basepair="A",  left_overhang="",
                  right_overhang="", refuse_sequences_with_enzyme_site=True,
                  min_overhangs_gc=0, max_overhangs_gc=1,
-                 min_overhangs_differences=1,  **properties):
+                 min_overhangs_differences=1,  **props):
         if enzyme not in self.enzymes_dict:
             return ValueError("Enzyme should be one of %s" %
                               self.enzymes_dict.keys())
-        AssemblyMethod.__init__(self, **properties)
+
+        # def location_has_valid_gc_content(sequence):
+        #     def f(cut_location):
+        #         gc = gc_content(get_overhang(sequence, cut_location))
+        #         return (self.min_overhangs_gc < gc < self.max_overhangs_gc)
+        #     return f
+        # self.cut_location_constraints.append(location_has_valid_gc_content)
+        self.min_overhangs_gc = min_gc = min_overhangs_gc
+        self.max_overhangs_gc = max_gc = max_overhangs_gc
+        overhang_selector = TmOverhangSelector(
+            min_size=4, max_size=4,
+            min_tm=gc_content_to_tm(4, min_gc),
+            max_tm=gc_content_to_tm(4, max_gc)
+        )
+        OverlapingAssemblyMethod.__init__(self, overhang_selector, **props)
         self.enzyme = enzyme
         self.enzyme_site = self.enzymes_dict[enzyme]
         enzyme_site_plus_basepair = self.enzyme_site + wildcard_basepair
         self.left_overhang = left_overhang + enzyme_site_plus_basepair
         self.right_overhang = right_overhang + enzyme_site_plus_basepair
         self.right_overhang_rev = reverse_complement(self.right_overhang)
-        self.min_overhangs_gc = 0
-        self.max_overhangs_gc = 1.0
         self.min_overhangs_differences = min_overhangs_differences
         self.refuse_sequences_with_enzyme_site = \
             refuse_sequences_with_enzyme_site
-
-        def get_overhang(sequence, cut_location):
-            overhang_start = min(max(0, cut_location - 2), len(sequence) - 4)
-            overhang_end = max(min(len(sequence), cut_location + 2), 4)
-            return sequence[overhang_start:overhang_end]
 
         # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
 
@@ -220,12 +231,7 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
 
         # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
 
-        def location_has_valid_gc_content(sequence):
-            def f(cut_location):
-                gc = gc_content(get_overhang(sequence, cut_location))
-                return (self.min_overhangs_gc < gc < self.max_overhangs_gc)
-            return f
-        self.cut_location_constraints.append(location_has_valid_gc_content)
+
 
         # CUTS SET CONSTRAINT: ALL OVERHANGS MUST BE COMPATIBLE
 
@@ -242,7 +248,8 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
         def all_overhangs_are_compatible(sequence):
             def f(cut_locations):
                 overhangs = sorted([
-                    get_overhang(sequence, cut_location)
+                    overhang_selector.compute_overhang_sequence(sequence,
+                                                                cut_location)
                     for cut_location in cut_locations
                 ])
                 return all([
@@ -255,24 +262,24 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
 
 
 
-    def compute_fragment_sequence(self, sequence, segment):
-        """Return the segment's sequence with flanking sequences for
-
-        Parameters
-        ----------
-
-        segment
-          A pair of integers (start, end) delimiting the subfragment
-          sequence[start:stop]
-
-        sequence
-          An "ATGC" DNA sequence string
-
-        """
-        L = len(sequence)
-        start, end = segment
-        segment = sequence[max(0, start - 2): min(L, end + 2)]
-        return self.left_overhang + segment + self.right_overhang_rev
+    # def compute_fragment_sequence(self, sequence, segment):
+    #     """Return the segment's sequence with flanking sequences for
+    #
+    #     Parameters
+    #     ----------
+    #
+    #     segment
+    #       A pair of integers (start, end) delimiting the subfragment
+    #       sequence[start:stop]
+    #
+    #     sequence
+    #       An "ATGC" DNA sequence string
+    #
+    #     """
+    #     L = len(sequence)
+    #     start, end = segment
+    #     segment = sequence[max(0, start - 2): min(L, end + 2)]
+    #     return self.left_overhang + segment + self.right_overhang_rev
 
     def additional_dict_description(self):
         return {
@@ -281,8 +288,7 @@ class GoldenGateAssemblyMethod(AssemblyMethod):
             "right overhang": self.right_overhang,
             "refuse sequences with enzyme site":
                 str(self.refuse_sequences_with_enzyme_site),
-            "overhangs gc content": "%d-%d" % (100*self.min_overhangs_gc,
-                                               100*self.max_overhangs_gc)
-                                     +"%",
+            "overhangs gc content": "%d-%d%%" % (100*self.min_overhangs_gc,
+                                                 100*self.max_overhangs_gc),
             "overhangs differences": self.min_overhangs_differences
         }

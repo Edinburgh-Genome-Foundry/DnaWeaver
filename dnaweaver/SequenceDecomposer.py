@@ -7,11 +7,6 @@ from .shortest_path_algorithms import (NoSolutionFoundError,
                                        shortest_valid_path,
                                        astar_path)
 
-def indicator_array(length, indices):
-    result = np.zeros(length, dtype="uint8")
-    result[indices] = 1
-    return result
-
 class SequenceDecomposer:
     """Find the sequence cuts which optimize the sum of segments scores.
 

@@ -10,6 +10,9 @@ from .DnaSource import (ExternalDnaOffer,
 from .AssemblyMethod import (GibsonAssemblyMethod,
                              BuildAGenomeAssemblyMethod,
                              GoldenGateAssemblyMethod)
+from .OverhangSelector import (OverhangSelector,
+                               ConstantSizeOverhangSelector,
+                               TmOverhangSelector)
 from .biotools import (random_dna_sequence, reverse_complement)
 from .constraints import (NoPatternConstraint, PerBasepairPricing,
                           SequenceLengthConstraint, GcContentConstraint)
