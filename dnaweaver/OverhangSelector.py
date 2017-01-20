@@ -20,8 +20,15 @@ class OverhangSelector:
 
     def compute_sequence_fragment(self, sequence, segment):
         start, end = segment
-        return sequence[self.compute_overhang_location(sequence, start)[0]:
-                        self.compute_overhang_location(sequence, end)[1]]
+        if start == 0:
+            fragment_start = 0
+        else:
+            fragment_start = self.compute_overhang_location(sequence, start)[0]
+        if end == len(sequence):
+            fragment_end = len(sequence)
+        else:
+            fragment_end = self.compute_overhang_location(sequence, end)[1]
+        return sequence[fragment_start: fragment_end]
 
 
     def compute_overhang_sequence(self, sequence, index):
@@ -48,7 +55,7 @@ class ConstantSizeOverhangSelector(OverhangSelector):
 class TmOverhangSelector(OverhangSelector):
 
     def __init__(self, min_size=18, max_size=22, min_tm=55, max_tm=65,
-                 precompute_overhangs=False, **params):
+                 precompute_overhangs=True, **params):
         self.min_size = min_size
         self.max_size = max_size
         self.precompute_overhangs = precompute_overhangs
@@ -144,5 +151,6 @@ class TmOverhangSelector(OverhangSelector):
             ])
         if not PRIMER3_AVAILABLE:
             raise ImportError("Melting temperature computation with '%s' "
-                              "Requires Primer3 installed." % self.method)
+                              "Requires Primer3 installed." %
+                              self.params.get('method', "[unknown method]"))
         return primer3.calcTm(sequence, **self.params)

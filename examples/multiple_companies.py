@@ -69,7 +69,10 @@ print("Now finding a price-optimal assembly strategy for a 10kb sequence")
 sequence = random_dna_sequence(10000, seed=123)
 import time
 t0 = time.time()
+import cProfile
+cProfile.run("""
 quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
+""")
 print (quote.assembly_step_summary())
 print("Finished in %.02fs" % (time.time()-t0))
 

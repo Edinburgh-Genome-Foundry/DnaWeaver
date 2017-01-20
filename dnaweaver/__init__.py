@@ -13,6 +13,7 @@ from .AssemblyMethod import (GibsonAssemblyMethod,
 from .OverhangSelector import (OverhangSelector,
                                ConstantSizeOverhangSelector,
                                TmOverhangSelector)
-from .biotools import (random_dna_sequence, reverse_complement)
+from .biotools import (random_dna_sequence, reverse_complement,
+                       string_to_sequence)
 from .constraints import (NoPatternConstraint, PerBasepairPricing,
                           SequenceLengthConstraint, GcContentConstraint)

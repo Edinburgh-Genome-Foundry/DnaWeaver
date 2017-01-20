@@ -701,14 +701,13 @@ class PcrOutStation(DnaSource):
                     }
                 else:
                     assembly_plan = None
-                
+
                 return DnaQuote(self, sequence, accepted=True,
                                 lead_time=overall_lead_time,
                                 price=total_price,
                                 assembly_plan=assembly_plan,
                                 metadata={"subject": subject,
                                           "location": (hit_start, hit_end)})
-        print "yay"
         return DnaQuote(self, sequence, accepted=False,
                         message="No valid match found")
 
