@@ -5,7 +5,7 @@ from .tools import memoize
 import itertools
 
 
-class AssemblyMethod:
+class AssemblyMethod(object):
     """General class for assembly methods.
 
     All assembly methods can store the following attributes:
@@ -58,7 +58,7 @@ class AssemblyMethod:
 
     def __init__(self, duration=0, cost=0, reference=None,
                  cut_location_constraints=(),
-                 segment_constraints=(), min_segment_length=None,
+                 segment_constraints=(), min_segment_length=0,
                  max_segment_length=None, force_cuts=(), suggest_cuts=(),
                  max_fragments=None, sequence_constraints=(),
                  cuts_set_constraints=()):
@@ -116,37 +116,11 @@ class OverlapingAssemblyMethod(AssemblyMethod):
     name = "Overlaping Assembly"
 
     def __init__(self, overhang_selector, **properties):
-        AssemblyMethod.__init__(self, **properties)
+        super(OverlapingAssemblyMethod, self).__init__(**properties)
         self.overhang_selector = overhang_selector
         self.cut_location_constraints.append(
             overhang_selector.location_filter_method)
         self.compute_sequence_fragment = overhang_selector.compute_sequence_fragment
-
-
-    # def compute_fragment_sequence(self, sequence):
-    #     """Return the segment's sequence with flanking sequences.
-    #
-    #     Parameters
-    #     ----------
-    #
-    #     segment
-    #       A pair of integers (start, end) delimiting the subfragment
-    #       sequence[start:stop]
-    #
-    #     sequence
-    #       An "ATGC" DNA sequence string
-    #
-    #     """
-    #
-    #
-    #     def f(segment):
-    #
-    #     return self.overhang_selector.compute_fragment_sequence(sequence,
-    #                                                             segment)
-    #     L = len(sequence)
-    #     start, end = segment
-    #     return sequence[max(0, start - self.homology_arm_length):
-    #                     min(L, end + self.homology_arm_length)]
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):

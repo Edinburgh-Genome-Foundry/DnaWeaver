@@ -594,8 +594,8 @@ class PcrOutStation(DnaSource):
     """
     class_description = "PCR-out station"
     operation_type = "PCR"
-    report_fa_symbol = u"",
-    report_fa_symbol_plain = "exchange",
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "exchange"
     report_color = "#eeffee"
 
     def __init__(self, name, primers_dna_source, blast_database=None,
@@ -710,6 +710,14 @@ class PcrOutStation(DnaSource):
                                           "location": (hit_start, hit_end)})
         return DnaQuote(self, sequence, accepted=False,
                         message="No valid match found")
+
+    def suggest_cuts(self, sequence):
+        suggested_cuts = []
+        for name, subseq in self.sequences:
+            if subseq in sequence:
+                index = sequence.find(subseq)
+                suggested_cuts += [index, index + len(subseq)]
+        return sorted(list(set(suggested_cuts)))
 
     def pre_blast(self, sequence):
         """Pre-compute the BLAST of the current sequence against the database.

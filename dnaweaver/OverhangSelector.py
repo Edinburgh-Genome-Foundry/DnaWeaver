@@ -53,6 +53,8 @@ class ConstantSizeOverhangSelector(OverhangSelector):
                                             len(sequence))
 
 class TmOverhangSelector(OverhangSelector):
+    """Selects overhangs with melting temperature constraints
+    """
 
     def __init__(self, min_size=18, max_size=22, min_tm=55, max_tm=65,
                  precompute_overhangs=True, **params):

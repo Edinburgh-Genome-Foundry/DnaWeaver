@@ -76,6 +76,31 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
     sequence
       An ATGC sequence
 
+    blast_db
+      Path to a BLAST database
+
+    subject
+      Either a path to a fasta (.fa) file or an ATGC string. Subject to blast
+      against.
+
+    word_size
+      Word size to use in the blast
+
+    perc_identity
+      Minimal percentage of identical nucleotides in a match for it to be kept
+
+    num_alignments
+      Number of alignments to keep
+
+    num_threads
+      Number of threads for the BLAST
+
+    use_megablast
+      Whether to use Megablast.
+
+    ungapped
+      No-gaps matches only ?
+
     Examples
     --------
 

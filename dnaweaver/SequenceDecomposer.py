@@ -174,13 +174,14 @@ class SequenceDecomposer:
                 raise NoSolutionFoundError("Could not find a solution in "
                                            "optimize_cuts_with_graph")
         else:
-            for start, end in self.iterate(graph.edges(),
+            for start, end in self.iterate(list(graph.edges()),
                                            "Computing edge weights"):
                 weight = self.segment_score_function((start, end))
                 if weight < 0:
                     graph.remove_edge(start, end)
                 else:
                     graph[start][end]["weight"] = weight
+
             return shortest_valid_path(
                 graph, 0, self.sequence_length,
                 nodes_constraints=self.cuts_set_constraints,
@@ -208,7 +209,7 @@ class SequenceDecomposer:
             set([cut] + ([] if cut in self.forced_cuts else
                          list(range(max(0, cut - radius),
                                     min(L + 1, cut + radius),
-                                    self.coarse_grain))))
+                                    self.fine_grain))))
             for cut in self.coarse_cuts
         ])
         refinement_cuts = ((refinement_cuts.intersection(self.valid_cuts))

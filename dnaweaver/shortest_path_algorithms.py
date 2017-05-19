@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 from heapq import heappush, heappop
 from itertools import count
+from copy import deepcopy
 
 
 class NoSolutionFoundError(Exception):
@@ -123,7 +124,6 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
                         size_limit=None, min_step=None,
                         compatibility_search_cutoff=100,
                         penalty=0):
-
     if size_limit is not None:
         def f(penalty):
             try:
@@ -136,7 +136,10 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
             except NoSolutionFoundError:
                 return None, np.inf
 
-        penalty = max(data["weight"] for _, _, data in graph.edges(data=True))
+        weights = [data["weight"] for _, _, data in graph.edges(data=True)]
+        if weights == []:
+            raise NoSolutionFoundError()
+        penalty = max(weights)
         step = -0.5 * penalty
 
         best_path, best_path_size = f(penalty)
@@ -165,11 +168,12 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
                 compatibility_search_cutoff=compatibility_search_cutoff,
                 nodes_constraints=nodes_constraints
             )
+            for data in edge_datas:
+                data["weight"] -= penalty
         except nx.NetworkXNoPath:
             for data in edge_datas:
                 data["weight"] -= penalty
             raise NoSolutionFoundError()
-        data["weight"] -= penalty
         return path
 
     elif len(nodes_constraints) == 0:
