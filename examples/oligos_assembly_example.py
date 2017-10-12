@@ -25,7 +25,7 @@ ViennaRNA) is the bottleneck of computations.
 """
 
 
-from dnaweaver import (ExternalDnaOffer, DnaAssemblyStation,
+from dnaweaver import (CommercialDnaOffer, DnaAssemblyStation,
                         BuildAGenomeAssemblyMethod)
 from dnachisel import random_dna_sequence
 import primer3   # primer3 Python binding
@@ -63,7 +63,7 @@ assembly_station = DnaAssemblyStation(
         max_segment_length=100,
         duration=7
     ),
-    dna_source=ExternalDnaOffer(
+    dna_source=CommercialDnaOffer(
         name="Oligos Company",
         pricing=lambda seq: 0.10 * len(seq)
     ),

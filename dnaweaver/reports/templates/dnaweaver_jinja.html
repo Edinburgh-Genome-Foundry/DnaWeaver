@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./static/css/dnaweaver_report.css">
+    <link rel="stylesheet" type="text/css" href="./static/css/font-awesome-4.6.3/css/font-awesome.min.css">
+
+    <title> DNA Weaver - Assembly report </title>
+</head>
+<body>
+
+<div class="header">
+    <object class=header-logo data="./static/images/dna_weaver_logo.svg"
+            type="image/svg+xml"></object>
+    <p>Using DNA Weaver version {{version}} </p>
+</div>
+
+<h1>Assembly Strategy Report</h1>
+
+<h2>Overview</h2>
+<div class="details-table">
+    <table>
+        <tr>
+            <td class="element">
+                <div>
+                <h3>Sequence</h3>
+                <table class="list-table">
+                    <tr>
+                      <td>Name:</td>
+                      <td>{{sequence_name}}</td>
+                    </tr>
+                  <tr>
+                      <tr>
+                        <td>User:</td>
+                        <td>{{user_name}}</td>
+                      </tr>
+                      <tr>
+                        <td>On date:</td>
+                        <td>{{date_submitted.strftime('%Y/%m/%d')}}</td>
+                      </tr>
+                    <tr>
+                    <td>Length:</td>
+                    <td>{{sequence|length}} bp</td>
+                  </tr>
+                  <tr>
+                    <td>Hash:</td>
+                    <td>{{sequence_hash}}</td>
+                  </tr>
+                </table>
+                </div>
+            </td>
+            <td>
+                <div>
+                <h3>Assembly</h3>
+                <table class="list-table">
+                  <tr>
+                    <td>Duration:</td>
+                    <td>{{quote.lead_time}} days</td>
+
+                  </tr>
+                  <tr>
+                    <td>Cost:</td>
+                    <td>{{quote.price}} $</td>
+                  </tr>
+                  <tr>
+                    <td>Commercial orders:</td>
+                    <td>{{n_orders}} ({{cost_orders}} $)</td>
+                  </tr>
+                  <tr>
+                    <td>Other operations:</td>
+                    <td>{{n_other_operations}} ({{cost_others}} $)</td>
+                  </tr>
+                </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+{% if orders is defined %}
+    <h2>Orders</h2>
+
+    {% for company, table in orders.groupby("Company") %}
+
+        <h3> Orders from <i>{{company}}</i></h3>
+            {{ table.sort_values("ID").to_html(index=False, classes=["fancy-table", "assembly-operation-table"],
+                             columns = [ "ID", "Length", "Price", "Lead time", "Location"],
+                             escape=False)
+            | safe }}
+
+    {% endfor %}
+{% endif %}
+
+{% if pcr_reuses is defined %}
+    <h2>PCR Re-use</h2>
+
+    {% for source, table in pcr_reuses.groupby("Source") %}
+
+        <h3> Extracted from <i>{{source}}</i></h3>
+            {{ table.sort_values("ID").to_html(index=False, classes=["fancy-table", "assembly-operation-table"],
+                             columns = [ "ID", "Primers", "Price", "Lead time", "Location"],
+                             escape=False)
+            | safe }}
+
+    {% endfor %}
+{% endif %}
+
+{% if parts_reuses is defined %}
+    <h2>Parts collections</h2>
+
+    {% for source, table in parts_reuses.groupby("Source") %}
+
+        <h3> From collection <i>{{source}}</i></h3>
+            {{ table.sort_values("ID").to_html(index=False, classes=["fancy-table", "assembly-operation-table"],
+                             columns = [ "ID", "Length", "Location"],
+                             escape=False)
+            | safe }}
+
+    {% endfor %}
+{% endif %}
+
+
+{% if assembly_operations is defined %}
+    <h2>Assemblies</h2>
+
+    {% for op in assembly_operations %}
+
+        <h3 class="assembly-section"><i class='fa fa-cubes' aria-hidden='true'></i>Assembly {{op.id}}</h3>
+        <table border="0" class="dataframe fancy-table assembly-operation-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Station</th>
+      <th>Method</th>
+      <th>Fragments</th>
+      <th>Final size</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{op.source.name}}</td>
+      <td>{{op.source.assembly_method_name}}</td>
+      <td>{{op.children | length}}</td>
+      <td>{{op.sequence | length}}</td>
+      <td>{{op.html_location}}</td>
+    </tr>
+</tbody>
+</table>
+<p>
+    Fragments used in this assembly:
+    {% for other_op_id in op.children %}
+    <a href="#anchor_{{other_op_id}}">{{other_op_id}}</a>,
+    {% endfor %}
+</p>
+<p>
+    EcoRI internal digestion bands: {{op.ecori_bands}}
+</p>
+
+    {% endfor %}
+{% endif %}
+
+
+</body>
+</html>

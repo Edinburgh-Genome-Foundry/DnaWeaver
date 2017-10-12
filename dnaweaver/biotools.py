@@ -64,6 +64,18 @@ def random_dna_sequence(length, probas=None, seed=None):
     return "".join(sequence)
 
 
+def load_record(filename, name="unnamed"):
+    """Load a sequence file (genbank or fasta) as  a Biopython record."""
+    if filename.lower().endswith(("gb", "gbk")):
+        record = SeqIO.read(filename, "genbank")
+    elif filename.lower().endswith(('fa', 'fasta')):
+        record = SeqIO.read(filename, "fasta")
+    else:
+        raise ValueError('Unknown format for file: %s' % filename)
+    record.id = name
+    record.name = name.replace(" ", "_")[:20]
+    return record
+
 def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
                    perc_identity=80, num_alignments=1000, num_threads=3,
                    use_megablast=True, ungapped=True):

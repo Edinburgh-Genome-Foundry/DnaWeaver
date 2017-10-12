@@ -5,7 +5,7 @@ from .tools import memoize
 import itertools
 
 
-class AssemblyMethod(object):
+class DnaAssemblyMethod(object):
     """General class for assembly methods.
 
     All assembly methods can store the following attributes:
@@ -102,7 +102,7 @@ class AssemblyMethod(object):
         return {}
 
 
-class OverlapingAssemblyMethod(AssemblyMethod):
+class OverlapingAssemblyMethod(DnaAssemblyMethod):
     """General class for all overlaping assembly methods.
 
     Parameters
@@ -171,12 +171,6 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             return ValueError("Enzyme should be one of %s" %
                               self.enzymes_dict.keys())
 
-        # def location_has_valid_gc_content(sequence):
-        #     def f(cut_location):
-        #         gc = gc_content(get_overhang(sequence, cut_location))
-        #         return (self.min_overhangs_gc < gc < self.max_overhangs_gc)
-        #     return f
-        # self.cut_location_constraints.append(location_has_valid_gc_content)
         self.min_overhangs_gc = min_gc = min_overhangs_gc
         self.max_overhangs_gc = max_gc = max_overhangs_gc
         overhang_selector = TmOverhangSelector(

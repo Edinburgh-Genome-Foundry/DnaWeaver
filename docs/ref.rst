@@ -24,5 +24,5 @@ DnaOffer, DnaOrderingPlan, etc.
 Assembly methods
 ----------------
 
-.. automodule:: dnaweaver.AssemblyMethod
+.. automodule:: dnaweaver.DnaAssemblyMethod
    :members:

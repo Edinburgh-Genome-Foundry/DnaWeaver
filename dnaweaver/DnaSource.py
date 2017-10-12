@@ -25,13 +25,14 @@ class DnaSource:
     """Base class for all DnaSources, which are the elements of the supply
     networks used to define assembly problems in DnaWeaver."""
 
+    min_basepair_price = 0
+
     def get_quote(self, sequence, max_lead_time=None, max_price=None,
                   with_assembly_plan=False, time_resolution=1.0):
         """Return a DnaQuote with price, lead time, etc. for a given sequence.
 
         Parameters
         ----------
-
 
         sequence (str)
           The sequence submitted to the Dna Source for a quots
@@ -288,6 +289,8 @@ class DnaSourcesComparator(DnaSource):
         self.sequence_constraints = sequence_constraints
         self.memoize_dict = {}
         self.name = name
+        self.min_basepair_price = min([source.min_basepair_price
+                                       for source in dna_sources])
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -306,17 +309,38 @@ class DnaSourcesComparator(DnaSource):
         with_assembly_plan
           If True, the assembly plan is added to the quote
         """
-        quotes = [
-            source.get_quote(sequence, max_lead_time=max_lead_time,
-                             with_assembly_plan=with_assembly_plan)
-            for source in self.dna_sources
-        ]
-        accepted_quotes = [quote for quote in quotes if quote.accepted]
-        if accepted_quotes == []:
+
+        best_quote = None
+        best_basepair_price = 0
+        for source in sorted(self.dna_sources, lambda s: s.min_basepair_price):
+            if source.min_basepair_price > best_basepair_price:
+                break
+            quote = source.get_quote(sequence, max_lead_time=max_lead_time,
+                                     with_assembly_plan=with_assembly_plan)
+            if not quote.accepted:
+                continue
+            quote_basepair_price = quote.price / float(len(sequence))
+            if quote_basepair_price < best_basepair_price:
+                best_quote = quote
+                best_basepair_price = quote_basepair_price
+        if best_quote is not None:
             return DnaQuote(self, sequence, accepted=False,
-                            message="Found no source accepting the sequence.")
+                            message="Sequence was rejected by all sources.")
         else:
-            return min(accepted_quotes, key=lambda quote: quote.price)
+            return best_quote
+            #     return min(accepted_quotes, key=lambda quote: quote.price)
+
+        # quotes = [
+        #     source.get_quote(sequence, max_lead_time=max_lead_time,
+        #                      with_assembly_plan=with_assembly_plan)
+        #     for source in self.dna_sources
+        # ]
+        # accepted_quotes = [quote for quote in quotes if quote.accepted]
+        # if accepted_quotes == []:
+        #     return DnaQuote(self, sequence, accepted=False,
+        #                     message="Found no source accepting the sequence.")
+        # else:
+        #     return min(accepted_quotes, key=lambda quote: quote.price)
 
     def additional_dict_description(self):
         return {
@@ -335,7 +359,7 @@ class DnaAssemblyStation(DnaSource):
       Name of the station (appears on reports)
 
     assembly_method
-      An AssemblyMethod object specifying how the fragments are assembled,
+      AnDnaAssemblyMethod object specifying how the fragments are assembled,
       what sequences can be assembled, what fragments can be used, etc.
 
     dna_source
@@ -363,6 +387,7 @@ class DnaAssemblyStation(DnaSource):
         else:
             self.decomposer_class = decomposer_class
         self.memoize_dict = {}
+        self.min_basepair_price = self.dna_source.min_basepair_price
 
     def get_quote_for_sequence_segment(self, sequence, segment,
                                        max_lead_time=None, **kwargs):
@@ -493,7 +518,7 @@ class DnaAssemblyStation(DnaSource):
         return result
 
 
-class ExternalDnaOffer(DnaSource):
+class CommercialDnaOffer(DnaSource):
     """External/Commercial source of DNA"""
 
     class_description = "External DNA offer"
@@ -502,7 +527,7 @@ class ExternalDnaOffer(DnaSource):
     report_fa_symbol_plain = "shopping-cart"
     report_color = "#ffeeee"
 
-    def __init__(self, name, sequence_constraints, price_function,
+    def __init__(self, name, price_function, sequence_constraints=(),
                  lead_time=None, memoize=False):
         self.name = name
         self.sequence_constraints = sequence_constraints
@@ -511,6 +536,7 @@ class ExternalDnaOffer(DnaSource):
                           else (lambda *a: lead_time))
         self.memoize = memoize
         self.memoize_dict = {}
+        if isinstance(price_function, )
 
     def __repr__(self):
         return self.name
@@ -569,11 +595,12 @@ class PcrOutStation(DnaSource):
       Name of the PCR station (e.g. "Lab constructs PCR station")
 
     primers_dna_source
-      DnaSource providing the primers (will typically be an ExternalDnaOffer)
+      DnaSource providing the primers (will typically be an CommercialDnaOffer)
 
     blast_database
 
     sequences
+      A dictionary {seq_name: sequence_in_atgc}
 
     pcr_homology_length
 
@@ -616,7 +643,6 @@ class PcrOutStation(DnaSource):
         if max_amplicon_length is not None:
             c = SequenceLengthConstraint(max_length=max_amplicon_length)
             self.sequence_constraints = [c] + self.sequence_constraints
-
         self.memoize = memoize
         self.memoize_dict = {}
         self.sequences = sequences
@@ -626,7 +652,7 @@ class PcrOutStation(DnaSource):
         (in Biopython format)"""
         if self.sequences is not None:
             result = []
-            for dna_name, seq in self.sequences:
+            for dna_name, seq in self.sequences.items():
                 match_coords = largest_common_substring(sequence, seq,
                                                         self.max_overhang_length)
                 if match_coords:
@@ -654,7 +680,7 @@ class PcrOutStation(DnaSource):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quots
+          The sequence submitted to the Dna Source for a quote
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
@@ -737,10 +763,10 @@ class PcrOutStation(DnaSource):
         >>> pcr_station.sequences=None # de-specializes the pcr station.
         """
         self.sequences = None  # destroy current pre-blast (used by get_hits)
-        self.sequences = [
-            (subject, sequence[start:end])
+        self.sequences = {
+            subject: sequence[start:end]
             for subject, (start, end) in self.get_hits(sequence)
-        ]
+        }
 
     def additional_dict_description(self):
         constraints = functions_list_to_string(self.sequence_constraints)

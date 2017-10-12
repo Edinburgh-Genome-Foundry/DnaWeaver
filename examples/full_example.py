@@ -1,5 +1,5 @@
 
-from dnaweaver import (ExternalDnaOffer,
+from dnaweaver import (CommercialDnaOffer,
                        DnaAssemblyStation,
                        GibsonAssemblyMethod,
                        GoldenGateAssemblyMethod,
@@ -12,7 +12,7 @@ import numpy
 
 # OLIGO COMPANIES
 
-cheap_dna_com = ExternalDnaOffer(
+cheap_dna_com = CommercialDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[NoPatternConstraint("GGTCTC"),
                           lambda seq: len(seq) < 200],
@@ -21,7 +21,7 @@ cheap_dna_com = ExternalDnaOffer(
     memoize=True
 )
 
-deluxe_dna_com = ExternalDnaOffer(
+deluxe_dna_com = CommercialDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[lambda seq: len(seq) < 200],
     price_function=lambda sequence: 0.20 * len(sequence),
@@ -29,7 +29,7 @@ deluxe_dna_com = ExternalDnaOffer(
     memoize=True
 )
 
-big_dna_com = ExternalDnaOffer(
+big_dna_com = CommercialDnaOffer(
     name="BigDNA.com",
     sequence_constraints=[lambda seq: 2000 < len(seq) < 4000],
     price_function=lambda sequence: 0.40 * len(sequence),

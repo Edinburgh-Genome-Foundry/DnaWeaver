@@ -61,13 +61,13 @@ tdi_rules = [
     cst.NoHairpinsIDTConstraint(stem_size=20, hairpin_window=200)
 ]
 
-cell9_offer = ExternalDnaOffer(
+cell9_offer = CommercialDnaOffer(
     name="Cell9 offer",
     sequence_constraints=cell9_rules,
     price_function=lambda sequence: 0.10 * len(sequence)
 )
 
-tdi_offer = ExternalDnaOffer(
+tdi_offer = CommercialDnaOffer(
     name="TDI Offer",
     sequence_constraints=tdi_rules,
     price_function=lambda sequence: 0.10 * len(sequence)

@@ -78,10 +78,10 @@ class DnaQuote:
         if self.accepted:
             infos = "price %.02f" % self.price
             if self.lead_time is not None:
-                infos = infos + ", lead_time %0.1f" % self.lead_time
+                infos = infos + " - lead_time %0.1f" % self.lead_time
         else:
             infos = "refused: %s" % self.message
-        return "From %s, %s" % (self.source, infos)
+        return "From %s - %s" % (self.source, infos)
 
     def compute_full_assembly_tree(self, id_prefix="S"):
         """ """

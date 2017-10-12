@@ -25,13 +25,13 @@ to reduce the number of cuts in the proposed solution.
 For instance if you increase `cuts_number_penalty` to 500 you will see the
 number of segments to order fall from 7 to just 3.
 """
-from dnaweaver import (ExternalDnaOffer, SequenceLengthConstraint,
+from dnaweaver import (CommercialDnaOffer, SequenceLengthConstraint,
                        PerBasepairPricing, NoPatternConstraint,
                        DnaAssemblyStation, GibsonAssemblyMethod,
                        DnaSourcesComparator, random_dna_sequence,
                        TmOverhangSelector)
 
-cheap_dna_offer = ExternalDnaOffer(
+cheap_dna_offer = CommercialDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[
         NoPatternConstraint("GGTCTC"),
@@ -40,7 +40,7 @@ cheap_dna_offer = ExternalDnaOffer(
     price_function=PerBasepairPricing(per_basepair_price=0.10),
 )
 
-deluxe_dna_offer = ExternalDnaOffer(
+deluxe_dna_offer = CommercialDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
     price_function=PerBasepairPricing(per_basepair_price=0.20),

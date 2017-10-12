@@ -2,7 +2,7 @@ import pandas as pd
 from dnaweaver import (GoldenGateAssemblyMethod, plot_ordering_tree,
                         PartsLibrary, PcrOutStation,
                         DnaAssemblyStation,
-                        ExternalDnaOffer, DnaSourcesComparator,
+                        CommercialDnaOffer, DnaSourcesComparator,
                         random_dna_sequence)
 import time
 
@@ -12,7 +12,7 @@ parts_by_name = dict(zip(parts.Name, parts.Sequence))
 yeastfab_library = PartsLibrary("YeastFab", parts_dict=parts_by_sequence)
 
 
-dna_company = ExternalDnaOffer(
+dna_company = CommercialDnaOffer(
     "DNA Company",
     sequence_constraints=[lambda seq: len(seq) < 300],
     price_function=lambda seq: 0.1 * len(seq)

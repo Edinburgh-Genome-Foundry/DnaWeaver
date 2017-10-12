@@ -1,4 +1,5 @@
 from .biotools import gc_content, reverse_complement
+import re
 
 class NoPatternConstraint:
     """Class of callables (sequence)-> True/False whether the sequence contains
@@ -81,6 +82,7 @@ class PerBasepairPricing:
 
     def __init__(self, per_basepair_price):
         self.per_basepair_price = per_basepair_price
+        self.min_basepair_price = per_basepair_price
 
     def __call__(self, sequence):
         return len(sequence) * self.per_basepair_price

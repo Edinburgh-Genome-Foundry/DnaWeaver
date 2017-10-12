@@ -1,17 +1,19 @@
 DnaWeaver
 ==========
 
-DnaWeaver is a Python library to find optimal strategies to assemble large synthetic DNA fragments.
+(documentation in progress, come back later !)
 
-A DNA assembly problem is defined by:
+DnaWeaver is a Python library to find optimal strategies to assemble large
+synthetic DNA fragments.
 
-- The desired DNA sequence.
-- A set of DNA sources (commercial offers, parts libraries) from which sub-fragments can be obtained.
-- A set of assembly methods (Gibson Assembly, Golden Gate Assembly, etc.) that can be used to assemble the sub-fragments.
+A DNA assembly problem is defined by the sequence to be assembled, and a supply
+network of DNA sources (such as commercial offers, parts libraries, or assembly
+stations) which produce or assemble sub-fragments of DNA.
 
-Given such a problem, DnaWeaver produces a report (example) describing an optimized assembly
-plan: what sub-fragments should be ordered and from which companies, what fragments should be
-re-used (i.e. extracted from existing constructs), what assembly methods should be used for each step, etc.
+Given such a problem, DnaWeaver produces [a report](example) describing an
+optimized assembly plan: what sub-fragments should be ordered, what sub-fragments
+should be obtained from an existing construct/genome, what cloning methods
+should be used for each assembly step, etc.
 
 DnaWeaver was written with versatility and extensibility in mind:
 each DNA source and assembly method can be customized, and assembly plans can
@@ -20,10 +22,6 @@ or assembly success probabilities.
 
 DnaWeaver can also export the result as interactive widgets for web applications, and
 as JSON for automated assembly platforms.
-
-
-How it works
-------------
 
 Example of use
 ---------------
@@ -41,7 +39,7 @@ Here is the Python code to solve the problem with DnaWeaver:
 ::
     from dnaweaver import *
 
-    cheap_dna_offer = ExternalDnaOffer(
+    cheap_dna_offer = CommercialDnaOffer(
         name="CheapDNA.com",
         sequence_constraints=[
             no_pattern_constraint("GGTCTC"),
@@ -50,7 +48,7 @@ Here is the Python code to solve the problem with DnaWeaver:
         price_function=lambda seq: 0.10 * len(seq),
     )
 
-    deluxe_dna_offer = ExternalDnaOffer(
+    deluxe_dna_offer = CommercialDnaOffer(
         name="DeluxeDNA.com",
         sequence_constraints=[lambda seq: len(seq) < 3000],
         price_function=(lambda seq: 0.20 * len(seq)),
@@ -84,9 +82,6 @@ See the examples section for more complete examples involving different sources,
 multiple assembly methods, and complex biological constraints.
 
 
-How it works
--------------
-
 Installation
 -------------
 
@@ -99,15 +94,11 @@ Alternatively, you can unzip the sources in a folder and type
     sudo python setup.py install
 
 
+License = MIT
+--------------
 
-Contribute
-----------
+DnaChisel is an open-source software originally written at the `Edinburgh Genome Foundry
+<http://edinburgh-genome-foundry.github.io/home.html>`_ by `Zulko <https://github.com/Zulko>`_
+and `released on Github <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ under the MIT licence (¢ Edinburg Genome Foundry).
 
-DnaWeaver is an open-source library originally written at the Edinburgh Genome Foundry by Zulko_.
-It is released on Github under the MIT licence, everyone is welcome to contribute.
-
-
-Cite
-----------
-
-If you are using DnaWeaver, please consider advertising for it or citing the original paper:
+Everyone is welcome to contribute !

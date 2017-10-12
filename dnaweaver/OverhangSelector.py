@@ -1,3 +1,6 @@
+""" This module contains overhangs selectors for methods such as
+Gibson Assembly, Golden Gate assembly, recombination in yeast."""
+
 import numpy as np
 from cachetools import LRUCache, cached
 try:

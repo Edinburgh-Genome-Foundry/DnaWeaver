@@ -1,4 +1,4 @@
-from dnaweaver import (ExternalDnaOffer,
+from dnaweaver import (CommercialDnaOffer,
                        DnaAssemblyStation,
                        DnaSourcesComparator,
                        PcrOutStation,
@@ -17,21 +17,21 @@ show_progress = False
 ecoli_blast_path = os.path.join("examples_data", "ecoli_blast_db", "ecoli")
 sequence_path = os.path.join("examples_data", "multistep_assembly_seq.txt")
 
-oligo_com = ExternalDnaOffer(
+oligo_com = CommercialDnaOffer(
     name="Oligo.com",
     sequence_constraints=[lambda seq: len(seq) < 200],
     price_function=lambda sequence: 0.10 * len(sequence),
     lead_time=7
 )
 
-deluxe_dna_com = ExternalDnaOffer(
+deluxe_dna_com = CommercialDnaOffer(
     name="DeluxeDna.com",
     sequence_constraints=[lambda seq: len(seq) < 4000],
     price_function=lambda sequence: 0.20 * len(sequence),
     lead_time=10
 )
 
-cheap_dna_com = ExternalDnaOffer(
+cheap_dna_com = CommercialDnaOffer(
     name="CheapDna.com",
     sequence_constraints=[
         lambda seq: len(seq) < 4000,

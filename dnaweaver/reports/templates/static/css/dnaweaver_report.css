@@ -1,0 +1,147 @@
+.header {
+    height:80px;
+}
+
+.header-logo {
+    height:60px;
+    width:auto;
+    position:absolute;
+}
+
+.header p {
+    text-align:right;
+    font-size:10px;
+}
+
+body {
+    width:18cm;
+    margin: 10px auto;
+    font-family: Raleway;
+    font-size:14px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom:40px;
+}
+
+
+h2 {
+    margin-top:40px;
+    margin-bottom:20px;
+}
+
+p {
+    text-align: justify;
+}
+
+.details-table {
+    border-radius: 25px;
+    border-style: solid;
+    border-color: black;
+    border: 1px solid black;
+    padding-bottom:10px
+}
+
+.details-table table{
+    width:100%;
+}
+
+.details-table td {
+    vertical-align: top;
+}
+
+
+.details-table table {
+    margin: 0px auto;
+}
+
+.details-table h3 {
+    text-align:center;
+}
+
+.list-table tr >td:first-child {
+    text-align:right;
+    padding-right:15px;
+}
+
+.supply-graph-schema {
+    width:100%;
+}
+
+.assembly-timeline-schema {
+    margin-left: 15%;
+    width: 70%;
+    max-height:900px;
+    height:100%;
+}
+
+.assembly-graph-schema {
+    margin-left: 15%;
+    width: 70%;
+    max-height:900px;
+    height:100%;
+}
+
+.assembly-blocks-schema {
+    max-width: 80%;
+    margin-left:10%;
+}
+
+.fancy-table { margin-bottom: 1.4em; width:100%; }
+.fancy-table th          { font-weight: bold; }
+.fancy-table thead th    { background: #c3d9ff; }
+.fancy-table th,td,caption { padding: 4px 10px 4px 5px; }
+.fancy-table tbody tr:nth-child(even) td,
+.fancy-table tbody tr.even td  {
+	background: #e5ecf9;
+}
+
+.fancy-table td {
+    max-width: 300px;
+    text-align:center
+}
+
+.fancy-table a, .sequence-table a {
+    color: #0000aa;
+    text-decoration: none;
+}
+
+.fancy-table th {
+    text-align:center
+}
+
+.sequence-table {
+    border-spacing: 0;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+
+.sequence-table th:nth-child(1) { text-align: center;}
+.sequence-table th:nth-child(2) { text-align: center;}
+.sequence-table th:nth-child(3) { text-align: left;}
+
+.sequence-table td:nth-child(2) {
+    border-right: 1px solid black;
+}
+.sequence-table td:nth-child(3) {
+    font-size: 8px;
+    max-width: 500px;
+    font-family: "Inconsolata", "Ubuntu Mono", "Courier";
+    word-break: break-all;
+}
+
+.assembly-section {
+    margin-top: 30px;
+}
+
+@page {
+    margin: 2cm 0cm;
+
+    @bottom-right {
+        font-family: Raleway;
+        padding-right: 20px;
+        content: "Page " counter(page)
+                 " of " counter(pages) }
+}

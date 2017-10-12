@@ -11,7 +11,7 @@ As a solution, we locate these sites and forced the solver to cut in the middle
 of these sites.
 """
 
-from dnaweaver import (ExternalDnaOffer, DnaAssemblyStation,
+from dnaweaver import (CommercialDnaOffer, DnaAssemblyStation,
                         GoldenGateAssemblyMethod)
 from dnachisel import (random_dna_sequence, enzyme_pattern,
                        NoPatternConstraint, homopolymer_pattern)
@@ -44,7 +44,7 @@ all_forbidden_patterns_centers = sorted([
     for (a, b) in pattern.find_matches(sequence)
 ])
 
-cheap_dna_com = ExternalDnaOffer(
+cheap_dna_com = CommercialDnaOffer(
     "CheapDNA.com",
     sequence_constraints= [NoPatternConstraint(pattern)
                            for pattern in forbidden_patterns],
