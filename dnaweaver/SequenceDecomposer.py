@@ -1,7 +1,6 @@
 """Optimization techniques"""
 
 import numpy as np
-from tqdm import tqdm
 import networkx as nx
 from .shortest_path_algorithms import (NoSolutionFoundError,
                                        shortest_valid_path,
@@ -149,16 +148,16 @@ class SequenceDecomposer:
                 end
                 for end in range(ends_min, ends_max)
                 if (end in valid_cuts) and
-                all(fl((start, end)) for fl in self.segments_constraints)
+                all([fl((start, end)) for fl in self.segments_constraints])
             ]
             segments += [(start, end) for end in valid_ends]
             reachable_indices = reachable_indices.union(valid_ends)
         graph = nx.DiGraph(segments)
+
         if prune_deadends:
             ancestors = nx.ancestors(graph, L)
             graph.remove_nodes_from([n for n in graph if (n != L)
-                                     and n not in ancestors])
-            # graph = graph.subgraph(nx.ancestors(graph, L).union({L}))
+                                     and (n not in ancestors)])
         return graph
 
     def find_shortest_path(self, graph):
@@ -193,7 +192,6 @@ class SequenceDecomposer:
                 return graph, None
 
         else:
-            graph = graph.copy()
             for start, end in self.logger.iter_bar(edge=list(graph.edges()),
                                                    bar_prefix=self.bar_prefix):
                 weight = self.segment_score_function((start, end))
