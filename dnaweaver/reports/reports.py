@@ -220,7 +220,7 @@ def make_pdf_report(quote, filename=None):
     css_path = os.path.join(base_path, "static", "css")
     stylesheets = [
         os.path.join(css_path, "dnaweaver_report.css"),
-        os.path.join(css_path, "font-awesome.min.css")
+        # os.path.join(css_path, "font-awesome.min.css")
     ]
     html_out = make_html_report(quote)
     weasy_html = weasyprint.HTML(string=html_out, base_url=base_path)

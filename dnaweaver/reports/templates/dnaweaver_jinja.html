@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="./static/css/dnaweaver_report.css">
-    <link rel="stylesheet" type="text/css" href="./static/css/font-awesome-4.6.3/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="./static/css/font-awesome-4.6.3/css/font-awesome.min.css"> -->
 
     <title> DNA Weaver - Assembly report </title>
 </head>
@@ -67,10 +67,6 @@
                     <td>Commercial orders:</td>
                     <td>{{n_orders}} ({{cost_orders}} $)</td>
                   </tr>
-                  <tr>
-                    <td>Other operations:</td>
-                    <td>{{n_other_operations}} ({{cost_others}} $)</td>
-                  </tr>
                 </table>
                 </div>
             </td>
@@ -126,7 +122,7 @@
 
     {% for op in assembly_operations %}
 
-        <h3 class="assembly-section"><i class='fa fa-cubes' aria-hidden='true'></i>Assembly {{op.id}}</h3>
+        <h3 class="assembly-section"></i>Assembly {{op.id}}</h3>
         <table border="0" class="dataframe fancy-table assembly-operation-table">
   <thead>
     <tr style="text-align: right;">
@@ -139,7 +135,7 @@
   </thead>
   <tbody>
     <tr>
-      <td>{{op.source.name}}</td>
+      <td>{{op.source}}</td>
       <td>{{op.source.assembly_method_name}}</td>
       <td>{{op.children | length}}</td>
       <td>{{op.sequence | length}}</td>
@@ -152,9 +148,6 @@
     {% for other_op_id in op.children %}
     <a href="#anchor_{{other_op_id}}">{{other_op_id}}</a>,
     {% endfor %}
-</p>
-<p>
-    EcoRI internal digestion bands: {{op.ecori_bands}}
 </p>
 
     {% endfor %}

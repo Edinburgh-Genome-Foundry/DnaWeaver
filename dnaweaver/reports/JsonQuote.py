@@ -63,9 +63,9 @@ class JsonQuote:
             if node.get("_visited", False):
                 return
             node["_visited"] = True
-            assembly_plan = node.pop("assembly_plan")
+            assembly_plan = node.get("assembly_plan", [])
             node["children"] = [
-                n["id"] for n in node.get("assembly_plan", [])
+                n["id"] for n in assembly_plan
             ]
             nodes.append(node)
             for other in sorted(assembly_plan,
