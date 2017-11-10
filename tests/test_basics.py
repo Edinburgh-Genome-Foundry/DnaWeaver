@@ -25,4 +25,4 @@ def test_simple_gibson_assembly_station():
     sequence = random_dna_sequence(5000, seed=1234)
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
     assert quote.accepted
-    assert quote.price == 405.76
+    assert 405.7 < quote.price < 405.8
