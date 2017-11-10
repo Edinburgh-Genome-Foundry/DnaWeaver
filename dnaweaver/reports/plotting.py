@@ -18,8 +18,12 @@ except ImportError:
 
 from base64 import b64encode
 
-from bokeh.plotting import figure, ColumnDataSource
-from bokeh.models import (Range1d, HoverTool, Legend)
+try:
+    from bokeh.plotting import figure, ColumnDataSource
+    from bokeh.models import (Range1d, HoverTool, Legend)
+    BOKEH_AVAILABLE = True
+except ImportError:
+    BOKEH_AVAILABLE = False
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

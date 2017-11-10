@@ -28,48 +28,35 @@ In and other example (golden_gate_with_forced_cuts_example.py) we show a
 smarter way to solve this problem by forcing the location of certain cuts.
 """
 
-from dnaweaver import *
-from dnachisel import random_dna_sequence, enzyme_pattern, NoPatternConstraint
-from dnachisel.biotools import gc_content
-import numpy as np
+from dnaweaver import (CommercialDnaOffer, GoldenGateAssemblyMethod,
+                       PerBasepairPricing, DnaAssemblyStation)
+from dnachisel import random_dna_sequence, enzyme_pattern, AvoidPattern
 
-np.random.seed(1234)
-
-sequence = random_dna_sequence(5000)
-
-aarI_site = enzyme_pattern("AarI")
-sites_locations = aarI_site.find_matches(sequence)
-enzyme_sites_centres = sorted([(a + b) // 2 for (a, b) in sites_locations])
-print ("BsaI site found around positions %s" % sites_locations)
-
-company_1 = DnaOffer(
+company = CommercialDnaOffer(
     name="Company InGen",
-    constraints=[NoPatternConstraint(aarI_site)],
-    pricing=lambda sequence: 0.10 * len(sequence)
+    sequence_constraints=[AvoidPattern(enzyme='AarI')],
+    pricing=PerBasepairPricing(0.08)
+)
+assembly_station = DnaAssemblyStation(
+    name='GoldenGate Assembly Station',
+    assembly_method=GoldenGateAssemblyMethod(
+        min_segment_length=50,
+        max_segment_length=2000
+    ),
+    dna_source=company,
+    coarse_grain=50,
+    logger='bars'
 )
 
-def is_suitable_gg_linker(location):
-    """Return True iff the 4bp site around `location` has less than 100% GC"""
-    subsequence = sequence[location - 2:location + 2]
-    return (len(subsequence) == 4) and (gc_content(subsequence) < 1)
+sequence = random_dna_sequence(4000, seed=123)
+sites_locations = enzyme_pattern("AarI").find_matches(sequence)
+enzyme_sites_centres = [(l.start + l.end) // 2 for l in sites_locations]
+print ("AarI site(s) were found around position(s) %s" % enzyme_sites_centres)
+quote = assembly_station.get_quote(sequence,  with_assembly_plan=True)
 
-problem = DnaOrderingProblem(
-    sequence=sequence,
-    offers=[company_1],
-    location_filters=(is_suitable_gg_linker,),
-    assembly_method=GoldenGateAssemblyMethod()
-)
-
-solution = problem.solve(
-    min_segment_length=100,
-    max_segment_length=4000,
-    nucleotide_resolution=10,
-)
-
-print (solution.summary())
-
-# Save as csv
-solution.to_dataframe().to_csv("golden_gate_ordering_sheet.csv", index=False)
+print (quote)
+if quote.accepted:
+    print (quote.assembly_step_summary())
 
 # This will print:
 # ----------------

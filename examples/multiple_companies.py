@@ -37,13 +37,13 @@ cheap_dna_offer = CommercialDnaOffer(
         NoPatternConstraint("GGTCTC"),
         SequenceLengthConstraint(max_length=4000)
     ],
-    price_function=PerBasepairPricing(per_basepair_price=0.10),
+    pricing=PerBasepairPricing(per_basepair_price=0.10),
 )
 
 deluxe_dna_offer = CommercialDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[SequenceLengthConstraint(max_length=3000)],
-    price_function=PerBasepairPricing(per_basepair_price=0.20),
+    pricing=PerBasepairPricing(per_basepair_price=0.20),
 )
 
 assembly_station = DnaAssemblyStation(

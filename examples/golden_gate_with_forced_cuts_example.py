@@ -12,43 +12,44 @@ of these sites.
 """
 
 from dnaweaver import (CommercialDnaOffer, DnaAssemblyStation,
-                        GoldenGateAssemblyMethod)
-from dnachisel import (random_dna_sequence, enzyme_pattern,
-                       NoPatternConstraint, homopolymer_pattern)
-import numpy
+                       GoldenGateAssemblyMethod)
+from dnachisel import (random_compatible_dna_sequence, enzyme_pattern,
+                       AvoidPattern, homopolymer_pattern)
 
-numpy.random.seed(1234)
-
-sequence = random_dna_sequence(5000)
+sequence = random_compatible_dna_sequence(
+    sequence_length=5000, seed=123, constraints=[AvoidPattern(enzyme='BsaI')])
 
 forbidden_patterns = [
     enzyme_pattern("AarI"),
-    homopolymer_pattern("G", 9)
+    homopolymer_pattern("G", 9),
+    enzyme_pattern("BsaI"),
 ]
 
 for pattern in forbidden_patterns:
     matches = pattern.find_matches(sequence)
-    print ("Pattern %s found at locations %s" % (pattern, matches))
+    print ("Pattern %s was found at location(s): %s" % (
+        pattern, ", ".join([str(m) for m in matches])))
 
 def force_cuts(sequence):
     all_forbidden_patterns_centers = sorted([
-        (a + b) // 2
+        (location.start + location.end) // 2
         for pattern in forbidden_patterns
-        for (a, b) in pattern.find_matches(sequence)
+        for location in pattern.find_matches(sequence)
     ])
+    print (all_forbidden_patterns_centers)
     return all_forbidden_patterns_centers
 
 all_forbidden_patterns_centers = sorted([
-    (a + b) // 2
+    (location.start + location.end) // 2
     for pattern in forbidden_patterns
-    for (a, b) in pattern.find_matches(sequence)
+    for location in pattern.find_matches(sequence)
 ])
 
 cheap_dna_com = CommercialDnaOffer(
     "CheapDNA.com",
-    sequence_constraints= [NoPatternConstraint(pattern)
-                           for pattern in forbidden_patterns],
-    price_function=lambda sequence: 0.10 * len(sequence))
+    sequence_constraints=[AvoidPattern(pattern)
+                          for pattern in forbidden_patterns],
+    pricing=lambda sequence: 0.10 * len(sequence))
 
 
 assembly_station = DnaAssemblyStation(
@@ -60,11 +61,11 @@ assembly_station = DnaAssemblyStation(
         force_cuts=force_cuts
     ),
     dna_source=cheap_dna_com,
-    nucleotide_resolution=10,
-    refine_resolution=1
+    coarse_grain=10,
+    fine_grain=1
 )
 
-quote = assembly_station.get_quote(sequence, with_ordering_plan=True)
+quote = assembly_station.get_quote(sequence)
 
 print (quote)
 if quote.accepted:

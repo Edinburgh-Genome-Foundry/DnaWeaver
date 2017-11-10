@@ -6,6 +6,17 @@ import networkx as nx
 from .shortest_path_algorithms import (NoSolutionFoundError,
                                        shortest_valid_path,
                                        astar_path)
+from proglog import TqdmProgressBarLogger, ProgressBarLogger
+
+_default_bars = ('segment', 'edge')
+class SequenceDecomposerLogger(TqdmProgressBarLogger):
+
+    def __init__(self, bars=_default_bars, notebook='default',
+                 min_time_interval=0.2):
+        ignored_bars = set(_default_bars).difference(bars)
+        TqdmProgressBarLogger.__init__(self, bars=bars, notebook=notebook,
+                                       ignored_bars=ignored_bars,
+                                       min_time_interval=min_time_interval)
 
 class SequenceDecomposer:
     """Find the sequence cuts which optimize the sum of segments scores.
@@ -84,7 +95,7 @@ class SequenceDecomposer:
                  forced_cuts=(), suggested_cuts=(), cuts_set_constraints=(),
                  min_segment_length=0, max_segment_length=None, coarse_grain=1,
                  fine_grain=1, a_star_factor=0, path_size_limit=None,
-                 path_size_min_step=0.001, progress_bars=False):
+                 path_size_min_step=0.001, logger=None, bar_prefix=''):
 
         self.segment_score_function = segment_score_function
         self.forced_cuts = set(list(forced_cuts) + [0, sequence_length])
@@ -98,34 +109,38 @@ class SequenceDecomposer:
         else:
             self.max_segment_length = max_segment_length
         self.min_segment_length = min_segment_length
-        self.progress_bars = progress_bars
+
         self.coarse_grain = coarse_grain
         self.fine_grain = fine_grain
         self.a_star_factor = a_star_factor
         self.path_size_limit = path_size_limit
         self.path_size_min_step = path_size_min_step
 
+        if logger == 'bars':
+            logger = SequenceDecomposerLogger()
+        if logger is None:
+            logger = ProgressBarLogger(min_time_interval=0.3) #  silent logger
+        self.logger = logger
+        self.bar_prefix = bar_prefix
+
         if forced_cuts != []:
             def forced_cuts_filter(segment):
                 start, end = segment
                 return not any((start < cut < end) for cut in forced_cuts)
             self.segments_constraints.append(forced_cuts_filter)
-        self.valid_cuts = set(
+        self.valid_cuts = set([
             index for index in range(sequence_length)
             if all(fl(index) for fl in self.cut_location_constraints)
-        )
-
-    def iterate(self, iterator, message=None):
-        if self.progress_bars:
-            return tqdm(iterator, desc=message, leave=False)
-        else:
-            return iterator
+        ])
 
     def compute_graph(self, valid_cuts, prune_deadends=True):
         L = self.sequence_length
         segments = []
         reachable_indices = set({0})
-        for start in self.iterate(sorted(valid_cuts), "Listing segments"):
+
+        # LIST THE SEGMENTS
+        for start in self.logger.iter_bar(segment=sorted(valid_cuts),
+                                          bar_prefix=self.bar_prefix):
             if start not in reachable_indices:
                 continue
             ends_min = start + self.min_segment_length
@@ -138,14 +153,17 @@ class SequenceDecomposer:
             ]
             segments += [(start, end) for end in valid_ends]
             reachable_indices = reachable_indices.union(valid_ends)
-        graph = nx.DiGraph()
-        graph.add_edges_from(segments)
+        graph = nx.DiGraph(segments)
         if prune_deadends:
-            graph = graph.subgraph(nx.ancestors(graph, L).union({L}))
+            ancestors = nx.ancestors(graph, L)
+            graph.remove_nodes_from([n for n in graph if (n != L)
+                                     and n not in ancestors])
+            # graph = graph.subgraph(nx.ancestors(graph, L).union({L}))
         return graph
 
     def find_shortest_path(self, graph):
-        if self.a_star_factor > 0:
+        constraints = self.cuts_set_constraints
+        if (len(constraints) == 0) and (self.a_star_factor > 0):
             memodict = {}
             def compute_weight(start, end, props):
                 """Compute the weight (cost) for segment (start, end).
@@ -167,27 +185,31 @@ class SequenceDecomposer:
                 return self.a_star_factor * (n2 - n1)
 
             try:
-                return astar_path(graph, 0, self.sequence_length,
+                path = astar_path(graph, 0, self.sequence_length,
                                   heuristic=heuristic,
                                   weight=compute_weight)
+                return graph, path
             except (KeyError, nx.NetworkXNoPath):
-                raise NoSolutionFoundError("Could not find a solution in "
-                                           "optimize_cuts_with_graph")
+                return graph, None
+
         else:
-            for start, end in self.iterate(list(graph.edges()),
-                                           "Computing edge weights"):
+            graph = graph.copy()
+            for start, end in self.logger.iter_bar(edge=list(graph.edges()),
+                                                   bar_prefix=self.bar_prefix):
                 weight = self.segment_score_function((start, end))
                 if weight < 0:
                     graph.remove_edge(start, end)
                 else:
                     graph[start][end]["weight"] = weight
 
-            return shortest_valid_path(
-                graph, 0, self.sequence_length,
-                nodes_constraints=self.cuts_set_constraints,
-                size_limit=self.path_size_limit,
-                min_step=self.path_size_min_step
-            )
+            try:
+                path = shortest_valid_path(graph, 0, self.sequence_length,
+                                           nodes_constraints=constraints,
+                                           size_limit=self.path_size_limit,
+                                           min_step=self.path_size_min_step)
+                return graph, path
+            except (KeyError, nx.NetworkXNoPath):
+                return graph, None
 
     def compute_coarse_cuts(self, grain="default"):
         L = self.sequence_length
@@ -197,10 +219,16 @@ class SequenceDecomposer:
         valid_cuts = ((grained_cuts.intersection(self.valid_cuts))
                       .union(self.forced_cuts).union(self.suggested_cuts))
         self.coarse_graph = self.compute_graph(valid_cuts)
+        error = NoSolutionFoundError("No coarse solution found, possibly too "
+                                     "strong cuts/segments constraints.")
         if 0 not in self.coarse_graph.nodes():
-            raise NoSolutionFoundError("No valid solution found, possibly too "
-                                       "strong cuts/segments constraints.")
-        self.coarse_cuts = self.find_shortest_path(self.coarse_graph)
+            raise error
+        graph, cuts = self.find_shortest_path(self.coarse_graph)
+
+        self.weighted_coarse_graph = graph
+        if cuts is None:
+            raise error
+        self.coarse_cuts = cuts
 
     def compute_fine_cuts(self):
         L = self.sequence_length
@@ -215,7 +243,7 @@ class SequenceDecomposer:
         refinement_cuts = ((refinement_cuts.intersection(self.valid_cuts))
                            .union(self.forced_cuts))
         self.fine_graph = self.compute_graph(refinement_cuts)
-        self.fine_cuts = self.find_shortest_path(self.fine_graph)
+        _, self.fine_cuts = self.find_shortest_path(self.fine_graph)
 
     def compute_optimal_cuts(self):
         self.compute_coarse_cuts()

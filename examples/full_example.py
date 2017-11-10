@@ -4,8 +4,12 @@ from dnaweaver import (CommercialDnaOffer,
                        GibsonAssemblyMethod,
                        GoldenGateAssemblyMethod,
                        BuildAGenomeAssemblyMethod,
-                       DnaSourcesComparator)
-from dnaweaver.biotools import NoPatternConstraint, random_dna_sequence
+                       DnaSourcesComparator,
+                       TmOverhangSelector,
+                       FixedSizeOverhangSelector,
+                       SequenceLengthConstraint)
+from dnaweaver.biotools import random_dna_sequence
+from dnaweaver.constraints import NoPatternConstraint
 import numpy
 
 
@@ -16,7 +20,7 @@ cheap_dna_com = CommercialDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[NoPatternConstraint("GGTCTC"),
                           lambda seq: len(seq) < 200],
-    price_function=lambda sequence: 0.10 * len(sequence),
+    pricing=lambda sequence: 0.10 * len(sequence),
     lead_time=10,
     memoize=True
 )
@@ -24,26 +28,26 @@ cheap_dna_com = CommercialDnaOffer(
 deluxe_dna_com = CommercialDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[lambda seq: len(seq) < 200],
-    price_function=lambda sequence: 0.20 * len(sequence),
+    pricing=lambda sequence: 0.20 * len(sequence),
     lead_time=5,
     memoize=True
 )
 
 big_dna_com = CommercialDnaOffer(
     name="BigDNA.com",
-    sequence_constraints=[lambda seq: 2000 < len(seq) < 4000],
-    price_function=lambda sequence: 0.40 * len(sequence),
+    sequence_constraints=[SequenceLengthConstraint(min_length=2000,
+                                                   max_length=4000)],
+    pricing=lambda sequence: 0.40 * len(sequence),
     lead_time=10,
     memoize=True
 )
-
 
 # OLIGOS TO BLOCKS ASSEMBLY
 
 oligo_assembly_station = DnaAssemblyStation(
     name="Oligo Assembly Station",
     assembly_method=BuildAGenomeAssemblyMethod(
-        homology_arm_length=20,
+        overhang_selector=TmOverhangSelector(),
         min_segment_length=40,
         max_segment_length=100,
         duration=8,
@@ -53,10 +57,9 @@ oligo_assembly_station = DnaAssemblyStation(
         cheap_dna_com,
         deluxe_dna_com
     ]),
-    nucleotide_resolution=10,
-    refine_resolution=False,
+    coarse_grain=10,
+    fine_grain=1,
     memoize=True,
-    progress_bars=False
 )
 
 
@@ -75,17 +78,16 @@ blocks_assembly_comparator = DnaSourcesComparator([
     DnaAssemblyStation(
         name="Blocks Assembly (Gibson)",
         assembly_method=GibsonAssemblyMethod(
-            homology_arm_length=40,
+            overhang_selector=TmOverhangSelector(min_size=15, max_size=30),
             min_segment_length=2000,
             max_segment_length=4000,
             duration=8,
             cost=10
         ),
         dna_source=blocks_sources_comparator,
-        nucleotide_resolution=300,
-        refine_resolution=False,
-        memoize=True,
-        progress_bars=True
+        coarse_grain=300,
+        fine_grain=False,
+        memoize=True
     ),
     DnaAssemblyStation(
         name="Blocks Assembly (Golden Gate)",
@@ -97,10 +99,9 @@ blocks_assembly_comparator = DnaSourcesComparator([
             cost=2
         ),
         dna_source=blocks_sources_comparator,
-        nucleotide_resolution=400,
-        refine_resolution=False,
-        memoize=True,
-        progress_bars=False
+        coarse_grain=300,
+        fine_grain=20,
+        memoize=True
     )
 ])
 
@@ -110,15 +111,14 @@ blocks_assembly_comparator = DnaSourcesComparator([
 chunks_assembly_station = DnaAssemblyStation(
     name="Yeast Recombination",
     assembly_method=GibsonAssemblyMethod(
-        homology_arm_length=300,
+        overhang_selector=FixedSizeOverhangSelector(300),
         min_segment_length=15000,
         max_segment_length=25000,
         duration=8
     ),
     dna_source=blocks_assembly_comparator,
-    nucleotide_resolution=2000,
-    refine_resolution=False,
-    progress_bars=False
+    coarse_grain=2000,
+    fine_grain=20
 )
 
 numpy.random.seed(1234)

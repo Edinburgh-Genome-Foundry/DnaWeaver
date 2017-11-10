@@ -1,4 +1,5 @@
 from .biotools import gc_content, reverse_complement
+from Bio import Restriction
 import re
 
 class NoPatternConstraint:
@@ -13,12 +14,30 @@ class NoPatternConstraint:
     explicitly, which would not be the case for a function
     """
 
-    def __init__(self, pattern, is_regex=False, with_revcomp=True):
+    def __init__(self, pattern=None, enzyme=None, is_regex=False,
+                 with_revcomp=True):
+
+        self.biopython_enzyme = None
+        if enzyme is not None:
+            if enzyme in Restriction.__dict__:
+                biopython_enzyme = Restriction.__dict__[enzyme]
+                if all([c in 'ATGC' for c in biopython_enzyme.site]):
+                    pattern = biopython_enzyme.site
+                else:
+                    self.biopython_enzyme = biopython_enzyme
+            else:
+                raise ValueError("Unknown enzyme: %s" % enzyme)
+        self.enzyme = enzyme
         self.pattern = pattern
         self.is_regex = is_regex
         self.with_revcomp = with_revcomp
+        if self.with_revcomp and self.pattern:
+            self.rev_pattern = reverse_complement(pattern)
 
     def __call__(self, sequence):
+
+        if self.biopython_enzyme is not None:
+            return self.biopython_enzyme.search(sequence) == []
 
         if self.is_regex:
             cm_pattern = re.compile(self.pattern)
@@ -31,10 +50,9 @@ class NoPatternConstraint:
             else:
                 return False
         else:
-            pattern_rev = reverse_complement(self.pattern)
             if self.pattern not in sequence:
                 if self.with_revcomp:
-                    return (pattern_rev not in sequence)
+                    return (self.rev_pattern not in sequence)
                 else:
                     return True
             else:

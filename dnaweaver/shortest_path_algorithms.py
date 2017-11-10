@@ -177,10 +177,11 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
         return path
 
     elif len(nodes_constraints) == 0:
-        return nx.dijkstra_path(graph, start, end)
+        return nx.dijkstra_path(graph, start, end, weight='weight')
 
     else:
-        shortest_paths = nx.shortest_simple_paths(graph, start, end)
+        shortest_paths = nx.shortest_simple_paths(graph, start, end,
+                                                  weight='weight')
         for i in range(compatibility_search_cutoff):
             shortest_path = next(shortest_paths)
             if all([nodes_constraint(shortest_path)

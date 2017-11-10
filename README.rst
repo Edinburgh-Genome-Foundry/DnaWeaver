@@ -36,7 +36,9 @@ where the sub-fragments can be ordered from two companies:
 Fragments are assembled using Gibson Assembly with 40bp overlap between segments.
 
 Here is the Python code to solve the problem with DnaWeaver:
-::
+
+.. code:: python
+
     from dnaweaver import *
 
     cheap_dna_offer = CommercialDnaOffer(
@@ -45,13 +47,13 @@ Here is the Python code to solve the problem with DnaWeaver:
             no_pattern_constraint("GGTCTC"),
             lambda seq: len(seq) < 4000
         ],
-        price_function=lambda seq: 0.10 * len(seq),
+        pricing=lambda seq: 0.10 * len(seq),
     )
 
     deluxe_dna_offer = CommercialDnaOffer(
         name="DeluxeDNA.com",
         sequence_constraints=[lambda seq: len(seq) < 3000],
-        price_function=(lambda seq: 0.20 * len(seq)),
+        pricing=(lambda seq: 0.20 * len(seq)),
     )
 
     assembly_station = DnaAssemblyStation(
@@ -70,7 +72,9 @@ Here is the Python code to solve the problem with DnaWeaver:
     print (quote.assembly_step_summary())
 
 Result:
-::
+
+.. code:: bash
+
     Ordering plan:
     (0, 2005): From CheapDNA.com, price 202.50, lead_time 10.0
     (2005, 4020): From CheapDNA.com, price 205.50, lead_time 10.0

@@ -15,7 +15,7 @@ yeastfab_library = PartsLibrary("YeastFab", parts_dict=parts_by_sequence)
 dna_company = CommercialDnaOffer(
     "DNA Company",
     sequence_constraints=[lambda seq: len(seq) < 300],
-    price_function=lambda seq: 0.1 * len(seq)
+    pricing=lambda seq: 0.1 * len(seq)
 )
 
 

@@ -64,13 +64,13 @@ tdi_rules = [
 cell9_offer = CommercialDnaOffer(
     name="Cell9 offer",
     sequence_constraints=cell9_rules,
-    price_function=lambda sequence: 0.10 * len(sequence)
+    pricing=lambda sequence: 0.10 * len(sequence)
 )
 
 tdi_offer = CommercialDnaOffer(
     name="TDI Offer",
     sequence_constraints=tdi_rules,
-    price_function=lambda sequence: 0.10 * len(sequence)
+    pricing=lambda sequence: 0.10 * len(sequence)
 )
 
 

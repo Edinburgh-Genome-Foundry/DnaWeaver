@@ -14,7 +14,7 @@ cheap_dna_com = CommercialDnaOffer(
     name="CheapDNA.com",
     sequence_constraints=[cst.GCContentConstraint(0.4, 0.6, gc_window=50),
                           cst.SequenceLengthConstraint(max_length=200)],
-    price_function=lambda sequence: 0.10 * len(sequence),
+    pricing=lambda sequence: 0.10 * len(sequence),
     lead_time=10,
     memoize=True
 )
@@ -22,7 +22,7 @@ cheap_dna_com = CommercialDnaOffer(
 deluxe_dna_com = CommercialDnaOffer(
     name="DeluxeDNA.com",
     sequence_constraints=[cst.SequenceLengthConstraint(max_length=200)],
-    price_function=lambda sequence: 0.20 * len(sequence),
+    pricing=lambda sequence: 0.20 * len(sequence),
     lead_time=5,
     memoize=True
 )
@@ -30,7 +30,7 @@ deluxe_dna_com = CommercialDnaOffer(
 big_dna_com = CommercialDnaOffer(
     name="BigDNA.com",
     sequence_constraints=[cst.SequenceLengthConstraint(2000, 4000)],
-    price_function=lambda sequence: 0.40 * len(sequence),
+    pricing=lambda sequence: 0.40 * len(sequence),
     lead_time=10,
     memoize=True
 )

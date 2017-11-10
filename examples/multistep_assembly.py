@@ -20,14 +20,14 @@ sequence_path = os.path.join("examples_data", "multistep_assembly_seq.txt")
 oligo_com = CommercialDnaOffer(
     name="Oligo.com",
     sequence_constraints=[lambda seq: len(seq) < 200],
-    price_function=lambda sequence: 0.10 * len(sequence),
+    pricing=lambda sequence: 0.10 * len(sequence),
     lead_time=7
 )
 
 deluxe_dna_com = CommercialDnaOffer(
     name="DeluxeDna.com",
     sequence_constraints=[lambda seq: len(seq) < 4000],
-    price_function=lambda sequence: 0.20 * len(sequence),
+    pricing=lambda sequence: 0.20 * len(sequence),
     lead_time=10
 )
 
@@ -39,7 +39,7 @@ cheap_dna_com = CommercialDnaOffer(
         lambda seq: no_pattern_constraint("CACCTGC"),
         lambda seq: (0.4 < gc_content(seq) < 0.6)
     ],
-    price_function=lambda sequence: 0.10 * len(sequence),
+    pricing=lambda sequence: 0.10 * len(sequence),
     lead_time=15,
     memoize=True
 )

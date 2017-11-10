@@ -258,7 +258,7 @@ def gc_content(sequence, window_size=None):
         return 1.0 * (a - b) / window_size
 
 def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
-    padding = padding*padding_nuc
+    padding = padding * padding_nuc
     sequence = Seq(padding + sequence + padding)
     return Restriction.__dict__[enzyme_name].search(sequence)
 
