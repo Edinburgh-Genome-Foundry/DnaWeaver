@@ -1,5 +1,14 @@
+.. image:: https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/title.png
+   :alt: [logo]
+   :align: center
+   :width: 600px
+
 DnaWeaver
 ==========
+
+.. image:: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master
+   :target: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver
+   :alt: Travis CI build status
 
 (documentation in progress, come back later !)
 
