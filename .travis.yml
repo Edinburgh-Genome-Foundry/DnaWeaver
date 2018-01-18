@@ -3,8 +3,11 @@ python:
   - "3.6"
 # command to install dependencies
 install:
-  - pip install pytest
+  - pip install pytest coveralls pytest-cov
   - pip install -e .
 # command to run tests
 script:
-  - python -m pytest
+  - python -m pytest -v --cov dnaweaver --cov-report term-missing
+
+after_success:
+  - coveralls

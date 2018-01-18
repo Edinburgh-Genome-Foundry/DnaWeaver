@@ -118,7 +118,8 @@ chunks_assembly_station = DnaAssemblyStation(
     ),
     dna_source=blocks_assembly_comparator,
     coarse_grain=2000,
-    fine_grain=20
+    fine_grain=20,
+    logger='bars'
 )
 
 numpy.random.seed(1234)
