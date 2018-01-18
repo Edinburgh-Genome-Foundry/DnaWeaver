@@ -1,10 +1,9 @@
-.. image:: https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/title.png
-   :alt: [logo]
-   :align: center
-   :width: 600px
+.. raw:: html
 
-DnaWeaver
-==========
+    <p align="center">
+    <img alt="DNA Weaver Logo" title="DNA Weaver Logo" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/title.png" width="500">
+    <br /><br />
+    </p>
 
 .. image:: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master
    :target: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver
