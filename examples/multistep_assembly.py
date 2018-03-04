@@ -5,8 +5,7 @@ from dnaweaver import (CommercialDnaOffer,
                        BuildAGenomeAssemblyMethod,
                        GibsonAssemblyMethod,
                        GoldenGateAssemblyMethod,
-                       no_pattern_constraint,
-                       random_dna_sequence,
+                       NoPatternConstraint,
                        gc_content)
 from copy import copy
 import os
@@ -35,8 +34,8 @@ cheap_dna_com = CommercialDnaOffer(
     name="CheapDna.com",
     sequence_constraints=[
         lambda seq: len(seq) < 4000,
-        lambda seq: no_pattern_constraint("GGTCTC"),
-        lambda seq: no_pattern_constraint("CACCTGC"),
+        lambda seq: NoPatternConstraint("GGTCTC"),
+        lambda seq: NoPatternConstraint("CACCTGC"),
         lambda seq: (0.4 < gc_content(seq) < 0.6)
     ],
     pricing=lambda sequence: 0.10 * len(sequence),

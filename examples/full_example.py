@@ -1,4 +1,4 @@
-
+import os
 from dnaweaver import (CommercialDnaOffer,
                        DnaAssemblyStation,
                        GibsonAssemblyMethod,
@@ -8,9 +8,7 @@ from dnaweaver import (CommercialDnaOffer,
                        TmOverhangSelector,
                        FixedSizeOverhangSelector,
                        SequenceLengthConstraint)
-from dnaweaver.biotools import random_dna_sequence
 from dnaweaver.constraints import NoPatternConstraint
-import numpy
 
 
 
@@ -58,7 +56,7 @@ oligo_assembly_station = DnaAssemblyStation(
         deluxe_dna_com
     ]),
     coarse_grain=10,
-    fine_grain=1,
+    fine_grain=2,
     memoize=True,
 )
 
@@ -100,7 +98,7 @@ blocks_assembly_comparator = DnaSourcesComparator([
         ),
         dna_source=blocks_sources_comparator,
         coarse_grain=300,
-        fine_grain=20,
+        fine_grain=30,
         memoize=True
     )
 ])
@@ -118,14 +116,15 @@ chunks_assembly_station = DnaAssemblyStation(
     ),
     dna_source=blocks_assembly_comparator,
     coarse_grain=2000,
-    fine_grain=20,
+    fine_grain=200,
     logger='bars'
 )
 
-numpy.random.seed(1234)
-sequence = random_dna_sequence(50000)
+sequence_path = os.path.join("examples_data", "multistep_assembly_seq.txt")
+with open(sequence_path, "r") as f:
+    sequence = f.read()
 
-quote = chunks_assembly_station.get_quote(sequence,  with_assembly_plan=True)
+quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
 
 print (quote)
 if quote.accepted:

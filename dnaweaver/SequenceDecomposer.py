@@ -116,21 +116,26 @@ class SequenceDecomposer:
         self.path_size_min_step = path_size_min_step
 
         if logger == 'bars':
-            logger = SequenceDecomposerLogger()
+            logger = SequenceDecomposerLogger(min_time_interval=0.2)
         if logger is None:
-            logger = ProgressBarLogger(min_time_interval=0.3) #  silent logger
+            logger = ProgressBarLogger(min_time_interval=0.3) # silent logger
         self.logger = logger
         self.bar_prefix = bar_prefix
 
-        if forced_cuts != []:
+        if len(forced_cuts) > 0:
             def forced_cuts_filter(segment):
                 start, end = segment
                 return not any((start < cut < end) for cut in forced_cuts)
             self.segments_constraints.append(forced_cuts_filter)
-        self.valid_cuts = set([
-            index for index in range(sequence_length)
-            if all(fl(index) for fl in self.cut_location_constraints)
-        ])
+
+        if len(self.cut_location_constraints) == 0:
+            self.valid_cuts = set(range(sequence_length))
+        else:
+            self.valid_cuts = set([
+                index for index in range(sequence_length)
+                if all(fl(index) for fl in self.cut_location_constraints)
+            ])
+        # print (forced_cuts, self.segments_constraints)
 
     def compute_graph(self, valid_cuts, prune_deadends=True):
         L = self.sequence_length
@@ -144,12 +149,16 @@ class SequenceDecomposer:
                 continue
             ends_min = start + self.min_segment_length
             ends_max = min(L + 1, start + self.max_segment_length)
-            valid_ends = [
-                end
-                for end in range(ends_min, ends_max)
-                if (end in valid_cuts) and
-                all([fl((start, end)) for fl in self.segments_constraints])
-            ]
+            # print (len(valid_cuts), len(range(ends_min, ends_max)))
+            if len(self.segments_constraints) > 0:
+                valid_ends = [
+                    end for end in range(ends_min, ends_max)
+                    if (end in valid_cuts) and
+                    all([fl((start, end)) for fl in self.segments_constraints])
+                ]
+            else:
+                valid_ends = [end for end in range(ends_min, ends_max)
+                              if end in valid_cuts]
             segments += [(start, end) for end in valid_ends]
             reachable_indices = reachable_indices.union(valid_ends)
         graph = nx.DiGraph(segments)
@@ -231,16 +240,16 @@ class SequenceDecomposer:
     def compute_fine_cuts(self):
         L = self.sequence_length
         radius = int(self.coarse_grain / 2)
-        refinement_cuts = set().union(*[
+        fine_cuts = set().union(*[
             set([cut] + ([] if cut in self.forced_cuts else
                          list(range(max(0, cut - radius),
                                     min(L + 1, cut + radius),
                                     self.fine_grain))))
             for cut in self.coarse_cuts
         ])
-        refinement_cuts = ((refinement_cuts.intersection(self.valid_cuts))
+        fine_cuts = ((fine_cuts.intersection(self.valid_cuts))
                            .union(self.forced_cuts))
-        self.fine_graph = self.compute_graph(refinement_cuts)
+        self.fine_graph = self.compute_graph(fine_cuts)
         _, self.fine_cuts = self.find_shortest_path(self.fine_graph)
 
     def compute_optimal_cuts(self):

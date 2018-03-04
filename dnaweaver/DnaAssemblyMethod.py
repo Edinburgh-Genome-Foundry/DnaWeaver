@@ -117,10 +117,12 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
 
     def __init__(self, overhang_selector, **properties):
         super(OverlapingAssemblyMethod, self).__init__(**properties)
-        self.overhang_selector = overhang_selector
-        self.cut_location_constraints.append(
-            overhang_selector.location_filter_method)
-        self.compute_sequence_fragment = overhang_selector.compute_sequence_fragment
+        selector = overhang_selector
+        self.overhang_selector = selector
+        if selector.has_location_filter:
+            self.cut_location_constraints.append(
+                selector.location_filter_method)
+        self.compute_sequence_fragment = selector.compute_sequence_fragment
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):

@@ -23,13 +23,16 @@ class OverhangSelector:
         """Return a filter function f(location) => True/False.
 
         The result is True iff the location is a valid cutting site"""
-        def f(index):
-            return self.filter_location(sequence, index)
-        return f
+        if self.has_location_filter:
+            def f(index):
+                return self.filter_location(sequence, index)
+            return f
+        else:
+            return None
 
-    def filter_location(self, sequence, index):
-        """By default, an OverhangSelector does not filter out any location."""
-        return True
+    @property
+    def has_location_filter(self):
+        return hasattr(self, 'filter_location')
 
     def compute_sequence_fragment(self, sequence, segment):
         """Compute the fragment equal to the sequence segment + overhangs."""
