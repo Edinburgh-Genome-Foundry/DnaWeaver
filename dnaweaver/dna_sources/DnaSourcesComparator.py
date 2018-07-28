@@ -11,7 +11,7 @@ class DnaSourcesComparator(DnaSource):
     Parameters
     ----------
 
-    dna_sources
+    suppliers
       List of `DnaSources` that
 
     memoize
@@ -25,15 +25,13 @@ class DnaSourcesComparator(DnaSource):
     report_fa_symbol_plain = u"circle-o"
     report_color = "#000000"
 
-    def __init__(self, dna_sources, memoize=False, sequence_constraints=(),
+    def __init__(self, suppliers=(), memoize=False, sequence_constraints=(),
                  name="comparator"):
-        self.dna_sources = dna_sources
+        self.set_suppliers(suppliers)
         self.memoize = memoize
         self.sequence_constraints = sequence_constraints
         self.memoize_dict = {}
         self.name = name
-        self.min_basepair_price = min([source.min_basepair_price
-                                       for source in dna_sources])
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -56,7 +54,7 @@ class DnaSourcesComparator(DnaSource):
         best_quote = DnaQuote(self, sequence, accepted=False,
                               message="Sequence was rejected by all sources.")
         best_basepair_price = 1e8
-        for source in sorted(self.dna_sources,
+        for source in sorted(self.suppliers,
                              key=lambda s: s.min_basepair_price):
             # print (self.name, len(sequence), source)
             if source.min_basepair_price > best_basepair_price:
@@ -75,5 +73,17 @@ class DnaSourcesComparator(DnaSource):
 
     def additional_dict_description(self):
         return {
-            "dna sources": [source.name for source in self.dna_sources],
+            "dna sources": [source.name for source in self.suppliers],
         }
+    @staticmethod
+    def from_dict(data):
+        return DnaSourcesComparator(
+             name=data['name'], suppliers=data['suppliers'])
+
+    def set_suppliers(self, suppliers):
+        self.suppliers = suppliers
+        if len(suppliers):
+            self.min_basepair_price = min([supplier.min_basepair_price
+                                           for supplier in suppliers])
+        else:
+            self.min_basepair_price = None

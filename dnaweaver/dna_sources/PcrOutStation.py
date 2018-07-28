@@ -4,6 +4,7 @@ from ..constraints import SequenceLengthConstraint
 from ..biotools import (reverse_complement, largest_common_substring,
                         blast_sequence)
 from ..tools import functions_list_to_string
+from .DnaSourcesComparator import DnaSourcesComparator
 
 class PcrOutStation(DnaSource):
     """Class to represent databases of constructs which can be (in part) reused
@@ -57,6 +58,7 @@ class PcrOutStation(DnaSource):
                  sequence_constraints=()):
         self.name = name
         self.blast_database = blast_database
+        self.set_suppliers(self, primers_dna_source)
         self.primers_dna_source = primers_dna_source
         self.pcr_homology_length = pcr_homology_length
         self.max_overhang_length = max_overhang_length
@@ -207,3 +209,28 @@ class PcrOutStation(DnaSource):
             "BLAST word size": self.blast_word_size,
             "sequence constraints": constraints,
         }
+
+    @classmethod
+    def from_dict(cls, data):
+        if 'dna_bank' in data:
+            blast_database = cls.dna_banks[data['dna_bank']]
+        else:
+            blast_database = data['blast_database']
+        return DnaSourcesComparator(
+            name=data['name'],
+            primer_dna_source=data['suppliers'],
+            pcr_homology_length=data['pcr_homology_length'],
+            max_overhang_length=data['max_overhang_length'],
+            extra_cost=data['cost'],
+            blast_database=blast_database
+        )
+
+    def set_suppliers(self, suppliers):
+        if hasattr(suppliers, '__iter__'):
+            if len(suppliers) > 1:
+                self.primers_dna_source = DnaSourcesComparator(
+                    name=self.name + ' comparator', suppliers=suppliers)
+            else:
+                self.primers_dna_source = suppliers[0]
+        else:
+            self.primers_dna_source = suppliers

@@ -1,8 +1,13 @@
+import numpy as np
+
 from ..DnaQuote import DnaQuote
 from .DnaSource import DnaSource
 from ..tools import functions_list_to_string
 
-import numpy as np
+from Bio.Restriction import AllEnzymes
+
+from ..constraints import (GcContentConstraint, NoPatternConstraint,
+                           PerBasepairPricing, SequenceLengthConstraint)
 
 class CommercialDnaOffer(DnaSource):
     """External/Commercial source of DNA"""
@@ -65,3 +70,30 @@ class CommercialDnaOffer(DnaSource):
             "price function": functions_list_to_string([self.pricing]),
             "sequence constraints": constraints
         }
+
+    def from_dict(data):
+        constraints = []
+        if "gc_range" in data:
+            mini, maxi = data['gc_range']
+            constraints.append(GcContentConstraint(0.01 * mini, 0.01 * maxi))
+        if "size_range" in data:
+            mini, maxi = data['size_range']
+            constraints.append(SequenceLengthConstraint(mini, maxi))
+        if 'forbidden' in data:
+            ENZYMES = list(str(e) for e in AllEnzymes)
+            for pattern in data["forbidden"].split(", "):
+                if pattern == '':
+                    continue
+                enzyme = None
+                if pattern in ENZYMES:
+                    enzyme = pattern
+                    pattern = None
+                constraints.append(
+                    NoPatternConstraint(pattern=pattern, enzyme=enzyme))
+
+        return CommercialDnaOffer(
+            name=data['name'],
+            pricing=PerBasepairPricing(data['cost_per_bp']),
+            lead_time=data['lead_time'],
+            sequence_constraints=constraints
+        )

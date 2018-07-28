@@ -5,7 +5,7 @@ import networkx as nx
 from .shortest_path_algorithms import (NoSolutionFoundError,
                                        shortest_valid_path,
                                        astar_path)
-from proglog import TqdmProgressBarLogger, ProgressBarLogger
+from proglog import TqdmProgressBarLogger, MuteProgressBarLogger
 
 _default_bars = ('segment', 'edge')
 class SequenceDecomposerLogger(TqdmProgressBarLogger):
@@ -118,7 +118,7 @@ class SequenceDecomposer:
         if logger == 'bars':
             logger = SequenceDecomposerLogger(min_time_interval=0.2)
         if logger is None:
-            logger = ProgressBarLogger(min_time_interval=0.3) # silent logger
+            logger = MuteProgressBarLogger() # silent
         self.logger = logger
         self.bar_prefix = bar_prefix
 

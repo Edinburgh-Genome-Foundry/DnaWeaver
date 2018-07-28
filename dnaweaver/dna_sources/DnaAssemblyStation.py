@@ -2,6 +2,11 @@ from ..DnaQuote import DnaQuote
 from ..SequenceDecomposer import SequenceDecomposer, NoSolutionFoundError
 # from .shortest_path_algorithms import NoSolutionFoundError
 from .DnaSource import DnaSource
+from .DnaSourcesComparator import DnaSourcesComparator
+from ..DnaAssemblyMethod import (BuildAGenomeAssemblyMethod,
+                                 GibsonAssemblyMethod,
+                                 GoldenGateAssemblyMethod)
+from ..OverhangSelector import TmOverhangSelector, FixedSizeOverhangSelector
 
 class DnaAssemblyStation(DnaSource):
     """DNA Assembly stations assemble together DNA fragments using a specific
@@ -31,7 +36,7 @@ class DnaAssemblyStation(DnaSource):
                  **solve_kwargs):
         self.name = name
         self.assembly_method = assembly_method
-        self.dna_source = dna_source
+        self.set_suppliers(dna_source)
         self.extra_time = assembly_method.duration
         self.extra_cost = assembly_method.cost
         self.sequence_constraints = assembly_method.sequence_constraints
@@ -44,7 +49,7 @@ class DnaAssemblyStation(DnaSource):
         self.memoize_dict = {}
         self.min_basepair_price = self.dna_source.min_basepair_price
         if solve_kwargs.get('a_star_factor', None) == 'auto':
-            solve_kwargs['a_star_factor'] = 2*self.min_basepair_price
+            solve_kwargs['a_star_factor'] = 2 * self.min_basepair_price
         self.solve_kwargs = solve_kwargs
 
     def get_quote_for_sequence_segment(self, sequence, segment,
@@ -175,3 +180,48 @@ class DnaAssemblyStation(DnaSource):
             for k, v in self.assembly_method.dict_description().items()
         })
         return result
+
+    @staticmethod
+    def from_dict(data):
+        if data['method'] == 'golden_gate_assembly':
+            gc_range = data.get('overhang_gc_range', [0, 1])
+            method = GoldenGateAssemblyMethod(
+                min_overhangs_gc=gc_range[0],
+                max_overhangs_gc=gc_range[1],
+                enzyme=data['enzyme']
+            )
+        elif data['method'] in ['gibson_assembly', 'yeast_recombination']:
+            if data['overhang_type'] == 'tm':
+                min_oh_size, max_oh_size = data['overhang_size_range']
+                min_tm, max_tm = data['tm_range']
+                overhang_selector = TmOverhangSelector(
+                    min_size=min_oh_size, max_size=max_oh_size,
+                    min_tm=min_tm, max_tm=max_tm
+                )
+            else:
+                overhang_selector = FixedSizeOverhangSelector(
+                    overhang_size=data['overhang_size']
+                )
+
+            method = GibsonAssemblyMethod(
+                overhang_selector=overhang_selector
+            )
+
+        return DnaAssemblyStation(
+            name=data['name'],
+            dna_source=data['suppliers'],
+            assembly_method=method,
+            coarse_grain=10,
+            fine_grain=2,
+            logger='bars'
+        )
+
+    def set_suppliers(self, suppliers):
+        if hasattr(suppliers, '__iter__'):
+            if len(suppliers) > 1:
+                self.dna_source = DnaSourcesComparator(
+                    name=self.name + ' comparator', suppliers=suppliers)
+            else:
+                self.dna_source = suppliers[0]
+        else:
+            self.dna_source = suppliers

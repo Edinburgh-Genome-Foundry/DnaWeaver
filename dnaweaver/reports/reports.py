@@ -273,41 +273,41 @@ def make_folder_report(quote, target="@memory"):
     def write_ax_as_pdf(ax, target):
         ax.figure.savefig(target, format="pdf", bbox_inches="tight")
 
-    with flametree.file_tree(target) as root:
-        root._file("assembly_report.pdf").write(
-            make_pdf_report(quote))
+    root = flametree.file_tree(target, replace=True)
+    root._file("assembly_report.pdf").write(
+        make_pdf_report(quote))
 
-        root._file('sequences.csv').write(
-            make_spreadsheet_sequences_report(quote))
+    root._file('sequences.csv').write(
+        make_spreadsheet_sequences_report(quote))
 
-        root._file("README.txt").write(
-            _get_folder_readme_content())
+    root._file("README.txt").write(
+        _get_folder_readme_content())
 
-        # FIGURES
+    # FIGURES
 
-        figures = root._dir("figures")
+    figures = root._dir("figures")
 
-        ax = plot_supply_graph(quote)
-        write_ax_as_pdf(ax, figures._file("supply_network.pdf").open("wb"))
-        plt.close(ax.figure)
+    ax = plot_supply_graph(quote)
+    write_ax_as_pdf(ax, figures._file("supply_network.pdf").open("wb"))
+    plt.close(ax.figure)
 
-        ax = plot_assembly_graph(quote, ax=None, textprops=None)
-        write_ax_as_pdf(ax, figures._file("assembly_graph.pdf").open("wb"))
-        plt.close(ax.figure)
+    ax = plot_assembly_graph(quote, ax=None, textprops=None)
+    write_ax_as_pdf(ax, figures._file("assembly_graph.pdf").open("wb"))
+    plt.close(ax.figure)
 
-        fig, ax_assembly_blocks = plt.subplots(1, figsize=(7, 4))
-        assembly_blocks_ax, lg = plot_assembly_blocks(
-            quote, backend="matplotlib", plot_top_assembly=False,
-            ax=ax_assembly_blocks, parts_offset=0.1, legend=True)
-        assembly_blocks_ax.figure.subplots_adjust(bottom=0.3)
-        write_ax_as_pdf(assembly_blocks_ax,
-                        figures._file("assembly_blocks.pdf").open("wb"))
-        plt.close(fig)
+    fig, ax_assembly_blocks = plt.subplots(1, figsize=(7, 4))
+    assembly_blocks_ax, lg = plot_assembly_blocks(
+        quote, backend="matplotlib", plot_top_assembly=False,
+        ax=ax_assembly_blocks, parts_offset=0.1, legend=True)
+    assembly_blocks_ax.figure.subplots_adjust(bottom=0.3)
+    write_ax_as_pdf(assembly_blocks_ax,
+                    figures._file("assembly_blocks.pdf").open("wb"))
+    plt.close(fig)
 
-        # GENBANKS
+    # GENBANKS
 
-        genbank = root._dir("genbank")
-        for q in quote.to_quotes_list():
-            genbank._file(q.id + ".gb").write(quote_to_genbank(q))
+    genbank = root._dir("genbank")
+    for q in quote.to_quotes_list():
+        genbank._file(q.id + ".gb").write(quote_to_genbank(q))
 
     return root._close()
