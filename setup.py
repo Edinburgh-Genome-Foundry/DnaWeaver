@@ -24,5 +24,6 @@ setup(name='DnaWeaver',
       license='MIT',
       keywords="DNA optimization assembly ordering synthetic biology",
       packages=find_packages(exclude='docs'),
+      include_package_data=True,
       install_requires=["numpy", "Biopython", 'proglog', "networkx",
                         "flametree"])
