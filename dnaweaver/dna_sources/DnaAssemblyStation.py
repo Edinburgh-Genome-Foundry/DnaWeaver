@@ -218,7 +218,10 @@ class DnaAssemblyStation(DnaSource):
                 min_segment_length=min_length,
                 max_fragments=data['max_fragments']
             )
-        a_star_factor = 0 if data["use_astar"] else data.get('astar_factor', 0)
+        if data["use_astar"]:
+            a_star_factor = data.get('astar_factor', 'auto')
+        else:
+            a_star_factor = 0
         max_construct_length = max_length * data['max_fragments']
         if data['grain_type'] == 'auto':
             data['coarse_grain'] = int(max_construct_length / 15)
