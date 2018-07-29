@@ -185,7 +185,7 @@ class DnaAssemblyStation(DnaSource):
     @staticmethod
     def from_dict(data):
         min_length, max_length = data['fragments_size_range']
-        if data['method'] == 'golden_gate_assembly':
+        if data['method'] == 'type_iis':
             gc_range = data.get('overhang_gc_range', [0, 1])
             method = GoldenGateAssemblyMethod(
                 min_overhangs_gc=gc_range[0],
