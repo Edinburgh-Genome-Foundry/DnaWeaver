@@ -59,7 +59,6 @@ class PcrOutStation(DnaSource):
         self.name = name
         self.blast_database = blast_database
         self.set_suppliers(primers_dna_source)
-        self.primers_dna_source = primers_dna_source
         self.pcr_homology_length = pcr_homology_length
         self.max_overhang_length = max_overhang_length
         self.extra_time = extra_time
@@ -216,9 +215,9 @@ class PcrOutStation(DnaSource):
             blast_database = cls.dna_banks[data['dna_bank']]
         else:
             blast_database = data['blast_database']
-        return DnaSourcesComparator(
+        return PcrOutStation(
             name=data['name'],
-            primer_dna_source=data['suppliers'],
+            primers_dna_source=data['suppliers'],
             pcr_homology_length=data['pcr_homology_length'],
             max_overhang_length=data['max_overhang_length'],
             extra_cost=data['cost'],

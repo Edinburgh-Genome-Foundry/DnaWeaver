@@ -7,6 +7,7 @@ from ..DnaAssemblyMethod import (BuildAGenomeAssemblyMethod,
                                  GibsonAssemblyMethod,
                                  GoldenGateAssemblyMethod)
 from ..OverhangSelector import TmOverhangSelector, FixedSizeOverhangSelector
+import numpy as np
 
 class DnaAssemblyStation(DnaSource):
     """DNA Assembly stations assemble together DNA fragments using a specific
@@ -183,14 +184,19 @@ class DnaAssemblyStation(DnaSource):
 
     @staticmethod
     def from_dict(data):
+        min_length, max_length = data['fragments_size_range']
         if data['method'] == 'golden_gate_assembly':
             gc_range = data.get('overhang_gc_range', [0, 1])
             method = GoldenGateAssemblyMethod(
                 min_overhangs_gc=gc_range[0],
                 max_overhangs_gc=gc_range[1],
-                enzyme=data['enzyme']
+                enzyme=data['enzyme'],
+                max_segment_length=max_length,
+                min_segment_length=min_length,
+                max_fragments=data['max_fragments']
             )
-        elif data['method'] in ['gibson_assembly', 'yeast_recombination']:
+        elif data['method'] in ['gibson_assembly', 'yeast_recombination',
+                                'oligo_assembly']:
             if data['overhang_type'] == 'tm':
                 min_oh_size, max_oh_size = data['overhang_size_range']
                 min_tm, max_tm = data['tm_range']
@@ -202,17 +208,29 @@ class DnaAssemblyStation(DnaSource):
                 overhang_selector = FixedSizeOverhangSelector(
                     overhang_size=data['overhang_size']
                 )
-
-            method = GibsonAssemblyMethod(
-                overhang_selector=overhang_selector
+            if data['method'] == 'oligo_assembly':
+                method_class = BuildAGenomeAssemblyMethod
+            else:
+                method_class = GibsonAssemblyMethod
+            method = method_class(
+                overhang_selector=overhang_selector,
+                max_segment_length=max_length,
+                min_segment_length=min_length,
+                max_fragments=data['max_fragments']
             )
+        a_star_factor = 0 if data["use_astar"] else data.get('astar_factor', 0)
+        max_construct_length = max_length * data['max_fragments']
+        if data['grain_type'] == 'auto':
+            data['coarse_grain'] = int(max_construct_length / 15)
+            data['fine_grain'] = int(np.sqrt(data['coarse_grain']))
 
         return DnaAssemblyStation(
             name=data['name'],
             dna_source=data['suppliers'],
             assembly_method=method,
-            coarse_grain=10,
-            fine_grain=2,
+            coarse_grain=data['coarse_grain'],
+            fine_grain=data['fine_grain'],
+            a_star_factor=a_star_factor,
             logger='bars'
         )
 
