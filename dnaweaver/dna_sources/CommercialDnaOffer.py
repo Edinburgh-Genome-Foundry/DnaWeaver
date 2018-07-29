@@ -75,7 +75,8 @@ class CommercialDnaOffer(DnaSource):
         constraints = []
         if "gc_range" in data:
             mini, maxi = data['gc_range']
-            constraints.append(GcContentConstraint(0.01 * mini, 0.01 * maxi))
+            if (mini, maxi) != (0, 100):
+                constraints.append(GcContentConstraint(.01 * mini, .01 * maxi))
         if "size_range" in data:
             mini, maxi = data['size_range']
             constraints.append(SequenceLengthConstraint(mini, maxi))
