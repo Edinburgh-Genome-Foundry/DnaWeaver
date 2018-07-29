@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("Agg")
+
 import os
 from dnaweaver import (PcrOutStation,
                        CommercialDnaOffer,
