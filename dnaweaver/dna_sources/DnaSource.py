@@ -235,6 +235,10 @@ class DnaSource:
                 for other in source.dna_sources:
                     providers.append(other.name)
                     rec(other, depth + 1)
+            if hasattr(source, "suppliers"):
+                for other in source.suppliers:
+                    providers.append(other.name)
+                    rec(other, depth + 1)
         rec(self)
         return sources
 

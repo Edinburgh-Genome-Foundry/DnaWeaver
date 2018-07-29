@@ -58,7 +58,7 @@ class PcrOutStation(DnaSource):
                  sequence_constraints=()):
         self.name = name
         self.blast_database = blast_database
-        self.set_suppliers(self, primers_dna_source)
+        self.set_suppliers(primers_dna_source)
         self.primers_dna_source = primers_dna_source
         self.pcr_homology_length = pcr_homology_length
         self.max_overhang_length = max_overhang_length
