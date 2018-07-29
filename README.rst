@@ -105,6 +105,21 @@ Alternatively, you can unzip the sources in a folder and type
 ::
     sudo python setup.py install
 
+Also install the ncbi-blast+ package. On Ubuntu:
+
+::
+    sudo apt-get install ncbi-blast+
+
+Reports generation needs more dependencies. Install Python dependencies with
+
+::
+    sudo pip install pandas dna_features_viewer weasyprint
+
+Install non-python dependencies as follows on Ubuntu:
+::
+    sudo apt-get installbuild-essential python3-dev python3-pip \
+        python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
+        libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
 
 License = MIT
 --------------
