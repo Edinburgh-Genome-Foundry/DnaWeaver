@@ -206,7 +206,7 @@ class DnaAssemblyStation(DnaSource):
                 )
             else:
                 overhang_selector = FixedSizeOverhangSelector(
-                    overhang_size=data['overhang_size']
+                    overhang_size=data['overlap']
                 )
             if data['method'] == 'oligo_assembly':
                 method_class = BuildAGenomeAssemblyMethod

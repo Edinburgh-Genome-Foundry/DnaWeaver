@@ -220,6 +220,7 @@ class PcrOutStation(DnaSource):
             primers_dna_source=data['suppliers'],
             pcr_homology_length=data['pcr_homology_length'],
             max_overhang_length=data['max_overhang_length'],
+            max_amplicon_length=data['max_amplicon_length'],
             extra_cost=data['cost'],
             blast_database=blast_database
         )
