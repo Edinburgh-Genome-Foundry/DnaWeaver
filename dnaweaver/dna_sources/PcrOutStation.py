@@ -82,15 +82,18 @@ class PcrOutStation(DnaSource):
                 match_coords = largest_common_substring(sequence, seq,
                                                         self.max_overhang_length)
                 if match_coords:
-                    result.append((dna_name, match_coords))
+                    result.append((dna_name, match_coords, None))
             return result
         else:
             record = blast_sequence(sequence, self.blast_database,
-                                    perc_identity=100,
+                                    perc_identity=99,
+                                    use_megablast=True,
                                     word_size=self.blast_word_size)
 
             return [
-                (al.hit_id + "_h%03d" % i, (hit.query_start, hit.query_end))
+                (al.hit_id + "_h%03d" % i,
+                 (hit.query_start, hit.query_end),
+                 hit.sbjct)
                 for al in record.alignments
                 for i, hit in enumerate(al.hsps)
             ]
@@ -117,7 +120,7 @@ class PcrOutStation(DnaSource):
           If True, the assembly plan is added to the quote
         """
 
-        for subject, (hit_start, hit_end) in self.get_hits(sequence):
+        for subject, (hit_start, hit_end), _ in self.get_hits(sequence):
 
             largest_overhang = max(hit_start, len(sequence) - hit_end)
 
@@ -191,8 +194,8 @@ class PcrOutStation(DnaSource):
         """
         self.sequences = None  # destroy current pre-blast (used by get_hits)
         self.sequences = {
-            subject: sequence[start:end]
-            for subject, (start, end) in self.get_hits(sequence)
+            subject: sbjct
+            for subject, (start, end), sbjct in self.get_hits(sequence)
         }
 
     def additional_dict_description(self):

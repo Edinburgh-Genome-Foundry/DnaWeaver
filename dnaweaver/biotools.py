@@ -151,6 +151,7 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         (["-task", "megablast"] if use_megablast else []) + [
         "-word_size", str(word_size),
         "-num_threads", str(num_threads),
+        "-dust", "no",
         "-perc_identity", str(perc_identity)
     ], close_fds=True, stderr=subprocess.PIPE)
     res, blast_err = p.communicate()
