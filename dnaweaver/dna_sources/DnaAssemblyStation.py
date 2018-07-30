@@ -193,6 +193,8 @@ class DnaAssemblyStation(DnaSource):
         if data['method'] == 'type_iis':
             gc_range = data.get('overhang_gc_range', [0, 1])
             method = GoldenGateAssemblyMethod(
+                duration=data['duration'],
+                cost=data['cost'],
                 min_overhangs_gc=gc_range[0],
                 max_overhangs_gc=gc_range[1],
                 enzyme=data['enzyme'],
@@ -219,6 +221,8 @@ class DnaAssemblyStation(DnaSource):
             else:
                 method_class = GibsonAssemblyMethod
             method = method_class(
+                duration=data['duration'],
+                cost=data['cost'],
                 overhang_selector=overhang_selector,
                 max_segment_length=max_length,
                 min_segment_length=min_length,
