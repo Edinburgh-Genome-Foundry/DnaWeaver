@@ -292,6 +292,7 @@ class DnaQuote:
 
     def children_total_price(self):
         """Return the total price of all sub-operations (apart from current)"""
+        # print ([quote.accepted for quote in self.assembly_plan.values()])
         return sum(quote.price for quote in self.assembly_plan.values())
 
     def children_overall_lead_time(self):

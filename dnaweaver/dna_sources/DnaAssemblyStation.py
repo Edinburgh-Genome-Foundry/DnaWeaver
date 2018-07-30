@@ -90,6 +90,7 @@ class DnaAssemblyStation(DnaSource):
                 sequence, segment, max_lead_time=max_lead_time
             )
             if not quote.accepted:
+                # print ("a")
                 return -1
             else:
                 return quote.price
@@ -161,6 +162,10 @@ class DnaAssemblyStation(DnaSource):
                             message="No solution found !")
 
         # A solution has been found ! Now compute overall time and lead time.
+
+        if any([q.price is None for q in assembly_plan.values()]):
+            return DnaQuote(self, sequence, accepted=False,
+                            message="No solution found !")
         quote = DnaQuote(self, sequence, assembly_plan=assembly_plan)
         quote.price = quote.children_total_price() + self.extra_cost
         children_lead_time = quote.children_overall_lead_time()
