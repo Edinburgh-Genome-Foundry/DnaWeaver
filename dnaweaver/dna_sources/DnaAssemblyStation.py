@@ -7,6 +7,7 @@ from ..DnaAssemblyMethod import (BuildAGenomeAssemblyMethod,
                                  GibsonAssemblyMethod,
                                  GoldenGateAssemblyMethod)
 from ..OverhangSelector import TmOverhangSelector, FixedSizeOverhangSelector
+from ..constraints import SequenceLengthConstraint
 import numpy as np
 
 class DnaAssemblyStation(DnaSource):
@@ -184,6 +185,10 @@ class DnaAssemblyStation(DnaSource):
 
     @staticmethod
     def from_dict(data):
+        sequence_constraints = []
+        if data['use_size_range']:
+            mini, maxi = data['size_range']
+            sequence_constraints.append(SequenceLengthConstraint(mini, maxi))
         min_length, max_length = data['fragments_size_range']
         if data['method'] == 'type_iis':
             gc_range = data.get('overhang_gc_range', [0, 1])
@@ -193,7 +198,8 @@ class DnaAssemblyStation(DnaSource):
                 enzyme=data['enzyme'],
                 max_segment_length=max_length,
                 min_segment_length=min_length,
-                max_fragments=data['max_fragments']
+                max_fragments=data['max_fragments'],
+                sequence_constraints=sequence_constraints
             )
         elif data['method'] in ['gibson_assembly', 'yeast_recombination',
                                 'oligo_assembly']:
@@ -216,7 +222,8 @@ class DnaAssemblyStation(DnaSource):
                 overhang_selector=overhang_selector,
                 max_segment_length=max_length,
                 min_segment_length=min_length,
-                max_fragments=data['max_fragments']
+                max_fragments=data['max_fragments'],
+                sequence_constraints=sequence_constraints
             )
         if data["use_astar"]:
             a_star_factor = data.get('astar_factor', 'auto')
