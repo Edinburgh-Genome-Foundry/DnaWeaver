@@ -137,28 +137,29 @@ class SequenceDecomposer:
             ])
         # print (forced_cuts, self.segments_constraints)
 
-    def compute_graph(self, valid_cuts, prune_deadends=True):
+    def compute_graph(self, valid_cuts, prune_deadends=True,
+                      reachable_indices_only=True):
         L = self.sequence_length
         segments = []
         reachable_indices = set({0})
 
         # LIST THE SEGMENTS
-        for start in self.logger.iter_bar(segment=sorted(valid_cuts),
+        valid_cuts = sorted(valid_cuts)
+        valid_cuts_array = np.zeros(L + 1)
+        valid_cuts_array[valid_cuts] = 1
+        for start in self.logger.iter_bar(segment=valid_cuts,
                                           bar_prefix=self.bar_prefix):
-            if start not in reachable_indices:
+            if reachable_indices_only and (start not in reachable_indices):
                 continue
             ends_min = start + self.min_segment_length
             ends_max = min(L + 1, start + self.max_segment_length)
-            # print (len(valid_cuts), len(range(ends_min, ends_max)))
+            hits = valid_cuts_array[ends_min: ends_max].nonzero()[0]
+            valid_ends = [int(e) for e in hits + ends_min]
             if len(self.segments_constraints) > 0:
-                valid_ends = [
-                    end for end in range(ends_min, ends_max)
-                    if (end in valid_cuts) and
-                    all([fl((start, end)) for fl in self.segments_constraints])
+                 valid_ends = [
+                    end for end in valid_ends if
+                    all(fl((start, end)) for fl in self.segments_constraints)
                 ]
-            else:
-                valid_ends = [end for end in range(ends_min, ends_max)
-                              if end in valid_cuts]
             segments += [(start, end) for end in valid_ends]
             reachable_indices = reachable_indices.union(valid_ends)
         graph = nx.DiGraph(segments)

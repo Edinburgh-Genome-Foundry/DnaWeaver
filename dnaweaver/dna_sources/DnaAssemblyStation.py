@@ -80,11 +80,9 @@ class DnaAssemblyStation(DnaSource):
             for segment in zip(cuts, cuts[1:])
         }
 
-    def get_assembly_plan_for_sequence(self, sequence, max_lead_time=None,
-                                       coarse_grain=None, fine_grain=None,
-                                       a_star_factor=0, logger=None):
-        """Return the plan {(seg,ment): quote, ...} of the optimal strategy
-        for the sequence's decomposition."""
+    def new_sequence_decomposer(self, sequence, max_lead_time=None,
+                                coarse_grain=None, fine_grain=None,
+                                a_star_factor=0, logger=None):
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
                 sequence, segment, max_lead_time=max_lead_time
@@ -100,7 +98,7 @@ class DnaAssemblyStation(DnaSource):
         if fine_grain is None:
             fine_grain = self.solve_kwargs.get("fine_grain", 1)
 
-        self.decomposer = self.decomposer_class(
+        return self.decomposer_class(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
             cut_location_constraints=[
@@ -126,7 +124,18 @@ class DnaAssemblyStation(DnaSource):
                 for cs in assembly.cuts_set_constraints
             ]
         )
-        best_cuts = self.decomposer.compute_optimal_cuts()
+        
+
+    def get_assembly_plan_for_sequence(self, sequence, max_lead_time=None,
+                                       coarse_grain=None, fine_grain=None,
+                                       a_star_factor=0, logger=None):
+        """Return the plan {(seg, ment): quote, ...} of the optimal strategy
+        for the sequence's decomposition."""
+        decomposer = self.new_sequence_decomposer(
+            sequence, max_lead_time=max_lead_time, coarse_grain=coarse_grain,
+            fine_grain=fine_grain, a_star_factor=a_star_factor, logger=logger)
+        self._lattest_decomposer = decomposer  # for debugging
+        best_cuts = decomposer.compute_optimal_cuts()
         return self.get_assembly_plan_from_cuts(sequence, best_cuts,
                                                 max_lead_time=max_lead_time)
 

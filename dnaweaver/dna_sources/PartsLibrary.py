@@ -20,7 +20,9 @@ class PartsLibrary(DnaSource):
         self.name = name
         self.sequence_constraints = sequence_constraints
         self.parts_dict = parts_dict
-        self.memoize = False
+        self.inverted_parts_dict = {v: k for k, v in parts_dict.items()}
+        self.sequences_set = set(self.inverted_parts_dict)
+        self.memoize = memoize
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -39,10 +41,11 @@ class PartsLibrary(DnaSource):
         with_assembly_plan
           If True, the assembly plan is added to the quote
        """
-        if sequence in self.parts_dict:
-            return DnaQuote(self, sequence, accepted=True,
-                            price=0, lead_time=0,
-                            message="Part name: " + self.parts_dict[sequence])
+        if sequence in self.sequences_set:
+            return DnaQuote(
+                self, sequence, accepted=True, price=0, lead_time=0,
+                message="Part name: " + self.inverted_parts_dict[sequence]
+            )
 
         return DnaQuote(self, sequence, accepted=False,
                         message="Sequence not in the library")
@@ -59,22 +62,32 @@ class GoldenGatePartsLibrary(PartsLibrary):
 
     def __init__(self, name, parts_dict, flanks_length=7, memoize=False,
                  sequence_constraints=()):
-        self.name = name
-        self.sequence_constraints = sequence_constraints
-        self.parts_dict = parts_dict
+        PartsLibrary.__init__(self,  name, parts_dict, memoize=memoize,
+                              sequence_constraints=sequence_constraints)
         self.flanks_length = flanks_length
-        self.memoize = False
 
     def suggest_cuts(self, sequence):
         suggested_cuts = []
         # + 2 is because the cut falls in the middle of the 4bp linker:
-        flank = self.flanks_length + 2
-        for part in self.parts_dict:
-            segment = part[flank:-flank]
+        flank = self.flanks_length
+        for part, part_sequence in self.parts_dict.items():
+            segment = part_sequence[flank:-flank]
             i = sequence.find(segment)
             if i != -1:
-                suggested_cuts += [i, i + len(segment)]
+                suggested_cuts += [i + 2, i + len(segment) - 2]
         return sorted(list(set(suggested_cuts)))
+    
+    def suggest_segments(self, sequence):
+        suggested_segments = []
+        # + 2 is because the cut falls in the middle of the 4bp linker:
+        flank = self.flanks_length
+        for part, part_sequence in self.parts_dict.items():
+            segment = part_sequence[flank:-flank]
+            i = sequence.find(segment)
+            if i != -1:
+                L = len(segment)
+                suggested_segments.append(((i + 2, i + L - 2), part))
+        return sorted(set(suggested_segments))
 
     def additional_dict_description(self):
         return {
