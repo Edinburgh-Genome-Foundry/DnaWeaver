@@ -287,11 +287,11 @@ def make_folder_report(quote, target="@memory"):
 
     figures = root._dir("figures")
 
-    ax = plot_supply_graph(quote)
+    pos, ax = plot_supply_graph(quote)
     write_ax_as_pdf(ax, figures._file("supply_network.pdf").open("wb"))
     plt.close(ax.figure)
 
-    ax = plot_assembly_graph(quote, ax=None, textprops=None)
+    pos, ax = plot_assembly_graph(quote, ax=None, textprops=None)
     write_ax_as_pdf(ax, figures._file("assembly_graph.pdf").open("wb"))
     plt.close(ax.figure)
 

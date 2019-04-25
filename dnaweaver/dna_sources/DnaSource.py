@@ -221,11 +221,17 @@ class DnaSource:
 
             if source in sources:
                 return
+            if hasattr(source, 'is_ghost_source'):
+                return
             sources[source.name] = source.dict_description()
             sources[source.name]["_depth"] = depth
 
             providers = sources[source.name]["providers"] = []
-            if hasattr(source, "dna_source"):
+            if hasattr(source, "suppliers"):
+                for other in source.suppliers:
+                    providers.append(other.name)
+                    rec(other, depth + 1)
+            elif hasattr(source, "dna_source"):
                 providers.append(source.dna_source.name)
                 rec(source.dna_source, depth + 1)
             elif hasattr(source, "primers_dna_source"):
@@ -235,10 +241,7 @@ class DnaSource:
                 for other in source.dna_sources:
                     providers.append(other.name)
                     rec(other, depth + 1)
-            if hasattr(source, "suppliers"):
-                for other in source.suppliers:
-                    providers.append(other.name)
-                    rec(other, depth + 1)
+            
         rec(self)
         return sources
 

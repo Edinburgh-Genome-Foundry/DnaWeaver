@@ -23,6 +23,7 @@ class PartsLibrary(DnaSource):
         self.inverted_parts_dict = {v: k for k, v in parts_dict.items()}
         self.sequences_set = set(self.inverted_parts_dict)
         self.memoize = memoize
+        self.memoize_dict = {}
 
     def get_best_price(self, sequence, max_lead_time=None,
                        with_assembly_plan=False):
@@ -41,6 +42,7 @@ class PartsLibrary(DnaSource):
         with_assembly_plan
           If True, the assembly plan is added to the quote
        """
+        sequence = self.preprocess_sequence(sequence) 
         if sequence in self.sequences_set:
             return DnaQuote(
                 self, sequence, accepted=True, price=0, lead_time=0,
@@ -49,6 +51,9 @@ class PartsLibrary(DnaSource):
 
         return DnaQuote(self, sequence, accepted=False,
                         message="Sequence not in the library")
+    def preprocess_sequence(self, sequence):
+        """Can be used by subclasses e.g. to anonymize wildcard nucleotides"""
+        return sequence
 
     def additional_dict_description(self):
         return {
@@ -88,6 +93,11 @@ class GoldenGatePartsLibrary(PartsLibrary):
                 L = len(segment)
                 suggested_segments.append(((i + 2, i + L - 2), part))
         return sorted(set(suggested_segments))
+
+    @classmethod
+    def preprocess_sequence(cls, sequence):
+        """Can be used by subclasses e.g. to anonymize wildcard nucleotides"""
+        return sequence[:6] + 'N' + sequence[7: -7] + 'N' + sequence[-6:]
 
     def additional_dict_description(self):
         return {

@@ -169,7 +169,7 @@ class PcrOutStation(DnaSource):
 
     def suggest_cuts(self, sequence):
         suggested_cuts = []
-        for name, subseq in self.sequences:
+        for name, subseq in self.sequences.items():
             if subseq in sequence:
                 index = sequence.find(subseq)
                 suggested_cuts += [index, index + len(subseq)]

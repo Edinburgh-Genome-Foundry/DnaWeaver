@@ -288,3 +288,12 @@ def file_to_sequence(filename):
 
 def gc_content_to_tm(seq_length, gc_content, gc_tm=4, nongc_tm=2):
     return seq_length * (gc_content * gc_tm + (1 - gc_content) * nongc_tm)
+
+def make_blast_db(fasta_input, target):
+  proc = subprocess.Popen([
+      "makeblastdb",
+      "-in", fasta_input,
+      "-dbtype", "nucl",
+      "-out", target
+  ])
+  proc.wait()

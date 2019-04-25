@@ -39,7 +39,7 @@ from dna_features_viewer import GraphicRecord
 from .config import SETTINGS
 
 
-def plot_assembly_blocks(quote, parts_offset=0, backend="bokeh",
+def plot_assembly_blocks(quote, parts_offset=0, backend="matplotlib",
                          plot_top_assembly=True,
                          ax=None, edge_widths=None, legend=False):
     """Return a Matplotlib or Bokeh plot of the assembly tree of blocks.
@@ -78,6 +78,8 @@ def plot_assembly_blocks(quote, parts_offset=0, backend="bokeh",
     rectangles = []
     if edge_widths is None:
         edge_widths = {}
+    if not hasattr(quote, 'tree'):
+        quote.compute_full_assembly_tree()
     tree = deepcopy(quote.tree)
 
     def rec(_quote, depth=0, xstart=0, xend=None):
@@ -250,7 +252,7 @@ def _matplotlib_plot_assembly_blocks(rectangles, guides, tops, ax=None,
             plt.legend(handles=[legend_patch])
         # linewidth = g["line_width"]
         width = g["right"] - g["left"]
-        line_width = 1.0 if (1.0 * width / L) > .01 else 0
+        line_width = 1.0 if (1.0 * width / L) > .002 else 0
         patch = mpatches.Rectangle((g["left"], g["bottom"]),
                                    width,
                                    g["top"] - g["bottom"],
@@ -289,7 +291,8 @@ def _matplotlib_plot_assembly_timeline(quote, deadline=None, ax=None,
     """Plot the assembly timeline with Matplotlib."""
     if deadline is None:
         deadline = quote.lead_time
-
+    if not hasattr(quote, 'tree'):
+        quote.compute_full_assembly_tree()
     quote.propagate_deadline(deadline)
     assemblies_list = quote.tree_as_list()
     assemblies_list = sorted(assemblies_list, key=lambda a: a.id)
@@ -366,7 +369,7 @@ def _matplotlib_plot_assembly_timeline(quote, deadline=None, ax=None,
 def plot_tree_graph(levels, edges, draw_node, elements_positions=None,
                     ax=None, width_factor=2.5, height_factor=2, scale=1.0,
                     edge_left_space=0.015, edge_right_space=0.015,
-                    interlevel_shift=0, **txt_kw):
+                    interlevel_shift=0, margin=None, **txt_kw):
     """General function for plotting tree graphs.
 
     Parameters
@@ -455,10 +458,20 @@ def plot_tree_graph(levels, edges, draw_node, elements_positions=None,
         ax.add_patch(patch)
 
     ax.axis("off")
-    return ax
+    if margin is not None:
+        xx, yy = [np.array(e) for e in zip(*elements_positions.values())]
+        xmin, xmax = xx.min(), xx.max()
+        dx = margin * (xmax - xmin)
+        ymin, ymax = yy.min(), yy.max()
+        dy = margin * (ymax - ymin)
+        d = max(dx, dy)
+        ax.set_xlim(xmin - d, xmax + d)
+        ax.set_ylim(ymin - d, ymax + d)
+
+    return elements_positions, ax
 
 
-def plot_supply_graph(quote, ax=None, textprops=None,
+def plot_supply_graph(quote, ax=None, textprops=None, margin=None,
                       scale=1.0, interlevel_shift=0):
     """Plot the supply graph of all sources related to the provided source.
 
@@ -512,18 +525,19 @@ def plot_supply_graph(quote, ax=None, textprops=None,
                 horizontalalignment="center",
                 verticalalignment="bottom", fontproperties=textprops,
                 )
-    ax = plot_tree_graph(levels, edges, draw_node, ax=ax, scale=scale,
-                         interlevel_shift=interlevel_shift)
-    return ax
+    return plot_tree_graph(levels, edges, draw_node, ax=ax, scale=scale,
+                           interlevel_shift=interlevel_shift, margin=margin)
 
 
-def plot_assembly_graph(quote, ax=None,
-                        textprops=None, scale=1.0):
+def plot_assembly_graph(quote, ax=None, margin=None, textprops=None,
+                        scale=1.0):
     """Plot the complete assembly graph"""
 
     nodes_dict = {}
     levels = defaultdict(lambda *a: [])
     edges = []
+    if not hasattr(quote, 'tree'):
+        quote.compute_full_assembly_tree()
     tree = deepcopy(quote.tree)
 
     def rec(node, depth=0):
@@ -585,6 +599,7 @@ def plot_assembly_graph(quote, ax=None,
                            elements_positions=elements_positions, ax=ax,
                            edge_left_space=0.06,
                            edge_right_space=0.03,
+                           margin=margin,
                            height_factor=0.40, width_factor=5.5, scale=scale)
 
 
@@ -668,7 +683,10 @@ def autocolor_quote_sources(quote, hues=(0.635, 0.047, 0.117),
     """
 
     colors = itertools.cycle([
-        rgb_to_hex(*[255*e**0.4 for e in cm.Paired(0.21 * i % 1.0)][:3])
+        rgb_to_hex(*[
+            255*e**0.4
+            for e in cm.Paired(0.13 * i % 1.0)
+        ][:3])
         for i in range(30)
     ])
     for name, source in sorted(quote.sources.items()):
@@ -680,13 +698,15 @@ def ax_to_pdf(ax):
 
 def plot_decomposition_graph(graph, nodes_color="#6886b7", weight='weight',
                              colormap='jet', ax=None, edge_width=1,
-                             edge_alpha=0.2, figsize=(8, 8)):
+                             edges_step=1, edge_alpha=0.2, figsize=(8, 8)):
     xx = np.array(sorted(graph.nodes))
     L = xx.max()
-    edges = sorted([
+    edges = [
         (start, end, data[weight] / (end - start))
         for start, end, data in graph.edges(data=True)
-    ], key=lambda e: e[2])
+    ]
+    edges = edges[::edges_step]
+    edges = sorted(edges, key=lambda e: e[2])
     max_segment_length = max([end - start for (start, end, _) in edges])
     weights = np.array([w for (_, _, w) in edges])
     normalized_weights = (255 * weights / weights.max()).astype('uint8')

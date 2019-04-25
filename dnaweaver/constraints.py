@@ -107,3 +107,15 @@ class PerBasepairPricing:
 
     def __str__(self):
         return "$%.03f/bp" % self.per_basepair_price
+
+class FixedPricing:
+
+    def __init__(self, fixed_price):
+        self.fixed_price = fixed_price
+        self.min_basepair_price = 0
+
+    def __call__(self, sequence):
+        return self.fixed_price
+
+    def __str__(self):
+        return "$%.03f/order" % self.fixed_price

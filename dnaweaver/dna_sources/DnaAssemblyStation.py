@@ -112,7 +112,7 @@ class DnaAssemblyStation(DnaSource):
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
-            suggested_cuts=assembly.suggest_cuts(sequence),
+            suggested_cuts=self.compute_suggested_cuts(sequence),
             coarse_grain=coarse_grain,
             fine_grain=fine_grain,
             logger=logger,
@@ -124,6 +124,13 @@ class DnaAssemblyStation(DnaSource):
                 for cs in assembly.cuts_set_constraints
             ]
         )
+    
+    def compute_suggested_cuts(self, sequence):
+        cuts = list(self.assembly_method.suggest_cuts(sequence))
+        for supplier in self.suppliers:
+            if hasattr(supplier, 'suggest_cuts'):
+                cuts.extend(list(supplier.suggest_cuts(sequence)))
+        return sorted(set(cuts))
         
 
     def get_assembly_plan_for_sequence(self, sequence, max_lead_time=None,
@@ -267,7 +274,11 @@ class DnaAssemblyStation(DnaSource):
             if len(suppliers) > 1:
                 self.dna_source = DnaSourcesComparator(
                     name=self.name + ' comparator', suppliers=suppliers)
+                self.dna_source.is_ghost_source = True
             else:
                 self.dna_source = suppliers[0]
         else:
             self.dna_source = suppliers
+            suppliers = [suppliers]
+        self.suppliers = suppliers
+

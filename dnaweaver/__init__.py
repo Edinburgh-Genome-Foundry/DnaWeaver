@@ -16,4 +16,5 @@ from .OverhangSelector import (OverhangSelector,
 from .biotools import (random_dna_sequence, reverse_complement,
                        string_to_sequence, load_record, gc_content)
 from .constraints import (NoPatternConstraint, PerBasepairPricing,
-                          SequenceLengthConstraint, GcContentConstraint)
+                          SequenceLengthConstraint, GcContentConstraint,
+                          FixedPricing)

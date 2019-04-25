@@ -19,7 +19,7 @@ class CommercialDnaOffer(DnaSource):
     report_color = "#ffeeee"
 
     def __init__(self, name, pricing, sequence_constraints=(),
-                 lead_time=None, memoize=False):
+                 lead_time=0, memoize=False):
         self.name = name
         self.sequence_constraints = sequence_constraints
         self.pricing = pricing
