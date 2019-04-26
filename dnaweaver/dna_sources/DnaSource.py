@@ -148,25 +148,30 @@ class DnaSource:
 
         """
         constraints = self.sequence_constraints
-        dnachisel_constraints = [
-            constraint for constraint in constraints
-            if isinstance(constraint, Specification)
-        ]
+        if not hasattr(self, 'dnachisel_constraints'):
+            self.dnachisel_constraints = [
+                constraint for constraint in self.sequence_constraints
+                if isinstance(constraint, Specification)
+            ]
 
-        if dnachisel_constraints != []:
+        if self.dnachisel_constraints != []:
             if not DNACHISEL_AVAILABLE:
                 raise ImportError("Spotted DNA Chisel constraints, while "
                                   "DNA Chisel is not installed.")
             # We provide an empty mutation space so it won't be recomputed
-            # (this takes time !)
-            canvas = DnaOptimizationProblem(sequence, dnachisel_constraints,
-                                            mutation_space=[])
+            # (which would take time and is useless here!)
+            problem = DnaOptimizationProblem(sequence, dnachisel_constraints,
+                                             mutation_space=[])
             constraints = [
                 constraint for constraint in constraints
                 if not isinstance(constraint, Specification)
-            ] + [lambda seq: canvas.all_constraints_pass()]
+            ] + [lambda seq: problem.all_constraints_pass()]
 
-        return all([constraint(sequence) for constraint in constraints])
+        return all(
+            constraint(sequence)
+            for constraint
+            in constraints
+        )
 
     def compute_supply_graph(self):
         """Return elements to plot the supply graph underlying this DnaSource

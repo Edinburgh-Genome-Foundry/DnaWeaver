@@ -1,3 +1,4 @@
+from Bio import SeqIO
 from .DnaSource import DnaSource
 from ..DnaQuote import DnaQuote
 
@@ -15,10 +16,15 @@ class PartsLibrary(DnaSource):
 
     report_color = "#feeefe"
 
-    def __init__(self, name, parts_dict, memoize=False,
+    def __init__(self, name, parts_dict=None, fasta_file=None, memoize=False,
                  sequence_constraints=()):
         self.name = name
         self.sequence_constraints = sequence_constraints
+        if fasta_file is not None:
+            parts_dict = {
+                record.id: str(record.seq).upper()
+                for record in SeqIO.parse("emma_parts.fa", "fasta")
+            }
         self.parts_dict = parts_dict
         self.inverted_parts_dict = {v: k for k, v in parts_dict.items()}
         self.sequences_set = set(self.inverted_parts_dict)
@@ -33,7 +39,7 @@ class PartsLibrary(DnaSource):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quots
+          The sequence submitted to the Dna Source for a quotes
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
@@ -65,9 +71,11 @@ class GoldenGatePartsLibrary(PartsLibrary):
     """Library of parts for Golden Gate Assembly"""
     class_description = "Golden Gate parts library"
 
-    def __init__(self, name, parts_dict, flanks_length=7, memoize=False,
+    def __init__(self, name, parts_dict=None, fasta_file=None,
+                 flanks_length=7, memoize=False,
                  sequence_constraints=()):
-        PartsLibrary.__init__(self,  name, parts_dict, memoize=memoize,
+        PartsLibrary.__init__(self,  name, parts_dict=parts_dict,
+                              fasta_file=fasta_file, memoize=memoize,
                               sequence_constraints=sequence_constraints)
         self.flanks_length = flanks_length
 

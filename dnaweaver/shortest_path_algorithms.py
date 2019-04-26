@@ -180,12 +180,18 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
         return nx.dijkstra_path(graph, start, end, weight='weight')
 
     else:
+        def path_is_valid(path):
+            return all(nodes_constraint(path)
+                       for nodes_constraint in nodes_constraints)
+        tentative_shortest_path = nx.dijkstra_path(graph, start, end,
+                                                   weight='weight')
+        if path_is_valid(tentative_shortest_path):
+            return tentative_shortest_path
         shortest_paths = nx.shortest_simple_paths(graph, start, end,
                                                   weight='weight')
         for i in range(compatibility_search_cutoff):
             shortest_path = next(shortest_paths)
-            if all([nodes_constraint(shortest_path)
-                    for nodes_constraint in nodes_constraints]):
+            if path_is_valid(shortest_path):
                 return shortest_path
         return nx.NetworkXNoPath("Could not find a solution verifying the cuts"
                                  " set constraints, after %d tries." %

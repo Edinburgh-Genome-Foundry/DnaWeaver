@@ -5,17 +5,17 @@ import networkx as nx
 from .shortest_path_algorithms import (NoSolutionFoundError,
                                        shortest_valid_path,
                                        astar_path)
-from proglog import TqdmProgressBarLogger, MuteProgressBarLogger
+from proglog import TqdmProgressBarLogger, MuteProgressBarLogger, default_bar_logger
 
-_default_bars = ('segment', 'edge')
-class SequenceDecomposerLogger(TqdmProgressBarLogger):
+# _default_bars = ('segment', 'edge')
+# class SequenceDecomposerLogger(TqdmProgressBarLogger):
 
-    def __init__(self, bars=_default_bars, notebook='default',
-                 min_time_interval=0.2):
-        ignored_bars = set(_default_bars).difference(bars)
-        TqdmProgressBarLogger.__init__(self, bars=bars, notebook=notebook,
-                                       ignored_bars=ignored_bars,
-                                       min_time_interval=min_time_interval)
+#     def __init__(self, bars=_default_bars, notebook='default',
+#                  min_time_interval=0.2):
+#         ignored_bars = set(_default_bars).difference(bars)
+#         TqdmProgressBarLogger.__init__(self, bars=bars, notebook=notebook,
+#                                        ignored_bars=ignored_bars,
+#                                        min_time_interval=min_time_interval)
 
 class SequenceDecomposer:
     """Find the sequence cuts which optimize the sum of segments scores.
@@ -114,12 +114,12 @@ class SequenceDecomposer:
         self.a_star_factor = a_star_factor
         self.path_size_limit = path_size_limit
         self.path_size_min_step = path_size_min_step
-
-        if logger == 'bars':
-            logger = SequenceDecomposerLogger(min_time_interval=0.2)
-        if logger is None:
-            logger = MuteProgressBarLogger() # silent
-        self.logger = logger
+        self.logger = default_bar_logger(logger, min_time_interval=0.2)
+        # if logger == 'bars':
+        #     logger = SequenceDecomposerLogger(min_time_interval=0.2)
+        # if logger is None:
+        #     logger = MuteProgressBarLogger() # silent
+        # self.logger = logger
         self.bar_prefix = bar_prefix
 
         if len(forced_cuts) > 0:
