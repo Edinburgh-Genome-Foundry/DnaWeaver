@@ -23,7 +23,7 @@ class PartsLibrary(DnaSource):
         if fasta_file is not None:
             parts_dict = {
                 record.id: str(record.seq).upper()
-                for record in SeqIO.parse("emma_parts.fa", "fasta")
+                for record in SeqIO.parse(fasta_file, "fasta")
             }
         self.parts_dict = parts_dict
         self.inverted_parts_dict = {v: k for k, v in parts_dict.items()}
@@ -52,7 +52,7 @@ class PartsLibrary(DnaSource):
         if sequence in self.sequences_set:
             return DnaQuote(
                 self, sequence, accepted=True, price=0, lead_time=0,
-                message="Part name: " + self.inverted_parts_dict[sequence]
+                message="Part: " + self.inverted_parts_dict[sequence]
             )
 
         return DnaQuote(self, sequence, accepted=False,

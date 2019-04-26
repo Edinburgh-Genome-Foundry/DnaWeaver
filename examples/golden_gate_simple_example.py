@@ -45,7 +45,7 @@ assembly_station = DnaAssemblyStation(
     ),
     dna_source=company,
     coarse_grain=50,
-    logger='bars'
+    logger='bar'
 )
 
 sequence = random_dna_sequence(4000, seed=123)

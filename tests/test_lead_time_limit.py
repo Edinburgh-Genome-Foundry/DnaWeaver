@@ -21,7 +21,7 @@ from dnaweaver.reports import (JsonQuote, make_folder_report,
 SEQUENCE_PATH = os.path.join('tests', 'data', 'full_example_50kb_sequence.txt')
 ECOLI_DB_PATH = os.path.join('tests', 'data', 'ecoli_blast_db', 'ecoli')
 
-def test_full_report():
+def test_lead_time_limit():
 
     # OLIGO COMPANIES
 
@@ -144,7 +144,6 @@ def test_full_report():
         ]),
         coarse_grain=1000,
         fine_grain=None,
-        logger='bars',
         a_star_factor=a_star_factor,
         memoize=memoize
     )

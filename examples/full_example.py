@@ -117,7 +117,7 @@ chunks_assembly_station = DnaAssemblyStation(
     dna_source=blocks_assembly_comparator,
     coarse_grain=2000,
     fine_grain=200,
-    logger='bars'
+    logger='bar'
 )
 
 sequence_path = os.path.join("examples_data", "multistep_assembly_seq.txt")

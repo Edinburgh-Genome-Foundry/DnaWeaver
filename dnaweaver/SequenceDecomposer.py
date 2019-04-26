@@ -115,11 +115,6 @@ class SequenceDecomposer:
         self.path_size_limit = path_size_limit
         self.path_size_min_step = path_size_min_step
         self.logger = default_bar_logger(logger, min_time_interval=0.2)
-        # if logger == 'bars':
-        #     logger = SequenceDecomposerLogger(min_time_interval=0.2)
-        # if logger is None:
-        #     logger = MuteProgressBarLogger() # silent
-        # self.logger = logger
         self.bar_prefix = bar_prefix
 
         if len(forced_cuts) > 0:
@@ -135,7 +130,6 @@ class SequenceDecomposer:
                 index for index in range(sequence_length)
                 if all(fl(index) for fl in self.cut_location_constraints)
             ])
-        # print (forced_cuts, self.segments_constraints)
 
     def compute_graph(self, valid_cuts, prune_deadends=True,
                       reachable_indices_only=True):

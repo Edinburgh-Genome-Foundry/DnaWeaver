@@ -144,7 +144,6 @@ def test_full_report():
         ]),
         coarse_grain=1000,
         fine_grain=None,
-        logger='bars',
         a_star_factor=a_star_factor,
         memoize=memoize
     )
