@@ -5,11 +5,8 @@ from dnaweaver import (CommercialDnaOffer, GoldenGateAssemblyMethod,
                        load_record)
 EMMA_PATH = os.path.join("tests", "test_scenarios", "emma_parts.fa")
 SEQUENCE_PATH = os.path.join("tests", "test_scenarios", "emma_sequence.gb")
-record = load_record(SEQUENCE_PATH)
-sequence = str(record.seq)
 
 def test_emma_construct():
-    print (EMMA_PATH)
     emma_collection = GoldenGatePartsLibrary("EMMA", fasta_file=EMMA_PATH,
                                              memoize=True)
     company_ingen = CommercialDnaOffer(
@@ -38,6 +35,8 @@ def test_emma_construct():
         logger='bar',
         a_star_factor='auto'
     )
+    record = load_record(SEQUENCE_PATH)
+    sequence = str(record.seq)
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
     emma_parts = [p for p in list(quote.assembly_plan.values())
               if p.source.name == 'EMMA']
