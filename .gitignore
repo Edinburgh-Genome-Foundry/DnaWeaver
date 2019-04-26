@@ -49,4 +49,4 @@ nosetests.xml
 
 .pypirc
 
-*.gb
+# *.gb
