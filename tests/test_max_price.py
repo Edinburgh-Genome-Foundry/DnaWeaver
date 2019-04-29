@@ -155,7 +155,7 @@ def test_max_price():
     import time
     t0 = time.time()
 
-    ecoli_genome.pre_blast(sequence)
+    chunks_assembly_station.prepare_network_on_sequence(sequence)
     quote = chunks_assembly_station.get_quote(
         sequence, max_price=50000, with_assembly_plan=True)
 

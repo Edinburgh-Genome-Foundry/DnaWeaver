@@ -86,7 +86,7 @@ class PcrOutStation(DnaSource):
             return result
         else:
             record = blast_sequence(sequence, self.blast_database,
-                                    perc_identity=99,
+                                    perc_identity=100,
                                     use_megablast=True,
                                     word_size=self.blast_word_size)
 
@@ -168,14 +168,16 @@ class PcrOutStation(DnaSource):
                         message="No valid match found")
 
     def suggest_cuts(self, sequence):
+        if self.sequences is None:
+            return []
         suggested_cuts = []
         for name, subseq in self.sequences.items():
             if subseq in sequence:
                 index = sequence.find(subseq)
-                suggested_cuts += [index, index + len(subseq)]
+                suggested_cuts.extend([index, index + len(subseq)])
         return sorted(list(set(suggested_cuts)))
 
-    def pre_blast(self, sequence):
+    def prepare_on_sequence(self, sequence):
         """Pre-compute the BLAST of the current sequence against the database.
 
         Once a pre-blast has been performed, this PcrOutStation becomes
@@ -188,10 +190,11 @@ class PcrOutStation(DnaSource):
 
         >>> pcr_station = PcrOutStation("some_blast_database")
         >>> top_station = # some assembly station depending on pcr_station
-        >>> pcr_station.pre-blast(my_sequence)
+        >>> pcr_station.prepare_on_sequence(my_sequence)
         >>> top_station.get_quote(my_sequence)
         >>> pcr_station.sequences=None # de-specializes the pcr station.
         """
+        hits = self.get_hits(sequence)
         self.sequences = None  # destroy current pre-blast (used by get_hits)
         self.sequences = {
             subject: sbjct

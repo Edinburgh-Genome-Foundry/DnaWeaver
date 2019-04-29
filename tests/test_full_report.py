@@ -154,7 +154,7 @@ def test_full_report():
     import time
     t0 = time.time()
 
-    ecoli_genome.pre_blast(sequence)
+    chunks_assembly_station.prepare_network_on_sequence(sequence)
     quote = chunks_assembly_station.get_quote(
         sequence, with_assembly_plan=True)
 

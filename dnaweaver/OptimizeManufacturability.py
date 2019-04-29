@@ -2,10 +2,10 @@ from copy import deepcopy
 import numpy as np
 import dnachisel as dc
 
-def compute_costs_profiles(graph):
+def compute_cost_profiles(graph):
     
     L = max(graph.nodes)
-    costs_profiles = {
+    cost_profiles = {
         'min': 1000 * np.ones(L),
         'max': -1000 * np.ones(L),
         'mean': np.zeros(L),
@@ -13,46 +13,18 @@ def compute_costs_profiles(graph):
         'count': np.zeros(L)
     }
     for start, end, data in graph.edges(data=True):
-        costs_profiles['count'][start:end] += 1.0
+        cost_profiles['count'][start:end] += 1.0
         bp_price = data['weight'] / (end - start)
-        costs_profiles['total'][start:end] += bp_price
-        costs_profiles['min'][start:end] = np.minimum(
-            bp_price, costs_profiles['min'][start:end])
-        costs_profiles['max'][start:end] = np.maximum(
-            bp_price, costs_profiles['max'][start:end])
-    costs_profiles['mean'] = costs_profiles['total'] / (
-        .0001 + costs_profiles['count'])
-    diffs = np.diff(costs_profiles['min'])
-    costs_profiles['diffs'] = diffs
-    return costs_profiles
-
-def plot_costs_profiles(bp_price_arrays):
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-    L = len(bp_price_arrays['count'])
-    diffs = bp_price_arrays['diffs']
-    r = (L - len(diffs)) / 2
-    xx = range(L)
-    ax1.plot(r + np.arange(len(diffs)), diffs, c='orange')
-    ymax = diffs.max()
-    if ymax == 0:
-        ymax = 1
-    ax1.set_ylim(bottom=-0.005, top = 1.5 * ymax)
-    ax1b = ax1.twinx()
-    ax1b.plot(xx, bp_price_arrays['count'], c='k', alpha=0.3)
-    ax1b.set_ylim(bottom=0, top = 1.5 * bp_price_arrays['count'].max())
-    ax1.set_xlim(0, L)
-    
-    ax2.plot(xx, bp_price_arrays['mean'], c='b', lw=2)
-    ax2.fill_between(
-        xx,
-        bp_price_arrays['min'],
-        bp_price_arrays['max'],
-        facecolor='b',
-        alpha=0.2
-    )
-    ax2.set_ylim(bottom=0, top = 1.5 * bp_price_arrays['max'].max())
-    return ax1, ax2
-
+        cost_profiles['total'][start:end] += bp_price
+        cost_profiles['min'][start:end] = np.minimum(
+            bp_price, cost_profiles['min'][start:end])
+        cost_profiles['max'][start:end] = np.maximum(
+            bp_price, cost_profiles['max'][start:end])
+    cost_profiles['mean'] = cost_profiles['total'] / (
+        .0001 + cost_profiles['count'])
+    diffs = np.diff(cost_profiles['min'])
+    cost_profiles['diffs'] = diffs
+    return cost_profiles
 
 class OptimizeManufacturability(dc.Specification):
     
@@ -78,14 +50,16 @@ class OptimizeManufacturability(dc.Specification):
                                          reachable_indices_only=False)
         graph, cuts = decomposer.find_shortest_path(graph)
         return graph
+    
+    def compute_cost_profiles(self, sequence):
+        graph = self.compute_cost_graph(sequence)
+        return compute_cost_profiles(graph)
 
     def detect_cost_driving_locations(self, sequence):
-        graph = self.compute_cost_graph(sequence)
-        costs_profiles = compute_costs_profiles(graph)
-        threshold = self.detection_threshold
-        above_threshold = abs(costs_profiles['diffs']) > threshold
+        diffs = self.compute_cost_profiles(sequence)['diffs']
+        above_threshold = abs(diffs) > self.detection_threshold
         changes = [
-            (index, costs_profiles['diffs'][index])
+            (index, diffs[index])
             for index in above_threshold.nonzero()[0]
         ]
         return [

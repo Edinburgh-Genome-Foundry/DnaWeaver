@@ -127,8 +127,8 @@ class DnaQuote:
         >>> some_subquote = print quote.assembly_plan.values()[0]
         >>> print (some_subquote.final_location)
         """
+        self.compute_full_assembly_tree()
         quotes = self.tree_as_list()
-
         quotes_dict = {quote.id: quote for quote in quotes}
         _, temp_fasta = tempfile.mkstemp(suffix=".fa")
         with open(temp_fasta, "w+") as f:
@@ -136,7 +136,7 @@ class DnaQuote:
                 f.write(">%s\n%s\n" % (quote.id, quote.sequence))
         results = blast_sequence(self.sequence,
                                  subject=temp_fasta,
-                                 word_size=10, perc_identity=99)
+                                 word_size=10, perc_identity=100)
 
         if isinstance(results, list):
             alignments = sum([rec.alignments for rec in results], [])

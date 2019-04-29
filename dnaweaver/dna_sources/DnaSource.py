@@ -58,14 +58,15 @@ class DnaSource:
             max_lead_time = np.inf
 
         if self.memoize:
-            args = (sequence, max_lead_time, max_price, with_assembly_plan)
+            args = (hash(sequence), max_lead_time, max_price,
+                    with_assembly_plan)
             quote = self.memoize_dict.get(args, None)
             if quote is not None:
                 return quote
 
         if not self.verify_constraints(sequence):
             quote = DnaQuote(self, sequence, accepted=False,
-                             message="Constraints do not pass")
+                             message="Sequence does not pass constraints.")
 
         elif max_price is not None:
             quote = self.get_best_lead_time_under_price_limit(
@@ -201,23 +202,29 @@ class DnaSource:
             seen_sources.add(source)
 
             levels[depth].append(source)
-
-            if hasattr(source, "dna_source"):
+            if hasattr(source, "suppliers"):
+                for other in source.suppliers:
+                    edges.append((other, source))
+                    rec(other, depth + 1)
+            elif hasattr(source, "dna_source"):
                 edges.append((source.dna_source, source))
                 rec(source.dna_source, depth + 1)
             elif hasattr(source, "primers_dna_source"):
                 edges.append((source.primers_dna_source, source))
                 rec(source.primers_dna_source, depth + 1)
-
-            if hasattr(source, "dna_sources"):
-                for other in source.dna_sources:
-                    edges.append((other, source))
-                    rec(other, depth + 1)
+            
 
         rec(self)
 
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
+    
+    def prepare_network_on_sequence(self, sequence):
+        edges, levels = self.compute_supply_graph()
+        for level in levels:
+            for source in level:
+                if hasattr(source, 'prepare_on_sequence'):
+                    source.prepare_on_sequence(sequence)
 
     def dict_supply_graph(self):
         sources = {}

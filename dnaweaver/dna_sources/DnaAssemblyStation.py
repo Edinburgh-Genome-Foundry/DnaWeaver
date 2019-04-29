@@ -266,7 +266,8 @@ class DnaAssemblyStation(DnaSource):
             coarse_grain=data['coarse_grain'],
             fine_grain=data['fine_grain'],
             a_star_factor=a_star_factor,
-            logger=data.get('logger', 'bar')
+            memoize=data.get('memoize', False),
+            logger=data.get('logger', None)
         )
 
     def set_suppliers(self, suppliers):

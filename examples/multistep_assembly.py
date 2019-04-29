@@ -141,7 +141,7 @@ chunks_assembly_station = DnaAssemblyStation(
 
 with open(sequence_path, "r") as f:
     sequence = f.read()
-ecoli_genome.pre_blast(sequence)
+chunks_assembly_station.prepare_network_on_sequence(sequence)
 import time
 t0 = time.time()
 quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)

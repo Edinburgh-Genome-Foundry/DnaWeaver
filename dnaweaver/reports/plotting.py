@@ -47,8 +47,7 @@ def plot_assembly_blocks(quote, parts_offset=0, backend="matplotlib",
     Parameters
     ----------
 
-    color_palette
-      A dict {source_name: color}
+
 
     parts_offset
       Offset applied so that consecutive blocks are not exactly on the same
@@ -79,6 +78,7 @@ def plot_assembly_blocks(quote, parts_offset=0, backend="matplotlib",
     if edge_widths is None:
         edge_widths = {}
     if not hasattr(quote, 'tree'):
+        print('lol')
         quote.compute_full_assembly_tree()
     tree = deepcopy(quote.tree)
 
@@ -726,3 +726,31 @@ def plot_decomposition_graph(graph, nodes_color="#6886b7", weight='weight',
     ax.set_aspect("equal")
     ax.set_xlim(-1, L + 1)
     ax.set_ylim(-1, max_segment_length / 2 + 1)
+
+def plot_cost_profiles(cost_profiles):
+    """Plot cost profiles generated in OptimizeManufacturability"""
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+    L = len(cost_profiles['count'])
+    diffs = cost_profiles['diffs']
+    r = (L - len(diffs)) / 2
+    xx = range(L)
+    ax1.plot(r + np.arange(len(diffs)), diffs, c='orange')
+    ymax = diffs.max()
+    if ymax == 0:
+        ymax = 1
+    ax1.set_ylim(bottom=-0.005, top = 1.5 * ymax)
+    ax1b = ax1.twinx()
+    ax1b.plot(xx, cost_profiles['count'], c='k', alpha=0.3)
+    ax1b.set_ylim(bottom=0, top = 1.5 * cost_profiles['count'].max())
+    ax1.set_xlim(0, L)
+    
+    ax2.plot(xx, cost_profiles['mean'], c='b', lw=2)
+    ax2.fill_between(
+        xx,
+        cost_profiles['min'],
+        cost_profiles['max'],
+        facecolor='b',
+        alpha=0.2
+    )
+    ax2.set_ylim(bottom=0, top = 1.5 * cost_profiles['max'].max())
+    return ax1, ax2

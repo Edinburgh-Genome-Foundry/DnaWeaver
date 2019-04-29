@@ -96,5 +96,6 @@ class CommercialDnaOffer(DnaSource):
             name=data['name'],
             pricing=PerBasepairPricing(data['cost_per_bp']),
             lead_time=data['lead_time'],
+            memoize=data.get('memoize', False),
             sequence_constraints=constraints
         )
