@@ -48,5 +48,6 @@ def supply_network_from_json(graph_data, dna_sources_dict='default'):
         ]
         supplier_class = dna_sources_dict[supplier_data["type"]]
         supplier = supplier_class.from_dict(supplier_data['parameters'])
+        supplier.id = supplier_id
         suppliers_dict[supplier_id] = supplier
     return levels, suppliers_dict, main_id
