@@ -48,5 +48,6 @@ nosetests.xml
 # Pipy codes
 
 .pypirc
+*.zip
 
 # *.gb

@@ -7,8 +7,9 @@ from dnaweaver import (CommercialDnaOffer,
                        DnaSourcesComparator,
                        TmOverhangSelector,
                        FixedSizeOverhangSelector,
-                       SequenceLengthConstraint)
-from dnaweaver.constraints import NoPatternConstraint
+                       SequenceLengthConstraint,
+                       NoPatternConstraint) 
+from dnaweaver.reports import make_folder_report
 
 
 
@@ -120,12 +121,14 @@ chunks_assembly_station = DnaAssemblyStation(
     logger='bar'
 )
 
-sequence_path = os.path.join("examples_data", "multistep_assembly_seq.txt")
+sequence_path = os.path.join("50kb_sequence.txt")
 with open(sequence_path, "r") as f:
     sequence = f.read()
 
+chunks_assembly_station.prepare_network_on_sequence(sequence)
 quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
 
-print (quote)
-if quote.accepted:
-    print (quote.assembly_step_summary())
+print (quote.assembly_step_summary())
+print ("Generating report...")
+make_folder_report(quote, "report.zip")
+print ("Done! (see report.zip)")

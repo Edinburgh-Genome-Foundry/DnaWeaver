@@ -55,8 +55,9 @@ def quote_to_SeqRecord(quote, record=None, record_id=None):
         features = [
             SeqFeature(
                 FeatureLocation(q.segment_start, q.segment_end, 1),
-                type="Feature",
+                type="misc_feature",
                 qualifiers={
+                    "label": "%s - From %s" % (q.id, q.source),
                     "name": q.id,
                     "source": q.source,
                     "price": q.price,

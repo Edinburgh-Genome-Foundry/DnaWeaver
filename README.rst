@@ -9,6 +9,10 @@
    :target: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver
    :alt: Travis CI build status
 
+.. image:: https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master
+   :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
+
+
 (documentation in progress, come back later !)
 
 DnaWeaver is a Python library to find optimal strategies to assemble large
