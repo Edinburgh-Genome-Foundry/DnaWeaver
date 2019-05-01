@@ -16,7 +16,8 @@ from dnaweaver import (PcrOutStation,
                        SequenceLengthConstraint)
 from dnaweaver.biotools import gc_content
 from dnaweaver.reports import (JsonQuote, make_folder_report,
-                               autocolor_quote_sources)
+                               autocolor_quote_sources,
+                               plot_assembly_timeline)
 
 SEQUENCE_PATH = os.path.join('tests', 'data', 'full_example_50kb_sequence.txt')
 ECOLI_DB_PATH = os.path.join('tests', 'data', 'ecoli_blast_db', 'ecoli')
@@ -171,3 +172,6 @@ def test_full_report():
     json_quote = JsonQuote.from_dnaweaver_quote(quote)
     autocolor_quote_sources(json_quote)
     data = make_folder_report(json_quote, '@memory')
+    plot_assembly_timeline(quote, deadline=None, ax=None,
+                           rectangle_color="#bbbbff", scale=1.0,
+                           backend="matplotlib")

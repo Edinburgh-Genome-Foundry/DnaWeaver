@@ -18,3 +18,4 @@ from .biotools import (random_dna_sequence, reverse_complement,
 from .constraints import (NoPatternConstraint, PerBasepairPricing,
                           SequenceLengthConstraint, GcContentConstraint,
                           FixedPricing)
+from .supply_network_from_json import supply_network_from_json

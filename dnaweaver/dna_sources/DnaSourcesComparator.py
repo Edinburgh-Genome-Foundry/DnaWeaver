@@ -51,8 +51,7 @@ class DnaSourcesComparator(DnaSource):
           If True, the assembly plan is added to the quote
         """
 
-        best_quote = DnaQuote(self, sequence, accepted=False,
-                              message="Sequence was rejected by all sources.")
+        best_quote = None
         best_basepair_price = 1e8
         for source in sorted(self.suppliers,
                              key=lambda s: s.min_basepair_price):
@@ -69,6 +68,9 @@ class DnaSourcesComparator(DnaSource):
                 best_quote = quote
                 best_basepair_price = quote_basepair_price
         # print ('---- went for ', best_quote.source)
+        if best_quote is None:
+           return DnaQuote(self, sequence, accepted=False,
+                           message="Sequence was rejected by all sources.")
         return best_quote
 
     def additional_dict_description(self):
@@ -87,3 +89,11 @@ class DnaSourcesComparator(DnaSource):
                                            for supplier in suppliers])
         else:
             self.min_basepair_price = None
+    
+    def suggest_cuts(self, sequence):
+      return sorted(set([
+        cut
+        for supplier in self.suppliers
+        if hasattr(supplier, 'suggest_cuts')
+        for cut in supplier.suggest_cuts(sequence)
+      ]))

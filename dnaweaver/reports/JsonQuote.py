@@ -98,6 +98,7 @@ class JsonQuote:
                     FeatureLocation(segment[0], segment[1], 1),
                     type="Feature",
                     qualifiers={
+                        "label": "%s - From %s" % (quote.id, quote.source),
                         "name": quote.id,
                         "source": quote.source,
                         "price": quote.price,

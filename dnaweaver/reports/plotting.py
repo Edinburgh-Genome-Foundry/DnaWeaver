@@ -309,7 +309,6 @@ def _matplotlib_plot_assembly_timeline(quote, deadline=None, ax=None,
         fig, ax = plt.subplots(1, figsize=(16 * scale,
                                            len(assemblies_list) * 0.3 * scale))
     positions = {}
-    icons = DEFAULT_ICONS
 
     if textprops is None:
         textprops = fm.FontProperties(
@@ -338,8 +337,7 @@ def _matplotlib_plot_assembly_timeline(quote, deadline=None, ax=None,
         ax.text(-1.5, i, assembly.id, horizontalalignment="right",
                 verticalalignment="center", fontproperties=textprops,
                 color=color)
-        icon = icons[source.__class__.__name__]
-        ax.text(-.75, i, icon, horizontalalignment="center",
+        ax.text(-.75, i, source.report_fa_symbol, horizontalalignment="center",
                 verticalalignment="center", fontproperties=fontawesome,
                 color=color)
 

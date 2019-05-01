@@ -139,7 +139,6 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
             remove_subject = False
     else:
         close_subject = False
-
     p = subprocess.Popen([
         "blastn", "-out", xml_name,
         "-outfmt", "5",
@@ -152,6 +151,7 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         "-word_size", str(word_size),
         "-num_threads", str(num_threads),
         "-dust", "no",
+        "-evalue", "0.01",
         "-perc_identity", str(perc_identity)
     ], close_fds=True, stderr=subprocess.PIPE)
     res, blast_err = p.communicate()
@@ -182,7 +182,20 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         raise ValueError("Problem reading the blast record: " + str(error))
 
 
-
+def perfect_match_locations_in_hsp(hsp, span_cutoff=10):
+    """Return the locations of perfect matches in a BLAST HSP.
+    
+    Only locations with a span above span_cutoff are kept.
+    """
+    if hsp.align_length < span_cutoff:
+        return []
+    arr = np.frombuffer(hsp.match.encode(), dtype='uint8')
+    indices = [0] + list((arr != 124).nonzero()[0]) + [len(arr)]
+    return [
+        (start + hsp.query_start, end + hsp.query_start)
+        for start, end in zip(indices, indices[1:])
+        if end - start >= span_cutoff
+    ]
 
 def largest_common_substring(query, target, max_overhang):
     """Return the largest common substring between `query` and `target`.

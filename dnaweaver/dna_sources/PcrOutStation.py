@@ -2,7 +2,7 @@ from ..DnaQuote import DnaQuote
 from .DnaSource import DnaSource
 from ..constraints import SequenceLengthConstraint
 from ..biotools import (reverse_complement, largest_common_substring,
-                        blast_sequence)
+                        blast_sequence, perfect_match_locations_in_hsp)
 from ..tools import functions_list_to_string
 from .DnaSourcesComparator import DnaSourcesComparator
 
@@ -50,6 +50,7 @@ class PcrOutStation(DnaSource):
     report_fa_symbol = u""
     report_fa_symbol_plain = "exchange"
     report_color = "#eeffee"
+    dna_banks = {}
 
     def __init__(self, name, primers_dna_source, blast_database=None,
                  sequences=None, pcr_homology_length=25,
@@ -86,7 +87,7 @@ class PcrOutStation(DnaSource):
             return result
         else:
             record = blast_sequence(sequence, self.blast_database,
-                                    perc_identity=100,
+                                    perc_identity=98,
                                     use_megablast=True,
                                     word_size=self.blast_word_size)
 
@@ -96,6 +97,22 @@ class PcrOutStation(DnaSource):
                  hit.sbjct)
                 for al in record.alignments
                 for i, hit in enumerate(al.hsps)
+            ]
+    def blast_sequence(self, sequence, cutoff=40):
+            record = blast_sequence(sequence, self.blast_database,
+                                    perc_identity=98,
+                                    use_megablast=True,
+                                    word_size=self.blast_word_size)
+            return [
+                (
+                    al.hit_id + "_h%03d_%02d" % (i, j),
+                    (start, end),
+                    sequence[start: end]
+                )
+                for al in record.alignments
+                for i, hit in enumerate(al.hsps)
+                for j, (start, end) in enumerate(
+                    perfect_match_locations_in_hsp(hit, span_cutoff=cutoff))
             ]
 
     def get_best_price(self, sequence, max_lead_time=None,
@@ -162,6 +179,7 @@ class PcrOutStation(DnaSource):
                                 lead_time=overall_lead_time,
                                 price=total_price,
                                 assembly_plan=assembly_plan,
+                                message='From %s' % subject,
                                 metadata={"subject": subject,
                                           "location": (hit_start, hit_end)})
         return DnaQuote(self, sequence, accepted=False,
@@ -172,8 +190,8 @@ class PcrOutStation(DnaSource):
             return []
         suggested_cuts = []
         for name, subseq in self.sequences.items():
-            if subseq in sequence:
-                index = sequence.find(subseq)
+            index = sequence.find(subseq)
+            if index >= 0:
                 suggested_cuts.extend([index, index + len(subseq)])
         return sorted(list(set(suggested_cuts)))
 
@@ -194,11 +212,11 @@ class PcrOutStation(DnaSource):
         >>> top_station.get_quote(my_sequence)
         >>> pcr_station.sequences=None # de-specializes the pcr station.
         """
-        hits = self.get_hits(sequence)
+        hits = self.blast_sequence(sequence)
         self.sequences = None  # destroy current pre-blast (used by get_hits)
         self.sequences = {
-            subject: sbjct
-            for subject, (start, end), sbjct in self.get_hits(sequence)
+            subject: seq
+            for subject, (start, end), seq in hits
         }
 
     def additional_dict_description(self):

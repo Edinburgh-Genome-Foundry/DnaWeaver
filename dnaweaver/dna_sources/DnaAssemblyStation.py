@@ -35,7 +35,7 @@ class DnaAssemblyStation(DnaSource):
 
     def __init__(self, name, assembly_method, dna_source, memoize=False,
                  decomposer_class=None, a_star_auto_multiplier=2,
-                 **solve_kwargs):
+                 **solver_kwargs):
         self.name = name
         self.assembly_method = assembly_method
         self.set_suppliers(dna_source)
@@ -50,9 +50,9 @@ class DnaAssemblyStation(DnaSource):
             self.decomposer_class = decomposer_class
         self.memoize_dict = {}
         self.min_basepair_price = self.dna_source.min_basepair_price
-        if solve_kwargs.get('a_star_factor', None) == 'auto':
-            solve_kwargs['a_star_factor'] = 2 * self.min_basepair_price
-        self.solve_kwargs = solve_kwargs
+        if solver_kwargs.get('a_star_factor', None) == 'auto':
+            solver_kwargs['a_star_factor'] = 2 * self.min_basepair_price
+        self.solver_kwargs = solver_kwargs
 
     def get_quote_for_sequence_segment(self, sequence, segment,
                                        max_lead_time=None, **kwargs):
@@ -94,9 +94,9 @@ class DnaAssemblyStation(DnaSource):
                 return quote.price
         assembly = self.assembly_method
         if coarse_grain is None:
-            coarse_grain = self.solve_kwargs.get("coarse_grain", 1)
+            coarse_grain = self.solver_kwargs.get("coarse_grain", 1)
         if fine_grain is None:
-            fine_grain = self.solve_kwargs.get("fine_grain", 1)
+            fine_grain = self.solver_kwargs.get("fine_grain", 1)
 
         return self.decomposer_class(
             sequence_length=len(sequence),
@@ -171,7 +171,7 @@ class DnaAssemblyStation(DnaSource):
                                 message="Lead time limit too short")
         try:
             assembly_plan = self.get_assembly_plan_for_sequence(
-                sequence, max_lead_time=max_lead_time, **self.solve_kwargs
+                sequence, max_lead_time=max_lead_time, **self.solver_kwargs
             )
         except NoSolutionFoundError:
             return DnaQuote(self, sequence, accepted=False,
@@ -196,7 +196,7 @@ class DnaAssemblyStation(DnaSource):
     def additional_dict_description(self):
         result = {
             "dna source": self.dna_source.name,
-            "solver parameters": self.solve_kwargs,
+            "solver parameters": self.solver_kwargs,
         }
         result.update({
             ("assembly method %s" % k): v

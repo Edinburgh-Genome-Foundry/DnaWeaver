@@ -3,8 +3,10 @@ from dnaweaver import (CommercialDnaOffer, GoldenGateAssemblyMethod,
                        PerBasepairPricing, DnaAssemblyStation,
                        GoldenGatePartsLibrary, SequenceLengthConstraint,
                        load_record)
-EMMA_PATH = os.path.join("tests", "test_scenarios", "emma_parts.fa")
-SEQUENCE_PATH = os.path.join("tests", "test_scenarios", "emma_sequence.gb")
+THIS_DIR = os.path.join("tests", "test_scenarios",
+                        "test_emma_homology_cassette")
+EMMA_PATH = os.path.join(THIS_DIR, "emma_parts.fa")
+SEQUENCE_PATH = os.path.join(THIS_DIR, "emma_sequence.gb")
 
 def test_emma_construct():
     emma_collection = GoldenGatePartsLibrary("EMMA", fasta_file=EMMA_PATH,
