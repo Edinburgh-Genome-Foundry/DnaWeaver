@@ -51,34 +51,37 @@ Here is the Python code to solve the problem with DnaWeaver:
 
 .. code:: python
 
-    from dnaweaver import *
+    import dnaweaver as dw
 
-    cheap_dna_offer = CommercialDnaOffer(
+    cheap_dna_offer = dw.CommercialDnaOffer(
         name="CheapDNA.com",
         sequence_constraints=[
-            no_pattern_constraint("GGTCTC"),
-            lambda seq: len(seq) < 4000
+            dw.NoPatternConstraint(enzyme="BsaI"),
+            dw.SequenceLengthConstraint(max_length=4000)
         ],
-        pricing=lambda seq: 0.10 * len(seq),
+        pricing=dw.PerBasepairPricing(0.10),
     )
 
-    deluxe_dna_offer = CommercialDnaOffer(
+    deluxe_dna_offer = dw.CommercialDnaOffer(
         name="DeluxeDNA.com",
-        sequence_constraints=[lambda seq: len(seq) < 3000],
-        pricing=(lambda seq: 0.20 * len(seq)),
+        sequence_constraints=[dw.SequenceLengthConstraint(max_length=3000)],
+        pricing=dw.PerBasepairPricing(0.20),
     )
 
-    assembly_station = DnaAssemblyStation(
+    assembly_station = dw.DnaAssemblyStation(
         name="Gibson Assembly Station",
-        assembly_method=GibsonAssemblyMethod(homology_arm_length=20,
-                                             min_segment_length=500,
-                                             max_segment_length=4000),
-        dna_source=DnaSourcesComparator([cheap_dna_offer, deluxe_dna_offer]),
-        nucleotide_resolution=10,
-        refine_resolution=False
+        assembly_method=dw.GibsonAssemblyMethod(
+            overhang_selector=dw.TmOverhangSelector(min_tm=55, max_tm=70),
+            min_segment_length=500,
+            max_segment_length=4000
+        ),
+        dna_source=[cheap_dna_offer, deluxe_dna_offer],
+        logger='bar',
+        coarse_grain=20,
+        fine_grain=1
     )
 
-    sequence = random_dna_sequence(10000, seed=123)
+    sequence = dw.random_dna_sequence(10000, seed=123)
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
 
     print (quote.assembly_step_summary())
