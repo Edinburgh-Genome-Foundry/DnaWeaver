@@ -35,6 +35,13 @@ def _sort_suppliers(graph_data):
 
 
 def supply_network_from_json(graph_data, dna_sources_dict='default'):
+    """
+
+    Returns
+    -------
+
+    levels, suppliers_dict, main_id
+    """
     if dna_sources_dict == 'default':
         dna_sources_dict = DEFAULT_DNA_SOURCES_DICT
 
