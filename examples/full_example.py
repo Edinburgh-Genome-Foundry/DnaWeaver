@@ -1,14 +1,16 @@
 import os
-from dnaweaver import (CommercialDnaOffer,
-                       DnaAssemblyStation,
-                       GibsonAssemblyMethod,
-                       GoldenGateAssemblyMethod,
-                       BuildAGenomeAssemblyMethod,
-                       DnaSourcesComparator,
-                       TmOverhangSelector,
-                       FixedSizeOverhangSelector,
-                       SequenceLengthConstraint,
-                       NoPatternConstraint) 
+from dnaweaver import (
+    CommercialDnaOffer,
+    DnaAssemblyStation,
+    GibsonAssemblyMethod,
+    GoldenGateAssemblyMethod,
+    BuildAGenomeAssemblyMethod,
+    DnaSourcesComparator,
+    TmOverhangSelector,
+    FixedSizeOverhangSelector,
+    SequenceLengthConstraint,
+    NoPatternConstraint
+) 
 from dnaweaver.reports import make_folder_report
 
 

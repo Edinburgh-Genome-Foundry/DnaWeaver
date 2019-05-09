@@ -15,10 +15,14 @@ class PartsLibrary(DnaSource):
     report_fa_symbol_plain = "book"
 
     report_color = "#feeefe"
+    collections_by_id = {}
+    library_classes = {}
 
     def __init__(self, name, parts_dict=None, fasta_file=None, memoize=False,
-                 sequence_constraints=()):
+                 price_per_part=0, lead_time=0, sequence_constraints=()):
         self.name = name
+        self.price_per_part = price_per_part
+        self.lead_time = lead_time
         self.sequence_constraints = sequence_constraints
         if fasta_file is not None:
             parts_dict = {
@@ -51,7 +55,8 @@ class PartsLibrary(DnaSource):
         sequence = self.preprocess_sequence(sequence) 
         if sequence in self.sequences_set:
             return DnaQuote(
-                self, sequence, accepted=True, price=0, lead_time=0,
+                self, sequence, accepted=True, price=self.price_per_part,
+                lead_time=self.lead_time,
                 message="Part: " + self.inverted_parts_dict[sequence]
             )
 
@@ -65,6 +70,22 @@ class PartsLibrary(DnaSource):
         return {
             "flanks length": self.flanks_length
         }
+    @classmethod
+    def from_dict(cls, data):
+        parameters = cls.collections_by_id[data['collection']]
+        library_class = parameters.pop('library_class')
+        if library_class in cls.library_classes:
+            library_class = cls.library_classes[library_class]
+        def get(param, default):
+            return data.get(param, parameters.get(param, default))
+        return library_class(
+            name= get('name', 'library'),
+            price_per_part=get('price_per_part', 0),
+            lead_time=get('lead_time', 0),
+            parts_dict=get('parts_dict', None),
+            fasta_file=get('fasta_file', None),
+            memoize=get('memoize', None)
+        )
 
 
 class GoldenGatePartsLibrary(PartsLibrary):
@@ -72,7 +93,7 @@ class GoldenGatePartsLibrary(PartsLibrary):
     class_description = "Golden Gate parts library"
 
     def __init__(self, name, parts_dict=None, fasta_file=None,
-                 flanks_length=7, memoize=False,
+                 price_per_part=0, lead_time=0, flanks_length=7, memoize=False,
                  sequence_constraints=()):
         PartsLibrary.__init__(self,  name, parts_dict=parts_dict,
                               fasta_file=fasta_file, memoize=memoize,
@@ -113,3 +134,8 @@ class GoldenGatePartsLibrary(PartsLibrary):
             "operation_type": "library",
             "flanks length": self.flanks_length
         }
+
+PartsLibrary.library_classes.update({
+    'library': PartsLibrary,
+    'golden_gate': GoldenGatePartsLibrary
+})
