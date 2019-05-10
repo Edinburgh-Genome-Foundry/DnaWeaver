@@ -16,7 +16,7 @@ DNA Weaver is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver it will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
-and assembly steps. Try it online via the [DNA Weaver web app](https://dnaweaver.genomefoundry.org)!
+and assembly steps. Try it online via the `DNA Weaver web app <https://dnaweaver.genomefoundry.org>`_
 
 DNA Weaver was written with versatility and extensibility in mind:
 each DNA source and assembly method can be customized, and assembly plans can
@@ -108,7 +108,7 @@ model complex assembly problems. For instance in this example
 
     <p align="center">
     <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
-         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/multiple_steps_supply_network.png" width="250"/>
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/multiple_step_supply_network.png" width="600"/>
     <br /><br />
     </p>
 
@@ -131,7 +131,7 @@ Result:
 
     <p align="center">
     <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
-         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/report_illustration.png" width="250"/>
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/report_illustration.png" width="900"/>
     <br /><br />
     </p>
 
@@ -147,18 +147,15 @@ Alternatively, you can unzip the sources in a folder and type
     sudo python setup.py install
 
 Also install the ncbi-blast+ package to be able to use PCR stations. On Ubuntu:
-
 ::
     sudo apt-get install ncbi-blast+
 
 Reports generation needs more dependencies for plots and tables. Install Python dependencies with:
-
 ::
     sudo pip install pandas dna_features_viewer weasyprint
 
 You may also need the following non-python dependencies for report generation,
 on Ubuntu:
-
 ::
     sudo apt-get installbuild-essential python3-dev python3-pip \
         python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
