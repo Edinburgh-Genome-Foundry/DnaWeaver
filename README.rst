@@ -98,8 +98,8 @@ Notice how DNA Weaver uses preferentially CheapDNA, with the exception of a 1kb
 fragment in the middle of the sequence, which had to be ordered from DeluxeDNA
 due to the presence of a BsaI site.
 
-Multi-step assembly
-~~~~~~~~~~~~~~~~~~~~~
+Multi-step assembly with assembly report
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By defining more DNA sources and connecting them together it is possible to
 model more complex assembly problems. For instance in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/three-step_assembly/three-step_assembly.py>`_ large DNA fragments (typically 50kb) are assembled via Yeast recombination of chunks originating either from Gibson Assembly, Golden Gate assembly, or PCR from the E. coli genome. Fragments for Golden Gate and Gibson assembly are obtained either via oligo assembly, or via commercial providers (CheapDNA and DeluxeDNA).
