@@ -102,7 +102,7 @@ Multi-step assembly
 ~~~~~~~~~~~~~~~~~~~~~
 
 By defining more DNA sources and connecting them together it is possible to
-model complex assembly problems. For instance in this example
+model more complex assembly problems. For instance in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/three-step_assembly/three-step_assembly.py>`_ large DNA fragments (typically 50kb) are assembled via Yeast recombination of chunks originating either from Gibson Assembly, Golden Gate assembly, or PCR from the E. coli genome. Fragments for Golden Gate and Gibson assembly are obtained either via oligo assembly, or via commercial providers (CheapDNA and DeluxeDNA).
 
 .. raw:: html
 
