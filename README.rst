@@ -13,7 +13,7 @@
    :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
 
 DNA Weaver is a Python library to find optimal strategies for assembling large
-DNA constructs. Given an arbitrary sequence, DNA Weaver it will select the most
+DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
 and assembly steps. Try it online via the `DNA Weaver web app <https://dnaweaver.genomefoundry.org>`_
