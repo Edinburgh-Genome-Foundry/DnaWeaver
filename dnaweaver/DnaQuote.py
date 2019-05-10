@@ -81,7 +81,10 @@ class DnaQuote:
                 infos = infos + " - lead_time %0.1f" % self.lead_time
         else:
             infos = "refused: %s" % self.message
-        return "From %s - %s - %s" % (self.source, infos, self.message)
+        result = "From %s - %s" % (self.source, infos)
+        if len(self.message):
+            result += ' - ' + self.message
+        return result
 
     def compute_full_assembly_tree(self, id_prefix="S"):
         """ """
@@ -282,10 +285,10 @@ class DnaQuote:
     def assembly_step_summary(self):
         """Return a print-friendly, simple string of the ordering plan."""
         plan = "\n  ".join(
-            str(segment) + ": " + str(quote)
-            for segment, quote in sorted(self.assembly_plan.items())
+            "%s-%s: %s" % (start, end, str(quote))
+            for (start, end), quote in sorted(self.assembly_plan.items())
         )
-        final_txt = "Ordering plan:\n  %s\n  Price:%.02f" % (plan, self.price)
+        final_txt = "Ordering plan:\n  %s\nPrice:%.02f" % (plan, self.price)
         if self.lead_time is not None:
             final_txt = final_txt + ", total lead_time:%.1f" % self.lead_time
         return final_txt
