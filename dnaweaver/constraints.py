@@ -2,6 +2,7 @@ from .biotools import gc_content, reverse_complement
 from Bio import Restriction
 import re
 
+
 class NoPatternConstraint:
     """Class of callables (sequence)-> True/False whether the sequence contains
     the pattern.
@@ -61,6 +62,7 @@ class NoPatternConstraint:
     def __repr__(self):
         return "No pattern '%s'" % (self.pattern)
 
+
 class SequenceLengthConstraint:
 
     def __init__(self, min_length=0, max_length=None):
@@ -75,26 +77,34 @@ class SequenceLengthConstraint:
     def __str__(self):
         left_side = ("" if (self.min_length == 0) else
                      ("%d < " % self.min_length))
-        right_side =("" if (self.max_length is None) else
-                     (" < %d" % self.max_length))
+        right_side = ("" if (self.max_length is None) else
+                      (" < %d" % self.max_length))
         return left_side + "length" + right_side
 
 
 class GcContentConstraint:
 
-    def __init__(self, min_gc=0, max_gc=1.0):
+    def __init__(self, min_gc=0, max_gc=1.0, memoize=False):
         self.min_gc = min_gc
         self.max_gc = max_gc
+        self.memoize = True
+        self.memoization_dict = {}
 
     def __call__(self, sequence):
+        if self.memoize:
+            if sequence not in self.memoization_dict:
+                result = self.min_gc <= gc_content(sequence) <= self.max_gc
+                self.memoization_dict[sequence] = result
+            return self.memoization_dict[sequence]
         return self.min_gc <= gc_content(sequence) <= self.max_gc
 
     def __str__(self):
         left_side = ("" if (self.min_gc == 0) else
                      ("%.01f" % (self.min_gc*100) + "% < "))
-        right_side =("" if (self.max_gc == 1) else
-                     (" < %.01f" % (self.max_gc*100) + "%"))
+        right_side = ("" if (self.max_gc == 1) else
+                      (" < %.01f" % (self.max_gc*100) + "%"))
         return left_side + "GC" + right_side
+
 
 class PerBasepairPricing:
 
@@ -107,6 +117,7 @@ class PerBasepairPricing:
 
     def __str__(self):
         return "$%.03f/bp" % self.per_basepair_price
+
 
 class FixedPricing:
 

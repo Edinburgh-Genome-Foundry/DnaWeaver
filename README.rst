@@ -15,13 +15,37 @@
 DNA Weaver is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver it will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
-(depending on your preferences), and will design all necessary assembly fragments
-and assembly steps. Try it online via the [DNA Weaver web app](https://dnaweaver.genomefoundry.org)!
+(depending on your preferences), and will design all necessary assembly
+fragments and assembly steps. Try it online via the
+[DNA Weaver web app](https://dnaweaver.genomefoundry.org)!
 
 DNA Weaver was written with versatility and extensibility in mind:
 each DNA source and assembly method can be customized, and assembly plans can
 be optimized with respect to total price, overall duration of the assembly,
 or assembly success probabilities.
+
+How it works
+------------
+
+In DNA Weaver you first define a supply network connecting various DNA sources
+(commercial providers, parts repositories, genomic DNA, and cloning stations) to
+represent how DNA can be obtained in your lab or biofoundry. For instance, assume
+that you routinely assemble ~10kb sequences using Gibson assembly, from fragments
+obtained either commercially or from the assembly of oligonucleotides. Your
+supply network then looks as follows:
+
+.. raw:: html
+
+    <p align="center">
+    <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/vendor_or_oligo_assembly.png" width="250"/>
+    <br /><br />
+    </p>
+
+When you submit a sequence to the main station (here, the Gibson Assembly station),
+DNA Weaver will use smart sequence decomposition techniques and competitive
+bidding between the different DNA sources in order to find the best possible
+assembly plan.
 
 Examples
 ---------
@@ -102,7 +126,15 @@ Multi-step assembly
 ~~~~~~~~~~~~~~~~~~~~~
 
 By defining more DNA sources and connecting them together it is possible to
-model complex assembly problems. For instance in this example
+model complex assembly problems.
+
+For instance in `this example <>`_ we implement a complex DNA assembly chain,
+where the final DNA sequence (typically 50kb) is obtained from Yeast
+recombination of DNA chunks originating either from the E. coli chromosome
+(via PCR extraction) or from the assembly of smaller fragments
+via Golden Assembly or Gibson assembly (whichever method is best adapted). These
+assembly fragments are obtained either from commercial providers (CheapDNA and
+DeluxeDNA) or assembled from oligos:
 
 .. raw:: html
 
@@ -134,6 +166,12 @@ Result:
          src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/report_illustration.png" width="250"/>
     <br /><br />
     </p>
+
+Assembly with more or less parts reuse
+--------------------------------------
+
+
+
 
 Installation
 -------------

@@ -387,6 +387,11 @@ def plot_tree_graph(levels, edges, draw_node, elements_positions=None,
     ax
       The matplotlib ax to use. If none is provided, a new ax is generated.
 
+    Returns
+    -------
+    elements_positions, ax
+      Dictionary of elements positions, matplotlib ax.
+
     Examples:
     ---------
 
@@ -486,10 +491,16 @@ def plot_supply_graph(quote, ax=None, textprops=None, margin=None,
                     "source_2_name": {"depth": 2, "infos": {...}},
                     etc.}
     ax
-      A matplotlib ax
+      A matplotlib ax. If None provided, one is created (and returned at the
+      end)
 
     textprops
       Properties of the text. If none, a nice opensans font is used.
+    
+    Returns
+    -------
+    elements_positions, ax
+      Dictionary of elements positions, matplotlib ax.
 
 
     """
@@ -529,7 +540,13 @@ def plot_supply_graph(quote, ax=None, textprops=None, margin=None,
 
 def plot_assembly_graph(quote, ax=None, margin=None, textprops=None,
                         scale=1.0):
-    """Plot the complete assembly graph"""
+    """Plot the complete assembly graph
+    
+    Returns
+    -------
+    elements_positions, ax
+      Dictionary of elements positions, matplotlib ax.
+    """
 
     nodes_dict = {}
     levels = defaultdict(lambda *a: [])

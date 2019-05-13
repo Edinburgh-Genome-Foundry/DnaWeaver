@@ -30,5 +30,4 @@ assembly_station = dw.DnaAssemblyStation(
 
 sequence = dw.random_dna_sequence(10000, seed=123)
 quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
-
-print (quote.assembly_step_summary())
+print(quote.assembly_step_summary())
