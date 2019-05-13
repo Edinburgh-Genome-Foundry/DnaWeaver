@@ -143,7 +143,7 @@ DeluxeDNA) or assembled from oligos:
     <br /><br />
     </p>
 
-Just a few lines of code can produce a comprehensive report (see a sample `here <>`_)
+Just a few lines of code can produce a comprehensive report (see a sample `here <https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/example_report.zip?raw=true>`_)
 featuring plots of the final assembly plan , comprehensive PDF reports
 listing all operations needed, and genbank/fasta files of the sequences to order:
 
@@ -169,7 +169,7 @@ Result:
 Assembly with more or less parts reuse
 --------------------------------------
 
-In `This other example <>`_ be build a sequence comprising a resistance cassette
+In `This other example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py>`_ be build a sequence comprising a resistance cassette
 (promoter, resistance, terminator) flanked by two homology arms. The sequence
 incorporates parts from the EMMA library. The script progressively adds new
 DNA sources (commercial DNA, the EMMA library, chromosomal DNA) so we can observe
@@ -179,7 +179,7 @@ the changes in the proposed solution:
 
     <p align="center">
     <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
-         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/examples/scenarios/assembly_plans.png" width="900"/>
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/assembly_plans.png" width="900"/>
     <br /><br />
     </p>
 
