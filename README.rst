@@ -36,8 +36,8 @@ supply network then looks as follows:
 .. raw:: html
 
     <p align="center">
-    <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
-         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/vendor_or_oligo_assembly.png" width="250"/>
+    <img alt="DNA Weaver Logo" title="vendor_or_oligo_assembly"
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/vendor_or_oligo_assembly.png" width="350"/>
     <br /><br />
     </p>
 
