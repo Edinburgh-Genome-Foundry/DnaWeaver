@@ -257,7 +257,7 @@ Result:
     5985-7077: From PCR station - price 11.90 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_05
     Price:71.80, total lead_time:0.0
 
-In the full assembly report (which you can generate in `this example <>`_) is the list
+In the full assembly report (which you can generate in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple>`_) is the list
 of all primers to order (including overhangs with sequence mutations and BsaI sites).
 
 Installation
