@@ -167,7 +167,7 @@ Result:
     </p>
 
 Assembly with more or less parts reuse
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In `This other example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py>`_ be build a sequence comprising a resistance cassette
 (promoter, resistance, terminator) flanked by two homology arms. The sequence
@@ -182,6 +182,83 @@ the changes in the proposed solution:
          src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/assembly_plans.png" width="900"/>
     <br /><br />
     </p>
+
+Site-directed mutagenesis
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common cloning operation is the domestication of physical genetic part for a
+given assembly standard. Many Golden Gate assembly standards forbid BsaI and
+BsmBI restriction sites in parts sequences. If one wanted to use the wildtype
+E. coli gene *yeeJ*, one would need to first remove the BsaI and BsmBI sites at
+positions 453, 2284, 3979, 5455 and 5990 in the gene sequence. This can be done
+via site-directed mutagenesis, where regions of the chromosome are PCR-amplified
+at precise locations using carefully-designed primers. These primers have overhangs
+introducing the desired (codon-synonymous) mutations and (in this example) carry
+BsaI sites so that the PCR products can be digested and assembled into the
+site-less final sequence.
+
+This process can be easily modeled in DNA Weaver by connecting a PCR station
+(and its oligo provider) to an assembly station:
+
+.. raw:: html
+
+    <p align="center">
+    <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+         src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/site_directed_mutagenesis.png" width="900"/>
+    <br /><br />
+    </p>
+
+
+.. code:: python
+
+    import dnaweaver as dw
+
+    oligos_company = dw.CommercialDnaOffer(
+        "OligoCompany",
+        sequence_constraints=[dw.SequenceLengthConstraint(max_length=200)],
+        pricing=dw.PerBasepairPricing(0.1)
+    )
+    pcr_station = dw.PcrOutStation(
+        name="PCR station",
+        max_overhang_length=50,
+        primers_dna_source=oligos_company,
+        blast_database='./ecoli_genome/ecoli',
+        extra_cost=5
+    )
+    assembly_station = dw.DnaAssemblyStation(
+        name="Golden Gate assembly",
+        assembly_method = dw.GoldenGateAssemblyMethod(enzyme='BsaI'),
+        dna_source=pcr_station,
+        coarse_grain=100,
+        fine_grain=0,
+        logger='bar'
+    )
+
+    # LOAD THE (SITE-FREE) DESIRED SEQUENCE
+    desired_sequence = str(dw.load_record("./desired_sequence.gb").seq)
+
+    # THIS LINE WILL PRE-BLAST THE SEQUENCE TO ACCELERATE COMPUTATIONS.
+    assembly_station.prepare_network_on_sequence(desired_sequence)
+
+    # FIND AN ASSEMBLY PLAN AND PRINT IT.
+    quote = assembly_station.get_quote(desired_sequence)
+    print (quote.assembly_step_summary())
+
+Result:
+
+.. code::
+
+    Ordering plan:
+    0-451: From PCR station - price 11.70 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_00
+    451-2283: From PCR station - price 12.60 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_01
+    2283-3987: From PCR station - price 12.00 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_02
+    3987-5451: From PCR station - price 11.80 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_03
+    5451-5985: From PCR station - price 11.80 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_04
+    5985-7077: From PCR station - price 11.90 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_05
+    Price:71.80, total lead_time:0.0
+
+In the full assembly report (which you can generate in `this example <>`_) is the list
+of all primers to order (including overhangs with sequence mutations and BsaI sites).
 
 Installation
 -------------
