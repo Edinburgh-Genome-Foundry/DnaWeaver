@@ -11,14 +11,14 @@ ecoli_db_path = os.path.join('..', '..', 'data', 'ecoli_blast_db', 'ecoli')
 pcr_station = dw.PcrOutStation(
     name="PCR station",
     max_overhang_length=50,
-    primers_dna_source=oligos_company,
+    primers_supplier=oligos_company,
     blast_database=ecoli_db_path,
     extra_cost=5
 )
 assembly_station = dw.DnaAssemblyStation(
     name="Golden Gate assembly",
     assembly_method=dw.GoldenGateAssemblyMethod(enzyme='BsaI'),
-    dna_source=pcr_station,
+    supplier=pcr_station,
     coarse_grain=100,
     fine_grain=0,
     logger='bar'

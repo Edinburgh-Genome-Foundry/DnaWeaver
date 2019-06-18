@@ -19,7 +19,7 @@ def test_simple_gibson_assembly_station():
             min_segment_length=300,
             max_segment_length=1200
         ),
-        dna_source=dna_provider,
+        supplier=dna_provider,
         coarse_grain=10,
     )
     sequence = random_dna_sequence(5000, seed=1234)

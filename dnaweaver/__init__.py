@@ -6,7 +6,9 @@ from .dna_sources import (CommercialDnaOffer,
                           DnaAssemblyStation,
                           PcrOutStation,
                           PartsLibrary,
-                          GoldenGatePartsLibrary)
+                          SequenceAdapter,
+                          GoldenGatePartsLibrary,
+                          PcrLinearizationStation)
 from .DnaAssemblyMethod import (GibsonAssemblyMethod,
                                 BuildAGenomeAssemblyMethod,
                                 GoldenGateAssemblyMethod)

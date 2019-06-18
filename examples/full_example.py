@@ -54,7 +54,7 @@ oligo_assembly_station = DnaAssemblyStation(
         duration=8,
         cost=0
     ),
-    dna_source=DnaSourcesComparator([
+    supplier=DnaSourcesComparator([
         cheap_dna_com,
         deluxe_dna_com
     ]),
@@ -85,7 +85,7 @@ blocks_assembly_comparator = DnaSourcesComparator([
             duration=8,
             cost=10
         ),
-        dna_source=blocks_sources_comparator,
+        supplier=blocks_sources_comparator,
         coarse_grain=300,
         fine_grain=False,
         memoize=True
@@ -99,7 +99,7 @@ blocks_assembly_comparator = DnaSourcesComparator([
             duration=5,
             cost=2
         ),
-        dna_source=blocks_sources_comparator,
+        supplier=blocks_sources_comparator,
         coarse_grain=300,
         fine_grain=30,
         memoize=True
@@ -117,7 +117,7 @@ chunks_assembly_station = DnaAssemblyStation(
         max_segment_length=25000,
         duration=8
     ),
-    dna_source=blocks_assembly_comparator,
+    supplier=blocks_assembly_comparator,
     coarse_grain=2000,
     fine_grain=200,
     logger='bar'

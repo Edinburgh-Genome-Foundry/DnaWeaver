@@ -48,7 +48,7 @@ company_oligo = CommercialDnaOffer(
 mouse_pcr_station = PcrOutStation(
     name="E. coli",
     extra_cost=10,
-    primers_dna_source=company_oligo,
+    primers_supplier=company_oligo,
     blast_database=os.path.join("..", "..", "data", "ecoli_blast_db", "ecoli"),
     memoize=True
 )
@@ -65,7 +65,7 @@ assembly_station = DnaAssemblyStation(
         max_segment_length=5000,
         enzyme='BsmBI'
     ),
-    dna_source=all_suppliers,
+    supplier=all_suppliers,
     coarse_grain=100,
     logger='bar',
 )

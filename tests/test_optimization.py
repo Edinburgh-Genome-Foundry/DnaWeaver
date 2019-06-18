@@ -24,7 +24,7 @@ def test_optimization_1():
             min_segment_length=200,
             max_segment_length=1200,
         ),
-        dna_source=[company_ingen, company_delux],
+        supplier=[company_ingen, company_delux],
         coarse_grain=20,
         a_star_factor = 'auto'
     )

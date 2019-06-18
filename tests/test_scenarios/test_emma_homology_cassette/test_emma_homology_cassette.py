@@ -31,7 +31,7 @@ def test_emma_construct():
             enzyme='BsmBI',
     #         max_fragments=8
         ),
-        dna_source=[company_ingen, emma_collection, company_tdi],
+        supplier=[company_ingen, emma_collection, company_tdi],
         coarse_grain=100,
         fine_grain=10,
         logger='bar',

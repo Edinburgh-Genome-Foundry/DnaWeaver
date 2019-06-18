@@ -209,9 +209,9 @@ class DnaSource:
             elif hasattr(source, "dna_source"):
                 edges.append((source.dna_source, source))
                 rec(source.dna_source, depth + 1)
-            elif hasattr(source, "primers_dna_source"):
-                edges.append((source.primers_dna_source, source))
-                rec(source.primers_dna_source, depth + 1)
+            elif hasattr(source, "primers_supplier"):
+                edges.append((source.primers_supplier, source))
+                rec(source.primers_supplier, depth + 1)
             
 
         rec(self)
@@ -246,9 +246,9 @@ class DnaSource:
             elif hasattr(source, "dna_source"):
                 providers.append(source.dna_source.name)
                 rec(source.dna_source, depth + 1)
-            elif hasattr(source, "primers_dna_source"):
-                providers.append(source.primers_dna_source.name)
-                rec(source.primers_dna_source, depth + 1)
+            elif hasattr(source, "primers_supplier"):
+                providers.append(source.primers_supplier.name)
+                rec(source.primers_supplier, depth + 1)
             if hasattr(source, "dna_sources"):
                 for other in source.dna_sources:
                     providers.append(other.name)
@@ -271,25 +271,3 @@ class DnaSource:
 
     def additional_dict_description(self):
         return {}
-
-
-class FragmentAmplificationStation(DnaSource):
-    """PCR-Out a fragment from a vector to linearize it for use in subsequent
-    assemblies such as Gibson assembly."""
-    report_fa_symbol = u""
-    report_fa_symbol_plain = "exchange"
-    report_color = "#eefefe"
-    operation_type = "PCR"
-
-    def __init__(self, fragment_dna_source,  primers_dna_source,
-                 primer_melting_temperature=50, sequence_constraints=()):
-        self.fragment_dna_source = fragment_dna_source
-        self.primers_dna_source = primers_dna_source
-        self.primer_melting_temperature = primer_melting_temperature
-        self.sequence_constraints = sequence_constraints
-
-    def additional_dict_description(self):
-        return {
-            "primers DNA source": self.primers_dna_source.name,
-            "primers melting temp.": self.primer_melting_temperature
-        }

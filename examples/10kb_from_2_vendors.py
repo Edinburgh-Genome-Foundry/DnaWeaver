@@ -22,7 +22,7 @@ assembly_station = dw.DnaAssemblyStation(
         min_segment_length=500,
         max_segment_length=4000
     ),
-    dna_source=[cheap_dna_offer, deluxe_dna_offer],
+    supplier=[cheap_dna_offer, deluxe_dna_offer],
     logger='bar',
     coarse_grain=20,
     fine_grain=1

@@ -60,7 +60,7 @@ oligo_assembly_station = DnaAssemblyStation(
         duration=8,
         cost=2
     ),
-    dna_source=oligo_com,
+    supplier=oligo_com,
     coarse_grain=20,
     fine_grain=False,
     a_star_factor=a_star_factor
@@ -88,7 +88,7 @@ gibson_blocks_assembly_station = DnaAssemblyStation(
         duration=8,
         cost=16
     ),
-    dna_source=blocks_sources_comparator,
+    supplier=blocks_sources_comparator,
     coarse_grain=300,
     fine_grain=False,
     memoize=memoize,
@@ -105,7 +105,7 @@ goldengate_blocks_assembly_station = DnaAssemblyStation(
         duration=5,
         cost=6
     ),
-    dna_source=blocks_sources_comparator,
+    supplier=blocks_sources_comparator,
     coarse_grain=400,
     fine_grain=False,
     memoize=memoize,
@@ -115,7 +115,7 @@ goldengate_blocks_assembly_station = DnaAssemblyStation(
 ecoli_db_path = os.path.join('..', '..', 'data', 'ecoli_blast_db', 'ecoli')
 ecoli_genome = PcrOutStation(
     "E. coli Genome (PCR)",
-    primers_dna_source = oligo_com,
+    primers_supplier = oligo_com,
     blast_database = ecoli_db_path,
     max_amplicon_length = 10000,
     extra_time=3,
@@ -133,7 +133,7 @@ chunks_assembly_station = DnaAssemblyStation(
         max_segment_length=25000,
         duration=8
     ),
-    dna_source=[
+    supplier=[
         ecoli_genome,
         goldengate_blocks_assembly_station,
         gibson_blocks_assembly_station,

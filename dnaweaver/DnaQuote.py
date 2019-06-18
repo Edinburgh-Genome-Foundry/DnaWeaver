@@ -96,7 +96,7 @@ class DnaQuote:
                 return quote
 
             if any([hasattr(quote.source, attr) for attr in [
-                   "dna_source", "primers_dna_source"]]):
+                   "supplier", "primers_supplier"]]):
                 if quote.assembly_plan is None:
                     quote = quote.source.get_quote(
                         quote.sequence,

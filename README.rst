@@ -96,7 +96,7 @@ Assembly station:
             max_segment_length=4000,
             duration=5
         ),
-        dna_source=[cheap_dna_offer, deluxe_dna_offer],
+        supplier=[cheap_dna_offer, deluxe_dna_offer],
         coarse_grain=20
     )
     sequence = dw.random_dna_sequence(10000, seed=123)
@@ -221,14 +221,14 @@ This process can be easily modeled in DNA Weaver by connecting a PCR station
     pcr_station = dw.PcrOutStation(
         name="PCR station",
         max_overhang_length=50,
-        primers_dna_source=oligos_company,
+        primers_supplier=oligos_company,
         blast_database='./ecoli_genome/ecoli',
         extra_cost=5
     )
     assembly_station = dw.DnaAssemblyStation(
         name="Golden Gate assembly",
         assembly_method = dw.GoldenGateAssemblyMethod(enzyme='BsaI'),
-        dna_source=pcr_station,
+        supplier=pcr_station,
         coarse_grain=100,
         fine_grain=0,
         logger='bar'

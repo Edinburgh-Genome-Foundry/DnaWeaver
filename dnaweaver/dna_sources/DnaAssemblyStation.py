@@ -24,7 +24,7 @@ class DnaAssemblyStation(DnaSource):
       AnDnaAssemblyMethod object specifying how the fragments are assembled,
       what sequences can be assembled, what fragments can be used, etc.
 
-    dna_source
+    supplier
 
     """
     class_description = "DNA assembly station"
@@ -33,12 +33,12 @@ class DnaAssemblyStation(DnaSource):
     report_fa_symbol_plain = "flask"
     report_color = "#eeeeff"
 
-    def __init__(self, name, assembly_method, dna_source, memoize=False,
+    def __init__(self, name, assembly_method, supplier, memoize=False,
                  decomposer_class=None, a_star_auto_multiplier=2,
                  **solver_kwargs):
         self.name = name
         self.assembly_method = assembly_method
-        self.set_suppliers(dna_source)
+        self.set_suppliers(supplier)
         self.extra_time = assembly_method.duration
         self.extra_cost = assembly_method.cost
         self.sequence_constraints = assembly_method.sequence_constraints
@@ -49,7 +49,7 @@ class DnaAssemblyStation(DnaSource):
         else:
             self.decomposer_class = decomposer_class
         self.memoize_dict = {}
-        self.min_basepair_price = self.dna_source.min_basepair_price
+        self.min_basepair_price = self.supplier.min_basepair_price
         if solver_kwargs.get('a_star_factor', None) == 'auto':
             solver_kwargs['a_star_factor'] = 2 * self.min_basepair_price
         self.solver_kwargs = solver_kwargs
@@ -65,7 +65,7 @@ class DnaAssemblyStation(DnaSource):
         fragment_to_order = self.assembly_method.compute_sequence_fragment(
             sequence, segment, **kwargs
         )
-        return self.dna_source.get_quote(fragment_to_order,
+        return self.supplier.get_quote(fragment_to_order,
                                          max_lead_time=max_lead_time)
 
     def get_assembly_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
@@ -195,7 +195,7 @@ class DnaAssemblyStation(DnaSource):
 
     def additional_dict_description(self):
         result = {
-            "dna source": self.dna_source.name,
+            "dna source": self.supplier.name,
             "solver parameters": self.solver_kwargs,
         }
         result.update({
@@ -261,7 +261,7 @@ class DnaAssemblyStation(DnaSource):
 
         return DnaAssemblyStation(
             name=data['name'],
-            dna_source=data['suppliers'],
+            supplier=data['suppliers'],
             assembly_method=method,
             coarse_grain=data['coarse_grain'],
             fine_grain=data['fine_grain'],
@@ -273,13 +273,13 @@ class DnaAssemblyStation(DnaSource):
     def set_suppliers(self, suppliers):
         if hasattr(suppliers, '__iter__'):
             if len(suppliers) > 1:
-                self.dna_source = DnaSourcesComparator(
+                self.supplier = DnaSourcesComparator(
                     name=self.name + ' comparator', suppliers=suppliers)
-                self.dna_source.is_ghost_source = True
+                self.supplier.is_ghost_source = True
             else:
-                self.dna_source = suppliers[0]
+                self.supplier = suppliers[0]
         else:
-            self.dna_source = suppliers
+            self.supplier = suppliers
             suppliers = [suppliers]
         self.suppliers = suppliers
 

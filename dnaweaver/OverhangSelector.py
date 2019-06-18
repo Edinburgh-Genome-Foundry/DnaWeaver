@@ -3,12 +3,13 @@ Gibson Assembly, Golden Gate assembly, recombination in yeast."""
 
 import numpy as np
 from functools import lru_cache
+
 try:
     import primer3
-    PRIMER3_AVAILABLE = True
-except:
-    PRIMER3_AVAILABLE = False
 
+    PRIMER3_AVAILABLE = True
+except ImportError:
+    PRIMER3_AVAILABLE = False
 
 
 class OverhangSelector:
@@ -24,15 +25,17 @@ class OverhangSelector:
 
         The result is True iff the location is a valid cutting site"""
         if self.has_location_filter:
+
             def f(index):
                 return self.filter_location(sequence, index)
+
             return f
         else:
             return None
 
     @property
     def has_location_filter(self):
-        return hasattr(self, 'filter_location')
+        return hasattr(self, "filter_location")
 
     def compute_sequence_fragment(self, sequence, segment):
         """Compute the fragment equal to the sequence segment + overhangs."""
@@ -45,14 +48,13 @@ class OverhangSelector:
             fragment_end = len(sequence)
         else:
             fragment_end = self.compute_overhang_location(sequence, end)[1]
-        fragment = sequence[fragment_start: fragment_end]
+        fragment = sequence[fragment_start:fragment_end]
         return self.left_addition + fragment + self.right_addition
-
 
     def compute_overhang_sequence(self, sequence, index):
         """Return the sequence of the selected overhang at the given index."""
         start, end = self.compute_overhang_location(sequence, index)
-        return sequence[start: end]
+        return sequence[start:end]
 
     @staticmethod
     def get_segment_coordinates(center, segment_length, sequence_length):
@@ -73,15 +75,16 @@ class FixedSizeOverhangSelector(OverhangSelector):
     temperature matters less.
     """
 
-    def __init__(self, overhang_size=100, left_addition='', right_addition=''):
+    def __init__(self, overhang_size=100, left_addition="", right_addition=""):
         self.overhang_size = overhang_size
         self.left_addition = left_addition
         self.right_addition = right_addition
 
-
     def compute_overhang_location(self, sequence, index):
-        return self.get_segment_coordinates(index, self.overhang_size,
-                                            len(sequence))
+        return self.get_segment_coordinates(
+            index, self.overhang_size, len(sequence)
+        )
+
 
 class TmOverhangSelector(OverhangSelector):
     """Selects overhangs with melting temperature constraints.
@@ -119,9 +122,17 @@ class TmOverhangSelector(OverhangSelector):
       melting temperature is computed
     """
 
-    def __init__(self, min_size=18, max_size=22, min_tm=55, max_tm=65,
-                 precompute_overhangs=True, left_addition='',
-                 right_addition='', **primer3_params):
+    def __init__(
+        self,
+        min_size=18,
+        max_size=22,
+        min_tm=55,
+        max_tm=65,
+        precompute_overhangs=True,
+        left_addition="",
+        right_addition="",
+        **primer3_params
+    ):
         """Initialize."""
         self.min_size = min_size
         self.max_size = max_size
@@ -139,7 +150,7 @@ class TmOverhangSelector(OverhangSelector):
         if index == len(sequence):
             index = index - 1
         if self.precompute_overhangs:
-            return (self.compute_all_overhangs(sequence)[index] is not None)
+            return self.compute_all_overhangs(sequence)[index] is not None
         else:
             return self.compute_optimal_overhang(sequence, index)[1]
 
@@ -165,10 +176,12 @@ class TmOverhangSelector(OverhangSelector):
             init_size = self.middle_size
 
         def f(ovh_size):
-            start, end = self.get_segment_coordinates(index, ovh_size,
-                                                      len(sequence))
-            tm = self.compute_tm(sequence[start: end])
+            start, end = self.get_segment_coordinates(
+                index, ovh_size, len(sequence)
+            )
+            tm = self.compute_tm(sequence[start:end])
             return (start, end), tm
+
         best_overhang, best_tm = f(init_size)
         if best_tm < self.middle_tm:
             ovh_sizes = range(init_size, self.max_size)
@@ -210,8 +223,8 @@ class TmOverhangSelector(OverhangSelector):
                 end = start + len(arr)
                 table[i, start:end] = arr
                 table[i, :start] = table[i, start]
-                table[i, end:] = table[i, end-1]
-            scores = - (table - self.min_tm) * (table - self.max_tm)
+                table[i, end:] = table[i, end - 1]
+            scores = -(table - self.min_tm) * (table - self.max_tm)
             best_sizes_indices = scores.argmax(axis=0)
             best_sizes = lmin + best_sizes_indices
             validities = np.choose(best_sizes_indices, scores) >= 0
@@ -224,11 +237,11 @@ class TmOverhangSelector(OverhangSelector):
                 osizes_and_validity.append((len(ovh), val))
 
         return [
-          None if not valid
-          else self.get_segment_coordinates(i, ovh_size, len(sequence))
-          for i, (ovh_size, valid) in enumerate(osizes_and_validities)
+            None
+            if not valid
+            else self.get_segment_coordinates(i, ovh_size, len(sequence))
+            for i, (ovh_size, valid) in enumerate(osizes_and_validities)
         ]
-
 
     def compute_tm(self, sequence):
         """Return the melting temp of the sequence.
@@ -237,14 +250,12 @@ class TmOverhangSelector(OverhangSelector):
         is used with ``self.primer3_params`` used as parameters.
         Else the heuristic AT/GC=2/4C is used.
         """
-        if self.params == {}:
-            return sum([
-                4 if c in "GC" else 2
-                for c in sequence
-            ])
+        if self.primer3_params == {}:
+            return sum([4 if c in "GC" else 2 for c in sequence])
         if not PRIMER3_AVAILABLE:
-            raise ImportError("Melting temperature computation with '%s' "
-                              "Requires Primer3 installed." %
-                              self.primer3_params.get('method',
-                                                      "[unknown method]"))
+            raise ImportError(
+                "Melting temperature computation with '%s' "
+                "Requires Primer3 installed."
+                % self.primer3_params.get("method", "[unknown method]")
+            )
         return primer3.calcTm(sequence, **self.primer3_params)

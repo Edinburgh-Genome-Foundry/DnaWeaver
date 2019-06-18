@@ -1,5 +1,4 @@
-from .biotools import (reverse_complement, find_enzyme_sites,
-                       gc_content_to_tm)
+from .biotools import reverse_complement, find_enzyme_sites, gc_content_to_tm
 from .OverhangSelector import TmOverhangSelector
 from .tools import memoize
 import itertools
@@ -54,14 +53,24 @@ class DnaAssemblyMethod(object):
     reference
       Reference to e.g. a paper or a protocol describing the method.
     """
+
     name = "None"
 
-    def __init__(self, duration=0, cost=0, reference=None,
-                 cut_location_constraints=(),
-                 segment_constraints=(), min_segment_length=0,
-                 max_segment_length=None, force_cuts=(), suggest_cuts=(),
-                 max_fragments=None, sequence_constraints=(),
-                 cuts_set_constraints=()):
+    def __init__(
+        self,
+        duration=0,
+        cost=0,
+        reference=None,
+        cut_location_constraints=(),
+        segment_constraints=(),
+        min_segment_length=0,
+        max_segment_length=None,
+        force_cuts=(),
+        suggest_cuts=(),
+        max_fragments=None,
+        sequence_constraints=(),
+        cuts_set_constraints=(),
+    ):
         self.duration = duration
         self.cost = cost
         self.cut_location_constraints = list(cut_location_constraints)
@@ -93,7 +102,7 @@ class DnaAssemblyMethod(object):
             "maximal number of fragments": self.max_fragments,
             "reference": self.reference,
             "duration": self.duration,
-            "cost": self.cost
+            "cost": self.cost,
         }
         result.update(self.additional_dict_description())
         return result
@@ -113,6 +122,7 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
       consecutive segments will overlap by 2*L
 
     """
+
     name = "Overlaping Assembly"
 
     def __init__(self, overhang_selector, **properties):
@@ -121,19 +131,20 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
         self.overhang_selector = selector
         if selector.has_location_filter:
             self.cut_location_constraints.append(
-                selector.location_filter_method)
+                selector.location_filter_method
+            )
         self.compute_sequence_fragment = selector.compute_sequence_fragment
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
+
     name = "Gibson Assembly"
-
-
 
 
 class BuildAGenomeAssemblyMethod(OverlapingAssemblyMethod):
     """The Build-a-Genome Assembly Method. Just another overlap-method"""
+
     name = "Build-a-Genome"
 
 
@@ -157,21 +168,27 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
       If left to None, will be equal to left_overhang.
 
     """
+
     name = "Golden Gate Assembly"
 
-    enzymes_dict = {
-        "BsaI": "GGTCTC",
-        "BsmBI": "CGTCTC",
-        "BbsI": "GAAGAC",
-    }
+    enzymes_dict = {"BsaI": "GGTCTC", "BsmBI": "CGTCTC", "BbsI": "GAAGAC"}
 
-    def __init__(self, enzyme="BsaI", wildcard_basepair="A",  left_addition="",
-                 right_addition="", refuse_sequences_with_enzyme_site=True,
-                 min_overhangs_gc=0, max_overhangs_gc=1,
-                 min_overhangs_differences=1,  **props):
+    def __init__(
+        self,
+        enzyme="BsaI",
+        wildcard_basepair="A",
+        left_addition="",
+        right_addition="",
+        refuse_sequences_with_enzyme_site=True,
+        min_overhangs_gc=0,
+        max_overhangs_gc=1,
+        min_overhangs_differences=1,
+        **props
+    ):
         if enzyme not in self.enzymes_dict:
-            return ValueError("Enzyme should be one of %s" %
-                              self.enzymes_dict.keys())
+            return ValueError(
+                "Enzyme should be one of %s" % self.enzymes_dict.keys()
+            )
 
         self.min_overhangs_gc = min_gc = min_overhangs_gc
         self.max_overhangs_gc = max_gc = max_overhangs_gc
@@ -181,31 +198,34 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         self.enzyme_site = self.enzymes_dict[enzyme]
         enzyme_site_plus_basepair = self.enzyme_site + wildcard_basepair
         self.left_addition = left_addition + enzyme_site_plus_basepair
-        self.right_addition = (reverse_complement(enzyme_site_plus_basepair) +
-                               right_addition)
-        self.refuse_sequences_with_enzyme_site = \
+        self.right_addition = (
+            reverse_complement(enzyme_site_plus_basepair) + right_addition
+        )
+        self.refuse_sequences_with_enzyme_site = (
             refuse_sequences_with_enzyme_site
+        )
 
         overhang_selector = TmOverhangSelector(
-            min_size=4, max_size=4,
+            min_size=4,
+            max_size=4,
             min_tm=gc_content_to_tm(4, min_gc),
             max_tm=gc_content_to_tm(4, max_gc),
             left_addition=self.left_addition,
-            right_addition=self.right_addition
+            right_addition=self.right_addition,
         )
         OverlapingAssemblyMethod.__init__(self, overhang_selector, **props)
 
         # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
 
         if refuse_sequences_with_enzyme_site:
+
             def no_site_in_sequence(sequence):
                 sites = find_enzyme_sites(sequence, enzyme_name=self.enzyme)
                 return sites == []
+
             self.sequence_constraints.append(no_site_in_sequence)
 
         # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
-
-
 
         # CUTS SET CONSTRAINT: ALL OVERHANGS MUST BE COMPATIBLE
 
@@ -221,15 +241,21 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
         def all_overhangs_are_compatible(sequence):
             def f(cut_locations):
-                overhangs = sorted([
-                    overhang_selector.compute_overhang_sequence(sequence,
-                                                                cut_location)
-                    for cut_location in cut_locations
-                ])
-                return all([
-                    overhangs_are_compatible(o1, o2)
-                    for o1, o2 in itertools.combinations(overhangs, 2)
-                ])
+                overhangs = sorted(
+                    [
+                        overhang_selector.compute_overhang_sequence(
+                            sequence, cut_location
+                        )
+                        for cut_location in cut_locations
+                    ]
+                )
+                return all(
+                    [
+                        overhangs_are_compatible(o1, o2)
+                        for o1, o2 in itertools.combinations(overhangs, 2)
+                    ]
+                )
+
             return f
 
         self.cuts_set_constraints.append(all_overhangs_are_compatible)
@@ -239,9 +265,10 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             "enzyme": self.enzyme,
             "left addition": self.left_addition,
             "right addition": self.right_addition,
-            "refuse sequences with enzyme site":
-                str(self.refuse_sequences_with_enzyme_site),
-            "overhangs gc content": "%d-%d%%" % (100*self.min_overhangs_gc,
-                                                 100*self.max_overhangs_gc),
-            "overhangs differences": self.min_overhangs_differences
+            "refuse sequences with enzyme site": str(
+                self.refuse_sequences_with_enzyme_site
+            ),
+            "overhangs gc content": "%d-%d%%"
+            % (100 * self.min_overhangs_gc, 100 * self.max_overhangs_gc),
+            "overhangs differences": self.min_overhangs_differences,
         }

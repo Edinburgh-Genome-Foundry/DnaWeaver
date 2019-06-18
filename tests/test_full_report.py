@@ -67,7 +67,7 @@ def test_full_report():
             duration=8,
             cost=2
         ),
-        dna_source=oligo_com,
+        supplier=oligo_com,
         coarse_grain=20,
         fine_grain=False,
         a_star_factor=a_star_factor
@@ -94,7 +94,7 @@ def test_full_report():
             duration=8,
             cost=16
         ),
-        dna_source=blocks_sources_comparator,
+        supplier=blocks_sources_comparator,
         coarse_grain=300,
         fine_grain=False,
         memoize=memoize,
@@ -111,7 +111,7 @@ def test_full_report():
             duration=5,
             cost=6
         ),
-        dna_source=blocks_sources_comparator,
+        supplier=blocks_sources_comparator,
         coarse_grain=400,
         fine_grain=False,
         memoize=memoize,
@@ -120,7 +120,7 @@ def test_full_report():
 
     ecoli_genome = PcrOutStation(
         "E. coli Genome (PCR)",
-        primers_dna_source=oligo_com,
+        primers_supplier=oligo_com,
         blast_database=ECOLI_DB_PATH,
         max_amplicon_length=10000,
         extra_time=3,
@@ -137,7 +137,7 @@ def test_full_report():
             max_segment_length=25000,
             duration=8
         ),
-        dna_source=DnaSourcesComparator([
+        supplier=DnaSourcesComparator([
             ecoli_genome,
             goldengate_blocks_assembly_station,
             gibson_blocks_assembly_station,
