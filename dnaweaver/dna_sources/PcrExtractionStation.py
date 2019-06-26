@@ -171,14 +171,17 @@ class PcrExtractionStation(DnaSource):
           If True, the assembly plan is added to the quote
         """
         hits = self.get_hits(sequence)
+        # print (hits)
         for subject, (hit_start, hit_end), _ in hits:
+            if min(hit_start, hit_end) < 0:
+                continue
             largest_overhang = max(hit_start, len(sequence) - hit_end)
 
             if largest_overhang > self.max_overhang_length:
                 continue
-
-            for i in range(self.max_overhang_length - hit_start):
+            for i in range(min(len(sequence), self.max_overhang_length) - hit_start):
                 subseq = sequence[hit_start + i:]
+                # print (hit_start, i, subseq, hit_end, hit_start)
                 left_location = \
                     self.homology_selector.compute_segment_location(subseq, 0)
                 if left_location is not None:

@@ -150,6 +150,7 @@ class TmSegmentSelector(SegmentSelector):
         if index == len(sequence):
             index = index - 1
         if self.precompute_segments:
+            
             return self.compute_all_segments(sequence)[index] is not None
         else:
             return self.compute_optimal_segment(sequence, index)[1]
@@ -213,15 +214,12 @@ class TmSegmentSelector(SegmentSelector):
             # super fast GC computing using the trick 67=C, 71=G in unicode.
             seq_array = np.fromstring(sequence + "", dtype="uint8")
             cumsum = np.cumsum(2 + 2 * ((seq_array == 71) | (seq_array == 67)))
-            # cumsum = np.cumsum([
-            #     4 if nuc in "GC" else 2
-            #     for nuc in sequence
-            # ])
-            for i, oh_size in enumerate(range(lmin, lmax + 1)):
+            for i, oh_size in enumerate(range(lmin, min(len(sequence) - 1, lmax + 1))):
                 arr = cumsum[oh_size:] - cumsum[:-oh_size]
                 start = int(oh_size / 2)
                 end = start + len(arr)
                 table[i, start:end] = arr
+                # print (i, start, table)
                 table[i, :start] = table[i, start]
                 table[i, end:] = table[i, end - 1]
             scores = -(table - self.min_tm) * (table - self.max_tm)
@@ -235,7 +233,6 @@ class TmSegmentSelector(SegmentSelector):
                 init_size = osizes_and_validity[-1][0]
                 ovh, val = self.find_optimal_segment(sequence, i, init_size)
                 osizes_and_validity.append((len(ovh), val))
-
         return [
             None
             if not valid

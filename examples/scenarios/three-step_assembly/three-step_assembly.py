@@ -120,6 +120,7 @@ ecoli_genome = PcrExtractionStation(
     "E. coli Genome (PCR)",
     primers_supplier=oligo_com,
     blast_database=ecoli_db_path,
+    homology_selector=TmSegmentSelector(),
     max_amplicon_length=10000,
     extra_time=3,
     extra_cost=1,
@@ -151,6 +152,7 @@ chunks_assembly_station = DnaAssemblyStation(
 with open("50kb_sequence.txt", "r") as f:
     sequence = f.read()
 
+print("Generating an assembly plan...")
 chunks_assembly_station.prepare_network_on_sequence(sequence)
 quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
 

@@ -91,7 +91,9 @@
    "parameters": {
     "cost": 4,
     "duration": 2,
-    "pcr_homology_length": 25,
+    "homology_type": "tm",
+    "homology_size_range": [18, 22],
+    "tm_range": [55, 65],
     "max_overhang_length": 40,
     "max_amplicon_length": 10000,
     "dna_bank": "e_coli"

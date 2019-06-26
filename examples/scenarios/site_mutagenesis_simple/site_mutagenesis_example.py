@@ -11,6 +11,7 @@ ecoli_db_path = os.path.join('..', '..', 'data', 'ecoli_blast_db', 'ecoli')
 pcr_station = dw.PcrExtractionStation(
     name="PCR station",
     max_overhang_length=50,
+    homology_selector=dw.TmSegmentSelector(),
     primers_supplier=oligos_company,
     blast_database=ecoli_db_path,
     extra_cost=5

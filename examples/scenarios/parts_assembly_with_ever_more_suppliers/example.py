@@ -10,6 +10,7 @@ from dnaweaver import (
     GoldenGatePartsLibrary,
     SequenceLengthConstraint,
     PcrExtractionStation,
+    TmSegmentSelector,
     load_record
 )
 
@@ -48,6 +49,7 @@ company_oligo = CommercialDnaOffer(
 mouse_pcr_station = PcrExtractionStation(
     name="E. coli",
     extra_cost=10,
+    homology_selector=TmSegmentSelector(),
     primers_supplier=company_oligo,
     blast_database=os.path.join("..", "..", "data", "ecoli_blast_db", "ecoli"),
     memoize=True
