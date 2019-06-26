@@ -220,7 +220,7 @@ def largest_common_substring(query, target, max_overhang):
     ------
 
     This is intended for finding whether `query` can be extracted from `target`
-    using PCR. See the PcrOutStation implementation in DNASource.py.
+    using PCR. See the PcrExtractionStation implementation in DNASource.py.
 
     """
     start, end = max_overhang, len(query) - max_overhang

@@ -1,6 +1,6 @@
 from dnaweaver import (supply_network_from_json,
                        PartsLibrary,
-                       PcrOutStation,
+                       PcrExtractionStation,
                        load_record)
 import json
 import os
@@ -9,7 +9,7 @@ with open("sequence_with_emma_and_ecoli_parts.txt", "r") as f:
 with open('state_from_web_app.json', 'r') as f:
     data = json.load(f)
 
-PcrOutStation.dna_banks = {
+PcrExtractionStation.dna_banks = {
     'e_coli': os.path.join("..", "..", "data",
                            "ecoli_blast_db", "ecoli"),
 }

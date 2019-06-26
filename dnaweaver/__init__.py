@@ -4,7 +4,7 @@ ordering."""
 from .dna_sources import (CommercialDnaOffer,
                           DnaSourcesComparator,
                           DnaAssemblyStation,
-                          PcrOutStation,
+                          PcrExtractionStation,
                           PartsLibrary,
                           SequenceAdapter,
                           GoldenGatePartsLibrary,
@@ -12,9 +12,9 @@ from .dna_sources import (CommercialDnaOffer,
 from .DnaAssemblyMethod import (GibsonAssemblyMethod,
                                 BuildAGenomeAssemblyMethod,
                                 GoldenGateAssemblyMethod)
-from .OverhangSelector import (OverhangSelector,
-                               FixedSizeOverhangSelector,
-                               TmOverhangSelector)
+from .SegmentSelector import (SegmentSelector,
+                               FixedSizeSegmentSelector,
+                               TmSegmentSelector)
 from .biotools import (random_dna_sequence, reverse_complement,
                        string_to_sequence, load_record, gc_content)
 from .constraints import (NoPatternConstraint, PerBasepairPricing,

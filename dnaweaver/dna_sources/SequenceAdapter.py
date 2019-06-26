@@ -7,7 +7,7 @@ class SequenceAdapter(DnaSource):
 
     class_description = "Adapts a sequence between a supplier and its clients"
     operation_type = "sequence extension"
-    report_fa_symbol = u""
+    report_fa_symbol = u"\uf07e"
     report_fa_symbol_plain = "arrows-h"
     report_color = "#ffeeee"
 

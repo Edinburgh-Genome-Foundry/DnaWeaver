@@ -12,10 +12,10 @@ except ImportError:
     PRIMER3_AVAILABLE = False
 
 
-class OverhangSelector:
-    """Base class for overhang selectors such as TmOverhangSelector.
+class SegmentSelector:
+    """Base class for segment selectors such as TmSegmentSelector.
 
-    These selectors return an ideal overhang subsegment around a given sequence
+    These selectors return an ideal segment subsegment around a given sequence
     location. They can also be used to filter out locations in the sequence as
     non-potential cutting sites for sequence decomposition.
     """
@@ -38,22 +38,22 @@ class OverhangSelector:
         return hasattr(self, "filter_location")
 
     def compute_sequence_fragment(self, sequence, segment):
-        """Compute the fragment equal to the sequence segment + overhangs."""
+        """Compute the fragment equal to the sequence region + flank segment."""
         start, end = segment
         if start == 0:
             fragment_start = 0
         else:
-            fragment_start = self.compute_overhang_location(sequence, start)[0]
+            fragment_start = self.compute_segment_location(sequence, start)[0]
         if end == len(sequence):
             fragment_end = len(sequence)
         else:
-            fragment_end = self.compute_overhang_location(sequence, end)[1]
+            fragment_end = self.compute_segment_location(sequence, end)[1]
         fragment = sequence[fragment_start:fragment_end]
         return self.left_addition + fragment + self.right_addition
 
-    def compute_overhang_sequence(self, sequence, index):
-        """Return the sequence of the selected overhang at the given index."""
-        start, end = self.compute_overhang_location(sequence, index)
+    def compute_segment_sequence(self, sequence, index):
+        """Return the sequence of the selected segment at the given index."""
+        start, end = self.compute_segment_location(sequence, index)
         return sequence[start:end]
 
     @staticmethod
@@ -68,57 +68,57 @@ class OverhangSelector:
         return start, end
 
 
-class FixedSizeOverhangSelector(OverhangSelector):
-    """Selects overhangs of a constant size.
+class FixedSizeSegmentSelector(SegmentSelector):
+    """Selects segments of a constant size.
 
     Great for methods involving large homology regions where melting
     temperature matters less.
     """
 
-    def __init__(self, overhang_size=100, left_addition="", right_addition=""):
-        self.overhang_size = overhang_size
+    def __init__(self, segment_size=100, left_addition="", right_addition=""):
+        self.segment_size = segment_size
         self.left_addition = left_addition
         self.right_addition = right_addition
 
-    def compute_overhang_location(self, sequence, index):
+    def compute_segment_location(self, sequence, index):
         return self.get_segment_coordinates(
-            index, self.overhang_size, len(sequence)
+            index, self.segment_size, len(sequence)
         )
 
 
-class TmOverhangSelector(OverhangSelector):
-    """Selects overhangs with melting temperature constraints.
+class TmSegmentSelector(SegmentSelector):
+    """Selects segment with melting temperature constraints.
 
-    Given a location in a sequence, this selector will return an overhang
-    (subsegment of the sequence) around this position, with size and
+    Given a location in a sequence, this selector will return a segment
+    (=subsegment of the sequence) around this position, with size and
     temperature constraints.
 
     Can be used for Gibson Assembly, Golden Gate Assembly, etc.
 
-    This class also implements methods to quickly compute all overhangs in a
+    This class also implements methods to quickly compute all segments in a
     sequence. The result is then cached for speed.
 
     Parameters
     ----------
     min_size
-      Minimal length of the overhang, in nucleotides
+      Minimal length of the segment, in nucleotides
 
     max_size
-      Maximal length of the overhang, in nucleotides
+      Maximal length of the segment, in nucleotides
 
     min_tm
-      Minimal melting temp allowed for overhangs
+      Minimal melting temp allowed for the segments
 
     max_tm
-      Maximal melting temp allowed for overhangs
+      Maximal melting temp allowed for the segments
 
-    precompute_overhangs
-      If True, the whole sequence will be analyzed to find the best overhang
+    precompute_segments
+      If True, the whole sequence will be analyzed to find the best segment
       for each cutting point (and find cutting points which do not allow
-      overhangs), using the AT/GC=2/4C heuristic for melting temperatures.
+      segments), using the AT/GC=2/4C heuristic for melting temperatures.
 
     primer3_params
-      If ``precompute_overhangs`` is False and ``Primer3`` is installed, the
+      If ``precompute_segments`` is False and ``Primer3`` is installed, the
       melting temperature is computed
     """
 
@@ -128,7 +128,7 @@ class TmOverhangSelector(OverhangSelector):
         max_size=22,
         min_tm=55,
         max_tm=65,
-        precompute_overhangs=True,
+        precompute_segments=True,
         left_addition="",
         right_addition="",
         **primer3_params
@@ -136,7 +136,7 @@ class TmOverhangSelector(OverhangSelector):
         """Initialize."""
         self.min_size = min_size
         self.max_size = max_size
-        self.precompute_overhangs = precompute_overhangs
+        self.precompute_segments = precompute_segments
         self.primer3_params = primer3_params
         self.min_tm = min_tm
         self.max_tm = max_tm
@@ -146,28 +146,28 @@ class TmOverhangSelector(OverhangSelector):
         self.right_addition = right_addition
 
     def filter_location(self, sequence, index):
-        """Return whether the sequence has a valid overhang at this index."""
+        """Return whether the sequence has a valid segment at this index."""
         if index == len(sequence):
             index = index - 1
-        if self.precompute_overhangs:
-            return self.compute_all_overhangs(sequence)[index] is not None
+        if self.precompute_segments:
+            return self.compute_all_segments(sequence)[index] is not None
         else:
-            return self.compute_optimal_overhang(sequence, index)[1]
+            return self.compute_optimal_segment(sequence, index)[1]
 
-    def compute_overhang_location(self, sequence, index):
-        """Return the location (start, stop) of the selected overhang."""
+    def compute_segment_location(self, sequence, index):
+        """Return the location (start, stop) of the selected segment."""
         if index == len(sequence):
             index = index - 1
-        if self.precompute_overhangs:
+        if self.precompute_segments:
             # calling a result that should be computed once then cached
-            return self.compute_all_overhangs(sequence)[index]
+            return self.compute_all_segments(sequence)[index]
         else:
-            return self.compute_optimal_overhang(sequence, index)[0]
+            return self.compute_optimal_segment(sequence, index)[0]
 
-    def compute_optimal_overhang(self, sequence, index, init_size=None):
-        """Return the best overhang around some location.
+    def compute_optimal_segment(self, sequence, index, init_size=None):
+        """Return the best segment around some location.
 
-        This function will be shortcut if ``precompute_overhangs`` is True,
+        This function will be shortcut if ``precompute_segments`` is True,
         as it is slow to compute the best overhang for each location
         separately.
         """
@@ -182,22 +182,22 @@ class TmOverhangSelector(OverhangSelector):
             tm = self.compute_tm(sequence[start:end])
             return (start, end), tm
 
-        best_overhang, best_tm = f(init_size)
+        best_segment, best_tm = f(init_size)
         if best_tm < self.middle_tm:
             ovh_sizes = range(init_size, self.max_size)
         else:
             ovh_sizes = range(init_size, self.min_size, -1)
         for ovh_size in ovh_sizes:
-            new_overhang, new_tm = f(ovh_size)
+            new_segment, new_tm = f(ovh_size)
             if abs(new_tm - self.middle_tm) < abs(best_tm - self.middle_tm):
-                best_overhang, best_tm = new_overhang, new_tm
+                best_segment, best_tm = new_segment, new_tm
             else:
                 break
-        return best_overhang, (self.min_tm < best_tm < self.max_tm)
+        return best_segment, (self.min_tm < best_tm < self.max_tm)
 
     @lru_cache(maxsize=3)
-    def compute_all_overhangs(self, sequence):
-        """Quickly compute all overhangs in the sequence.
+    def compute_all_segments(self, sequence):
+        """Quickly compute all segments in the sequence.
 
         This function uses the heuristic {A, T}=2degC, {G, C}=4degC to compute
         melting temperatures.
@@ -230,10 +230,10 @@ class TmOverhangSelector(OverhangSelector):
             validities = np.choose(best_sizes_indices, scores) >= 0
             osizes_and_validities = zip(best_sizes, validities)
         else:
-            osizes_and_validity = [self.compute_optimal_overhang(sequence, 0)]
+            osizes_and_validity = [self.compute_optimal_segment(sequence, 0)]
             for i in range(1, len(sequence)):
                 init_size = osizes_and_validity[-1][0]
-                ovh, val = self.find_optimal_overhang(sequence, i, init_size)
+                ovh, val = self.find_optimal_segment(sequence, i, init_size)
                 osizes_and_validity.append((len(ovh), val))
 
         return [

@@ -18,7 +18,7 @@ deluxe_dna_offer = dw.CommercialDnaOffer(
 assembly_station = dw.DnaAssemblyStation(
     name="Gibson Assembly Station",
     assembly_method=dw.GibsonAssemblyMethod(
-        overhang_selector=dw.TmOverhangSelector(min_tm=55, max_tm=70),
+        overhang_selector=dw.TmSegmentSelector(min_tm=55, max_tm=70),
         min_segment_length=500,
         max_segment_length=4000
     ),

@@ -91,7 +91,7 @@ Assembly station:
     assembly_station = dw.DnaAssemblyStation(
         name="Gibson Assembly Station",
         assembly_method=dw.GibsonAssemblyMethod(
-            overhang_selector=dw.TmOverhangSelector(min_tm=55, max_tm=70),
+            overhang_selector=dw.TmSegmentSelector(min_tm=55, max_tm=70),
             min_segment_length=500,
             max_segment_length=4000,
             duration=5
@@ -218,7 +218,7 @@ This process can be easily modeled in DNA Weaver by connecting a PCR station
         sequence_constraints=[dw.SequenceLengthConstraint(max_length=200)],
         pricing=dw.PerBasepairPricing(0.1)
     )
-    pcr_station = dw.PcrOutStation(
+    pcr_station = dw.PcrExtractionStation(
         name="PCR station",
         max_overhang_length=50,
         primers_supplier=oligos_company,

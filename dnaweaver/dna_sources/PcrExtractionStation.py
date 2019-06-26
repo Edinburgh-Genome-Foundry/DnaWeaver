@@ -1,6 +1,7 @@
 from ..DnaQuote import DnaQuote
 from .DnaSource import DnaSource
 from ..constraints import SequenceLengthConstraint
+from ..SegmentSelector import TmSegmentSelector, FixedSizeSegmentSelector
 from ..biotools import (
     reverse_complement,
     largest_common_substring,
@@ -11,11 +12,11 @@ from ..tools import functions_list_to_string
 from .DnaSourcesComparator import DnaSourcesComparator
 
 
-class PcrOutStation(DnaSource):
+class PcrExtractionStation(DnaSource):
     """Class to represent databases of constructs which can be (in part) reused
 
     A blast database contains the sequences of all available constructs.
-    Given a sequence, the PcrOutStation finds whether it is possible to order
+    Given a sequence, the PcrExtractionStation finds whether it is possible to order
     two primers to extract this sequence from the constructs in the BLAST
     database.
 
@@ -55,8 +56,8 @@ class PcrOutStation(DnaSource):
 
     class_description = "PCR-out station"
     operation_type = "PCR"
-    report_fa_symbol = u""
-    report_fa_symbol_plain = "exchange"
+    report_fa_symbol = u""
+    report_fa_symbol_plain = "recycle"
     report_color = "#eeffee"
     dna_banks = {}
 
@@ -64,6 +65,7 @@ class PcrOutStation(DnaSource):
         self,
         name,
         primers_supplier,
+        homology_selector,
         blast_database=None,
         sequences=None,
         pcr_homology_length=25,
@@ -76,6 +78,7 @@ class PcrOutStation(DnaSource):
         sequence_constraints=(),
     ):
         self.name = name
+        self.homology_selector = homology_selector
         self.blast_database = blast_database
         self.set_suppliers(primers_supplier)
         self.pcr_homology_length = pcr_homology_length
@@ -88,6 +91,7 @@ class PcrOutStation(DnaSource):
         if max_amplicon_length is not None:
             c = SequenceLengthConstraint(max_length=max_amplicon_length)
             self.sequence_constraints = [c] + self.sequence_constraints
+            self.min_basepair_price = (2 * 20 * self.primers_supplier.min_basepair_price) / self.max_amplicon_length
         self.memoize = memoize
         self.memoize_dict = {}
         self.sequences = sequences
@@ -166,66 +170,94 @@ class PcrOutStation(DnaSource):
         with_assembly_plan
           If True, the assembly plan is added to the quote
         """
-
-        for subject, (hit_start, hit_end), _ in self.get_hits(sequence):
-
+        hits = self.get_hits(sequence)
+        for subject, (hit_start, hit_end), _ in hits:
             largest_overhang = max(hit_start, len(sequence) - hit_end)
 
-            if largest_overhang <= self.max_overhang_length:
-                primer_l_end = hit_start + self.pcr_homology_length
-                primer_left = sequence[:primer_l_end]
-                primer_r_end = hit_end - self.pcr_homology_length
-                primer_right = reverse_complement(sequence[primer_r_end:])
+            if largest_overhang > self.max_overhang_length:
+                continue
 
-                primer_max_lead_time = (
-                    None
-                    if max_lead_time is None
-                    else max_lead_time - self.extra_time
+            for i in range(self.max_overhang_length - hit_start):
+                subseq = sequence[hit_start + i:]
+                left_location = \
+                    self.homology_selector.compute_segment_location(subseq, 0)
+                if left_location is not None:
+                    l_start, l_end = left_location
+                    primer_left = sequence[:l_end + hit_start + i]
+                    break
+            else:
+                continue
+            right_padding = len(sequence) - hit_end
+            for i in range(self.max_overhang_length - right_padding):
+                subseq = sequence[:hit_end - i]
+                right_location = \
+                    self.homology_selector.compute_segment_location(
+                        subseq, hit_end - i)
+                if right_location is not None:
+                    r_start, r_end = right_location
+                    primer_right = reverse_complement(sequence[r_start:])
+                    break
+            else:
+                continue
+            # primer_l_end = hit_start + self.pcr_homology_length
+            # primer_left = sequence[:primer_l_end]
+            # primer_r_end = hit_end - self.pcr_homology_length
+            # primer_right = reverse_complement(sequence[primer_r_end:])
+
+            primer_max_lead_time = (
+                None
+                if max_lead_time is None
+                else max_lead_time - self.extra_time
+            )
+            quotes = [
+                self.primers_supplier.get_quote(
+                    primer, max_lead_time=primer_max_lead_time
                 )
-                quotes = [
-                    self.primers_supplier.get_quote(
-                        primer, max_lead_time=primer_max_lead_time
-                    )
-                    for primer in [primer_left, primer_right]
-                ]
-                if not all(quote.accepted for quote in quotes):
-                    continue  # primers inorderable
+                for primer in [primer_left, primer_right]
+            ]
+            if not all(quote.accepted for quote in quotes):
+                continue  # primers inorderable
 
-                if max_lead_time is not None:
-                    overall_lead_time = (
-                        max(quote.lead_time for quote in quotes)
-                        + self.extra_time
-                    )
-                else:
-                    overall_lead_time = None
-                total_price = (
-                    sum(quote.price for quote in quotes) + self.extra_cost
+            if max_lead_time is not None:
+                overall_lead_time = (
+                    max(quote.lead_time for quote in quotes)
+                    + self.extra_time
                 )
+            else:
+                overall_lead_time = None
+            total_price = (
+                sum(quote.price for quote in quotes) + self.extra_cost
+            )
 
-                if with_assembly_plan:
-                    assembly_plan = {
-                        (0, primer_l_end): quotes[0],
-                        (primer_r_end, len(sequence)): quotes[1],
-                    }
-                else:
-                    assembly_plan = None
+            if with_assembly_plan:
+                assembly_plan = {
+                    (0, int(l_end)): quotes[0],
+                    (int(r_start), len(sequence)): quotes[1],
+                }
+            else:
+                assembly_plan = None
 
-                return DnaQuote(
-                    self,
-                    sequence,
-                    accepted=True,
-                    lead_time=overall_lead_time,
-                    price=total_price,
-                    assembly_plan=assembly_plan,
-                    message="From %s" % subject,
-                    metadata={
-                        "subject": subject,
-                        "location": (hit_start, hit_end),
-                    },
-                )
-        return DnaQuote(
-            self, sequence, accepted=False, message="No valid match found"
-        )
+            return DnaQuote(
+                self,
+                sequence,
+                accepted=True,
+                lead_time=overall_lead_time,
+                price=total_price,
+                assembly_plan=assembly_plan,
+                message="From %s" % subject,
+                metadata={
+                    "subject": subject,
+                    "location": (hit_start, hit_end),
+                },
+            )
+        if len(hits):
+            message = ('Some matches found but could not find suitable primer '
+                       'design.')
+        else:
+            message = 'No BLAST hit found'
+        return DnaQuote(self, sequence, accepted=False,
+                        message=message)
+        
 
     def suggest_cuts(self, sequence):
         if self.sequences is None:
@@ -240,15 +272,15 @@ class PcrOutStation(DnaSource):
     def prepare_on_sequence(self, sequence):
         """Pre-compute the BLAST of the current sequence against the database.
 
-        Once a pre-blast has been performed, this PcrOutStation becomes
+        Once a pre-blast has been performed, this PcrExtractionStation becomes
         specialized on that sequence and its subsequences, do not feed it with
         another different sequence. Do `self.sequences=None` to reinitialize
-        and de-specialize this PcrOutStation.
+        and de-specialize this PcrExtractionStation.
 
         Examples
         --------
 
-        >>> pcr_station = PcrOutStation("some_blast_database")
+        >>> pcr_station = PcrExtractionStation("some_blast_database")
         >>> top_station = # some assembly station depending on pcr_station
         >>> pcr_station.prepare_on_sequence(my_sequence)
         >>> top_station.get_quote(my_sequence)
@@ -278,10 +310,22 @@ class PcrOutStation(DnaSource):
             blast_database = cls.dna_banks[data["dna_bank"]]
         else:
             blast_database = data["blast_database"]
-        return PcrOutStation(
+        
+        if data['homology_type'] == 'tm':
+            min_oh_size, max_oh_size = data['homology_size_range']
+            min_tm, max_tm = data['tm_range']
+            homology_selector = TmSegmentSelector(
+                min_size=min_oh_size, max_size=max_oh_size,
+                min_tm=min_tm, max_tm=max_tm
+            )
+        else:
+            homology_selector = FixedSizeSegmentSelector(
+                segment_size=data['homology_size']
+            )
+        return PcrExtractionStation(
             name=data["name"],
+            homology_selector=homology_selector,
             primers_supplier=data["suppliers"],
-            pcr_homology_length=data["pcr_homology_length"],
             max_overhang_length=data["max_overhang_length"],
             max_amplicon_length=data["max_amplicon_length"],
             extra_cost=data["cost"],

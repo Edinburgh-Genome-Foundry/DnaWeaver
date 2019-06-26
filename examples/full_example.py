@@ -6,8 +6,8 @@ from dnaweaver import (
     GoldenGateAssemblyMethod,
     BuildAGenomeAssemblyMethod,
     DnaSourcesComparator,
-    TmOverhangSelector,
-    FixedSizeOverhangSelector,
+    TmSegmentSelector,
+    FixedSizeSegmentSelector,
     SequenceLengthConstraint,
     NoPatternConstraint
 ) 
@@ -48,7 +48,7 @@ big_dna_com = CommercialDnaOffer(
 oligo_assembly_station = DnaAssemblyStation(
     name="Oligo Assembly Station",
     assembly_method=BuildAGenomeAssemblyMethod(
-        overhang_selector=TmOverhangSelector(),
+        overhang_selector=TmSegmentSelector(),
         min_segment_length=40,
         max_segment_length=100,
         duration=8,
@@ -79,7 +79,7 @@ blocks_assembly_comparator = DnaSourcesComparator([
     DnaAssemblyStation(
         name="Blocks Assembly (Gibson)",
         assembly_method=GibsonAssemblyMethod(
-            overhang_selector=TmOverhangSelector(min_size=15, max_size=30),
+            overhang_selector=TmSegmentSelector(min_size=15, max_size=30),
             min_segment_length=2000,
             max_segment_length=4000,
             duration=8,
@@ -112,7 +112,7 @@ blocks_assembly_comparator = DnaSourcesComparator([
 chunks_assembly_station = DnaAssemblyStation(
     name="Yeast Recombination",
     assembly_method=GibsonAssemblyMethod(
-        overhang_selector=FixedSizeOverhangSelector(300),
+        overhang_selector=FixedSizeSegmentSelector(300),
         min_segment_length=15000,
         max_segment_length=25000,
         duration=8

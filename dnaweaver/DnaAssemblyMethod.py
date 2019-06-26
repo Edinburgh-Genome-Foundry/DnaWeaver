@@ -1,5 +1,5 @@
 from .biotools import reverse_complement, find_enzyme_sites, gc_content_to_tm
-from .OverhangSelector import TmOverhangSelector
+from .SegmentSelector import TmSegmentSelector
 from .tools import memoize
 import itertools
 
@@ -136,6 +136,14 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
         self.compute_sequence_fragment = selector.compute_sequence_fragment
 
 
+class BluntEndsAssemblyMethod(DnaAssemblyMethod):
+
+    def compute_sequence_fragment(self, sequence, segment):
+        start, end = segment
+        return sequence[start: end]
+
+
+
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
     """Gibson Assembly Method. Just another overlap-method"""
 
@@ -205,7 +213,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             refuse_sequences_with_enzyme_site
         )
 
-        overhang_selector = TmOverhangSelector(
+        overhang_selector = TmSegmentSelector(
             min_size=4,
             max_size=4,
             min_tm=gc_content_to_tm(4, min_gc),
@@ -243,7 +251,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             def f(cut_locations):
                 overhangs = sorted(
                     [
-                        overhang_selector.compute_overhang_sequence(
+                        overhang_selector.compute_segment_sequence(
                             sequence, cut_location
                         )
                         for cut_location in cut_locations

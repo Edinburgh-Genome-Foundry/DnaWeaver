@@ -9,7 +9,7 @@ from dnaweaver import (
     DnaAssemblyStation,
     GoldenGatePartsLibrary,
     SequenceLengthConstraint,
-    PcrOutStation,
+    PcrExtractionStation,
     load_record
 )
 
@@ -45,7 +45,7 @@ company_oligo = CommercialDnaOffer(
 
 
 
-mouse_pcr_station = PcrOutStation(
+mouse_pcr_station = PcrExtractionStation(
     name="E. coli",
     extra_cost=10,
     primers_supplier=company_oligo,

@@ -6,5 +6,5 @@ from .CommercialDnaOffer import CommercialDnaOffer
 from .DnaAssemblyStation import DnaAssemblyStation
 from .DnaSourcesComparator import DnaSourcesComparator
 from .PartsLibrary import PartsLibrary, GoldenGatePartsLibrary
-from .PcrOutStation import PcrOutStation
+from .PcrExtractionStation import PcrExtractionStation
 from .PcrLinearizationStation import PcrLinearizationStation

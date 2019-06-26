@@ -1,6 +1,6 @@
 from dnaweaver import (DnaAssemblyStation,
                        GibsonAssemblyMethod,
-                       TmOverhangSelector,
+                       TmSegmentSelector,
                        CommercialDnaOffer,
                        PerBasepairPricing,
                        random_dna_sequence)
@@ -15,7 +15,7 @@ def test_simple_gibson_assembly_station():
     assembly_station = DnaAssemblyStation(
         name='Gibson Assembly Station',
         assembly_method=GibsonAssemblyMethod(
-            overhang_selector=TmOverhangSelector(),
+            overhang_selector=TmSegmentSelector(),
             min_segment_length=300,
             max_segment_length=1200
         ),

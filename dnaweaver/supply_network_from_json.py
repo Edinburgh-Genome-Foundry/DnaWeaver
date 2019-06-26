@@ -1,13 +1,13 @@
 import networkx as nx
 from .dna_sources import (CommercialDnaOffer, DnaAssemblyStation, PartsLibrary,
-                          PcrOutStation, DnaSourcesComparator,
+                          PcrExtractionStation, DnaSourcesComparator,
                           GoldenGatePartsLibrary)
 DEFAULT_DNA_SOURCES_DICT = {
     'commercial':  CommercialDnaOffer,
     'assembly': DnaAssemblyStation,
     'library': PartsLibrary,
     'golden_gate_library': GoldenGatePartsLibrary,
-    'pcr': PcrOutStation,
+    'pcr': PcrExtractionStation,
     'comparator': DnaSourcesComparator,
     'main': DnaSourcesComparator
 }

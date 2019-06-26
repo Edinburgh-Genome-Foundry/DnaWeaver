@@ -8,7 +8,7 @@ oligos_company = dw.CommercialDnaOffer(
     pricing=dw.PerBasepairPricing(0.1)
 )
 ecoli_db_path = os.path.join('..', '..', 'data', 'ecoli_blast_db', 'ecoli')
-pcr_station = dw.PcrOutStation(
+pcr_station = dw.PcrExtractionStation(
     name="PCR station",
     max_overhang_length=50,
     primers_supplier=oligos_company,
