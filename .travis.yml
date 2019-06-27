@@ -4,7 +4,7 @@ python:
 # command to install dependencies
 install:
   - sudo apt-get install ncbi-blast+
-  - pip install pytest coveralls pytest-cov==2.6
+  - pip install pytest==4.1.0 coveralls pytest-cov==2.6
   - pip install pandas dna_features_viewer dnachisel weasyprint jinja2
   - pip install -e .
 # command to run tests
