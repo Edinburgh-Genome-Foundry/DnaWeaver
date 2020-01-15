@@ -1,8 +1,8 @@
 from Bio import SeqIO
-from .DnaSource import DnaSource
+from .DnaSupplier import DnaSupplier
 from ..DnaQuote import DnaQuote
 
-class PartsLibrary(DnaSource):
+class PartsLibrary(DnaSupplier):
     """Class for collections of ready-to-assemble parts.
 
 

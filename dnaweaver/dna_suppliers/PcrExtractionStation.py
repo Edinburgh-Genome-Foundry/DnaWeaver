@@ -1,6 +1,6 @@
 from ..DnaQuote import DnaQuote
-from .DnaSource import DnaSource
-from ..constraints import SequenceLengthConstraint
+from .DnaSupplier import DnaSupplier
+from ..builtin_constraints import SequenceLengthConstraint
 from ..SegmentSelector import TmSegmentSelector, FixedSizeSegmentSelector
 from ..biotools import (
     reverse_complement,
@@ -9,10 +9,10 @@ from ..biotools import (
     perfect_match_locations_in_hsp,
 )
 from ..tools import functions_list_to_string
-from .DnaSourcesComparator import DnaSourcesComparator
+from .DnaSuppliersComparator import DnaSuppliersComparator
 
 
-class PcrExtractionStation(DnaSource):
+class PcrExtractionStation(DnaSupplier):
     """Class to represent databases of constructs which can be (in part) reused
 
     A blast database contains the sequences of all available constructs.
@@ -27,7 +27,7 @@ class PcrExtractionStation(DnaSource):
       Name of the PCR station (e.g. "Lab constructs PCR station")
 
     primers_supplier
-      DnaSource providing the primers (will typically be an CommercialDnaOffer)
+      DnaSupplier providing the primers (will typically be an CommercialDnaOffer)
 
     blast_database
 
@@ -91,20 +91,27 @@ class PcrExtractionStation(DnaSource):
         if max_amplicon_length is not None:
             c = SequenceLengthConstraint(max_length=max_amplicon_length)
             self.sequence_constraints = [c] + self.sequence_constraints
-            self.min_basepair_price = (2 * 20 * self.primers_supplier.min_basepair_price) / self.max_amplicon_length
+            self.min_basepair_price = (
+                2 * 20 * self.primers_supplier.min_basepair_price
+            ) / self.max_amplicon_length
         self.memoize = memoize
         self.memoize_dict = {}
         self.sequences = sequences
 
-    def get_hits(self, sequence):
+    def _get_hits(self, sequence):
         """Return the hits of the given sequence against the blast database
-        (in Biopython format)"""
+        in format [(part_hit, (start, end), subsequence)
+        
+        
+        
+        """
         if self.sequences is not None:
             result = []
             for dna_name, seq in self.sequences.items():
                 match_coords = largest_common_substring(
                     sequence, seq, self.max_overhang_length
                 )
+                # if match_coords
                 if match_coords:
                     result.append((dna_name, match_coords, None))
             return result
@@ -170,8 +177,9 @@ class PcrExtractionStation(DnaSource):
         with_assembly_plan
           If True, the assembly plan is added to the quote
         """
-        hits = self.get_hits(sequence)
-        # print (hits)
+        hits = self._get_hits(sequence)
+
+        # For each hit in the database, see if there is a 
         for subject, (hit_start, hit_end), _ in hits:
             if min(hit_start, hit_end) < 0:
                 continue
@@ -179,23 +187,26 @@ class PcrExtractionStation(DnaSource):
 
             if largest_overhang > self.max_overhang_length:
                 continue
-            for i in range(min(len(sequence), self.max_overhang_length) - hit_start):
-                subseq = sequence[hit_start + i:]
+            for i in range(
+                min(len(sequence), self.max_overhang_length) - hit_start
+            ):
+                subseq = sequence[hit_start + i :]
                 # print (hit_start, i, subseq, hit_end, hit_start)
-                left_location = \
-                    self.homology_selector.compute_segment_location(subseq, 0)
+                left_location = self.homology_selector.compute_segment_location(
+                    subseq, 0
+                )
                 if left_location is not None:
                     l_start, l_end = left_location
-                    primer_left = sequence[:l_end + hit_start + i]
+                    primer_left = sequence[: l_end + hit_start + i]
                     break
             else:
                 continue
             right_padding = len(sequence) - hit_end
             for i in range(self.max_overhang_length - right_padding):
-                subseq = sequence[:hit_end - i]
-                right_location = \
-                    self.homology_selector.compute_segment_location(
-                        subseq, hit_end - i)
+                subseq = sequence[: hit_end - i]
+                right_location = self.homology_selector.compute_segment_location(
+                    subseq, hit_end - i
+                )
                 if right_location is not None:
                     r_start, r_end = right_location
                     primer_right = reverse_complement(sequence[r_start:])
@@ -223,8 +234,7 @@ class PcrExtractionStation(DnaSource):
 
             if max_lead_time is not None:
                 overall_lead_time = (
-                    max(quote.lead_time for quote in quotes)
-                    + self.extra_time
+                    max(quote.lead_time for quote in quotes) + self.extra_time
                 )
             else:
                 overall_lead_time = None
@@ -254,13 +264,13 @@ class PcrExtractionStation(DnaSource):
                 },
             )
         if len(hits):
-            message = ('Some matches found but could not find suitable primer '
-                       'design.')
+            message = (
+                "Some matches found but could not find suitable primer "
+                "design."
+            )
         else:
-            message = 'No BLAST hit found'
-        return DnaQuote(self, sequence, accepted=False,
-                        message=message)
-        
+            message = "No BLAST hit found"
+        return DnaQuote(self, sequence, accepted=False, message=message)
 
     def suggest_cuts(self, sequence):
         if self.sequences is None:
@@ -289,8 +299,10 @@ class PcrExtractionStation(DnaSource):
         >>> top_station.get_quote(my_sequence)
         >>> pcr_station.sequences=None # de-specializes the pcr station.
         """
+        if self.blast_database is None:
+            return
         hits = self.blast_sequence(sequence)
-        self.sequences = None  # destroy current pre-blast (used by get_hits)
+        self.sequences = None  # destroy current pre-blast (used by _get_hits)
         self.sequences = {subject: seq for subject, (start, end), seq in hits}
 
     def additional_dict_description(self):
@@ -313,17 +325,19 @@ class PcrExtractionStation(DnaSource):
             blast_database = cls.dna_banks[data["dna_bank"]]
         else:
             blast_database = data["blast_database"]
-        
-        if data['homology_type'] == 'tm':
-            min_oh_size, max_oh_size = data['homology_size_range']
-            min_tm, max_tm = data['tm_range']
+
+        if data["homology_type"] == "tm":
+            min_oh_size, max_oh_size = data["homology_size_range"]
+            min_tm, max_tm = data["tm_range"]
             homology_selector = TmSegmentSelector(
-                min_size=min_oh_size, max_size=max_oh_size,
-                min_tm=min_tm, max_tm=max_tm
+                min_size=min_oh_size,
+                max_size=max_oh_size,
+                min_tm=min_tm,
+                max_tm=max_tm,
             )
         else:
             homology_selector = FixedSizeSegmentSelector(
-                segment_size=data['homology_size']
+                segment_size=data["homology_size"]
             )
         return PcrExtractionStation(
             name=data["name"],
@@ -338,7 +352,7 @@ class PcrExtractionStation(DnaSource):
     def set_suppliers(self, suppliers):
         if hasattr(suppliers, "__iter__"):
             if len(suppliers) > 1:
-                self.primers_supplier = DnaSourcesComparator(
+                self.primers_supplier = DnaSuppliersComparator(
                     name=self.name + " comparator", suppliers=suppliers
                 )
             else:

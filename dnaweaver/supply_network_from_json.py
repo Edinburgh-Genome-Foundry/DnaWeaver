@@ -1,15 +1,15 @@
 import networkx as nx
-from .dna_sources import (CommercialDnaOffer, DnaAssemblyStation, PartsLibrary,
-                          PcrExtractionStation, DnaSourcesComparator,
+from .dna_suppliers import (CommercialDnaOffer, DnaAssemblyStation, PartsLibrary,
+                          PcrExtractionStation, DnaSuppliersComparator,
                           GoldenGatePartsLibrary)
-DEFAULT_DNA_SOURCES_DICT = {
+DEFAULT_dna_supplierS_DICT = {
     'commercial':  CommercialDnaOffer,
     'assembly': DnaAssemblyStation,
     'library': PartsLibrary,
     'golden_gate_library': GoldenGatePartsLibrary,
     'pcr': PcrExtractionStation,
-    'comparator': DnaSourcesComparator,
-    'main': DnaSourcesComparator
+    'comparator': DnaSuppliersComparator,
+    'main': DnaSuppliersComparator
 }
 
 def _sort_suppliers(graph_data):
@@ -34,7 +34,7 @@ def _sort_suppliers(graph_data):
     return sorted_suppliers, levels
 
 
-def supply_network_from_json(graph_data, dna_sources_dict='default'):
+def supply_network_from_json(graph_data, dna_suppliers_dict='default'):
     """
 
     Returns
@@ -42,8 +42,8 @@ def supply_network_from_json(graph_data, dna_sources_dict='default'):
 
     levels, suppliers_dict, main_id
     """
-    if dna_sources_dict == 'default':
-        dna_sources_dict = DEFAULT_DNA_SOURCES_DICT
+    if dna_suppliers_dict == 'default':
+        dna_suppliers_dict = DEFAULT_dna_supplierS_DICT
 
     sorted_suppliers, levels = _sort_suppliers(graph_data)
     main_id = sorted_suppliers[-1]
@@ -55,7 +55,7 @@ def supply_network_from_json(graph_data, dna_sources_dict='default'):
             suppliers_dict[supp_id]
             for supp_id in supplier_data['suppliers']
         ]
-        supplier_class = dna_sources_dict[supplier_data["type"]]
+        supplier_class = dna_suppliers_dict[supplier_data["type"]]
         supplier = supplier_class.from_dict(supplier_data['parameters'])
         supplier.id = supplier_id
         suppliers_dict[supplier_id] = supplier

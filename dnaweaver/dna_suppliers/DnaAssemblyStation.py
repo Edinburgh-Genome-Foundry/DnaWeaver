@@ -2,19 +2,19 @@ from ..DnaQuote import DnaQuote
 from ..SequenceDecomposer import SequenceDecomposer, NoSolutionFoundError
 
 # from .shortest_path_algorithms import NoSolutionFoundError
-from .DnaSource import DnaSource
-from .DnaSourcesComparator import DnaSourcesComparator
+from .DnaSupplier import DnaSupplier
+from .DnaSuppliersComparator import DnaSuppliersComparator
 from ..DnaAssemblyMethod import (
     BuildAGenomeAssemblyMethod,
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
 )
 from ..SegmentSelector import TmSegmentSelector, FixedSizeSegmentSelector
-from ..constraints import SequenceLengthConstraint
+from ..builtin_constraints import SequenceLengthConstraint
 import numpy as np
 
 
-class DnaAssemblyStation(DnaSource):
+class DnaAssemblyStation(DnaSupplier):
     """DNA Assembly stations assemble together DNA fragments using a specific
     assembly method.
 
@@ -317,7 +317,7 @@ class DnaAssemblyStation(DnaSource):
     def set_suppliers(self, suppliers):
         if hasattr(suppliers, "__iter__"):
             if len(suppliers) > 1:
-                self.supplier = DnaSourcesComparator(
+                self.supplier = DnaSuppliersComparator(
                     name=self.name + " comparator", suppliers=suppliers
                 )
                 self.supplier.is_ghost_source = True

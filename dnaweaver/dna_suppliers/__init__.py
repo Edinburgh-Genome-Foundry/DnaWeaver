@@ -1,10 +1,10 @@
 """DnaWeaver Reports implements reporting methods for Dna Weaver outputs."""
 
-from .DnaSource import DnaSource
+from .DnaSupplier import DnaSupplier
 from .SequenceAdapter import SequenceAdapter
 from .CommercialDnaOffer import CommercialDnaOffer
 from .DnaAssemblyStation import DnaAssemblyStation
-from .DnaSourcesComparator import DnaSourcesComparator
+from .DnaSuppliersComparator import DnaSuppliersComparator
 from .PartsLibrary import PartsLibrary, GoldenGatePartsLibrary
 from .PcrExtractionStation import PcrExtractionStation
 from .PcrLinearizationStation import PcrLinearizationStation

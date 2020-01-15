@@ -1,8 +1,8 @@
-from .DnaSource import DnaSource
+from .DnaSupplier import DnaSupplier
 from ..DnaQuote import DnaQuote
 
 
-class PcrLinearizationStation(DnaSource):
+class PcrLinearizationStation(DnaSupplier):
     """Station which will linearize another station's (circular) output via PCR.
     
     Parameters

@@ -142,12 +142,12 @@ class SequenceDecomposer:
             self.segments_constraints.append(forced_cuts_filter)
 
         if len(self.cut_location_constraints) == 0:
-            self.valid_cuts = set(range(sequence_length))
+            self.valid_cuts = set(range(sequence_length + 1))
         else:
             self.valid_cuts = set(
                 [
                     index
-                    for index in range(sequence_length)
+                    for index in range(sequence_length + 1)
                     if all(fl(index) for fl in self.cut_location_constraints)
                 ]
             )
@@ -256,10 +256,17 @@ class SequenceDecomposer:
         if grain == "default":
             grain = self.coarse_grain
         grained_cuts = set(range(0, L + 1, grain))
+        forced_but_invalid = self.forced_cuts.difference(self.valid_cuts)
+        if len(forced_but_invalid):
+            raise ValueError(
+                'One forced cut was also invalid at indices %s' % 
+                forced_but_invalid
+            )
         valid_cuts = (
-            (grained_cuts.intersection(self.valid_cuts))
-            .union(self.forced_cuts)
+            grained_cuts
             .union(self.suggested_cuts)
+            .intersection(self.valid_cuts)
+            .union(self.forced_cuts)
         )
         self.coarse_graph = self.compute_graph(valid_cuts)
         error = NoSolutionFoundError(

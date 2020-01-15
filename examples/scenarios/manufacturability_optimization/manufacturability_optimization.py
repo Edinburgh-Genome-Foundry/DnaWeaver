@@ -2,7 +2,7 @@ from dnaweaver import (
     CommercialDnaOffer,
     DnaAssemblyStation,
     GibsonAssemblyMethod,
-    DnaSourcesComparator,
+    DnaSuppliersComparator,
     TmSegmentSelector,
     PerBasepairPricing,
     NoPatternConstraint,
@@ -67,7 +67,7 @@ objective = OptimizeManufacturability(gibson_blocks_assembly_station)
 
 problem = dnachisel.DnaOptimizationProblem(
     sequence=sequence,
-    constraints=[dnachisel.EnforceTranslation((0, 9999))],
+    constraints=[dnachisel.EnforceTranslation(location=(0, 9999))],
     objectives=[objective]
 )
 

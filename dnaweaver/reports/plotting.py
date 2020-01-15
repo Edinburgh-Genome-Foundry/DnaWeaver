@@ -643,6 +643,7 @@ def plot_supply_graph(
             for provider_name in infos.providers:
                 edges.append((provider_name, source_name))
         levels = [levels[i] for i in range(max(levels) + 1)][::-1]
+        print (levels)
     else:
         sources_dict = {
             source.name: source

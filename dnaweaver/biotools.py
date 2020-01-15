@@ -200,6 +200,8 @@ def perfect_match_locations_in_hsp(hsp, span_cutoff=10):
 def largest_common_substring(query, target, max_overhang):
     """Return the largest common substring between `query` and `target`.
 
+    Find the longest substring of query that is contained in target.
+
     If the common substring is too much smaller than `query` False is returned,
     else the location `(start, end)` of the substring in `target` is returned.
 
@@ -215,14 +217,26 @@ def largest_common_substring(query, target, max_overhang):
     max_overhang
       Maximal size allowed for the flanking regions of `query` that would
       not be contained in `target`.
+    
+    Examples
+    --------
+
+    >>> seqA = '-----oooooooo'
+    >>> seqB = 'oooooo-----tttt'
+    >>> largest_common_substring(seqA, seqA, 80) # == (0, 12)
+    >>> largest_common_substring(seqA, seqB, 80) # == (5, 11)
 
     Notes:
     ------
 
     This is intended for finding whether `query` can be extracted from `target`
-    using PCR. See the PcrExtractionStation implementation in DNASource.py.
+    using PCR. See the PcrExtractionStation implementation in DnaSupplier.py.
 
     """
+    # The trick here is to start with the central region of "query".
+    # This region is initially as small as max_overhang allows, and it is
+    # progressively expanded on the sides
+    max_overhang = min(max_overhang, int(len(query) / 2))
     start, end = max_overhang, len(query) - max_overhang
     if query[start:end] not in target:
         return False

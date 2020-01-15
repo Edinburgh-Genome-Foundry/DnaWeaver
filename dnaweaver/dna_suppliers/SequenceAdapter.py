@@ -1,7 +1,7 @@
-from .DnaSource import DnaSource
+from .DnaSupplier import DnaSupplier
 
 
-class SequenceAdapter(DnaSource):
+class SequenceAdapter(DnaSupplier):
     """Transparent source adding sequence flanks between suppliers and clients.
     """
 

@@ -6,7 +6,7 @@ from dnaweaver import (
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
     BuildAGenomeAssemblyMethod,
-    DnaSourcesComparator,
+    DnaSuppliersComparator,
     TmSegmentSelector,
     FixedSizeSegmentSelector,
     PerBasepairPricing,
@@ -76,7 +76,7 @@ oligo_assembly_station = DnaAssemblyStation(
 
 # BLOCKS TO CHUNKS ASSEMBLY
 
-blocks_sources_comparator = DnaSourcesComparator(
+blocks_sources_comparator = DnaSuppliersComparator(
     name="bs_comparator",
     suppliers=[oligo_assembly_station, cheap_dna_com, deluxe_dna_com],
     memoize=memoize,

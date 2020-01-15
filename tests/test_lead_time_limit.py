@@ -10,7 +10,7 @@ from dnaweaver import (
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
     BuildAGenomeAssemblyMethod,
-    DnaSourcesComparator,
+    DnaSuppliersComparator,
     TmSegmentSelector,
     FixedSizeSegmentSelector,
     PerBasepairPricing,
@@ -83,7 +83,7 @@ def test_lead_time_limit():
 
     # BLOCKS TO CHUNKS ASSEMBLY
 
-    blocks_sources_comparator = DnaSourcesComparator(
+    blocks_sources_comparator = DnaSuppliersComparator(
         name="bs_comparator",
         suppliers=[oligo_assembly_station, cheap_dna_com, deluxe_dna_com],
         memoize=memoize,
@@ -144,7 +144,7 @@ def test_lead_time_limit():
             max_segment_length=25000,
             duration=8,
         ),
-        supplier=DnaSourcesComparator(
+        supplier=DnaSuppliersComparator(
             [
                 ecoli_genome,
                 goldengate_blocks_assembly_station,

@@ -5,7 +5,7 @@ from dnaweaver import (
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
     BuildAGenomeAssemblyMethod,
-    DnaSourcesComparator,
+    DnaSuppliersComparator,
     TmSegmentSelector,
     FixedSizeSegmentSelector,
     SequenceLengthConstraint,
@@ -54,7 +54,7 @@ oligo_assembly_station = DnaAssemblyStation(
         duration=8,
         cost=0
     ),
-    supplier=DnaSourcesComparator([
+    supplier=DnaSuppliersComparator([
         cheap_dna_com,
         deluxe_dna_com
     ]),
@@ -66,7 +66,7 @@ oligo_assembly_station = DnaAssemblyStation(
 
 # BLOCKS TO CHUNKS ASSEMBLY
 
-blocks_sources_comparator = DnaSourcesComparator(
+blocks_sources_comparator = DnaSuppliersComparator(
     [
         oligo_assembly_station,
         big_dna_com
@@ -75,7 +75,7 @@ blocks_sources_comparator = DnaSourcesComparator(
 )
 
 
-blocks_assembly_comparator = DnaSourcesComparator([
+blocks_assembly_comparator = DnaSuppliersComparator([
     DnaAssemblyStation(
         name="Blocks Assembly (Gibson)",
         assembly_method=GibsonAssemblyMethod(

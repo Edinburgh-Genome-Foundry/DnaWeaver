@@ -27,7 +27,7 @@ class DnaQuote:
     -----------
 
     source
-      The DnaSource which issued the quote
+      The DnaSupplier which issued the quote
 
 
 

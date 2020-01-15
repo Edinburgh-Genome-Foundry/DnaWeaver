@@ -6,7 +6,7 @@ from dnaweaver import (
     DnaAssemblyStation,
     NoPatternConstraint,
     FixedSizeSegmentSelector,
-    DnaSourcesComparator,
+    DnaSuppliersComparator,
     NoPatternConstraint,
     SequenceLengthConstraint,
 )
@@ -106,7 +106,7 @@ def test_optimization_2():
 
     problem = DnaOptimizationProblem(
         sequence=sequence,
-        constraints=[EnforceTranslation((0, 4998))],
+        constraints=[EnforceTranslation(location=(0, 4998))],
         objectives=[objective],
     )
 

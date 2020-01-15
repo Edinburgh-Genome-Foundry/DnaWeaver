@@ -43,11 +43,23 @@ class SegmentSelector:
         if start == 0:
             fragment_start = 0
         else:
-            fragment_start = self.compute_segment_location(sequence, start)[0]
+            loc = self.compute_segment_location(sequence, start)
+            if loc is None:
+                subseq = sequence[:20] + '...'
+                raise ValueError(
+                    "loc was None around start %s for sequence %s (%dbp)"
+                                 % (end, subseq, len(sequence)))
+            fragment_start = loc[0]
         if end == len(sequence):
             fragment_end = len(sequence)
         else:
-            fragment_end = self.compute_segment_location(sequence, end)[1]
+            loc = self.compute_segment_location(sequence, end)
+            if loc is None:
+                subseq = sequence[:20] + '...'
+                raise ValueError(
+                    "loc was None around end %s for sequence %s (%dbp)"
+                                 % (end, subseq, len(sequence)))
+            fragment_end = loc[1]
         fragment = sequence[fragment_start:fragment_end]
         return self.left_addition + fragment + self.right_addition
 
@@ -66,6 +78,9 @@ class SegmentSelector:
         start = max(0, min(center - half, sequence_length - segment_length))
         end = start + segment_length
         return start, end
+    
+    def __repr__(self):
+        return str(self)
 
 
 class FixedSizeSegmentSelector(SegmentSelector):
@@ -84,6 +99,14 @@ class FixedSizeSegmentSelector(SegmentSelector):
         return self.get_segment_coordinates(
             index, self.segment_size, len(sequence)
         )
+    
+    def __str__(self):
+        result = "FixedSize(%dbp)" % self.segment_size
+        if self.left_addition:
+            result = ('...%s-' % self.left_addition[-12:]) + result
+        if self.right_addition:
+            result = result + ('-%s...' % self.right_addition[:12]) 
+        return result
 
 
 class TmSegmentSelector(SegmentSelector):
@@ -150,13 +173,14 @@ class TmSegmentSelector(SegmentSelector):
         if index == len(sequence):
             index = index - 1
         if self.precompute_segments:
-            
             return self.compute_all_segments(sequence)[index] is not None
         else:
             return self.compute_optimal_segment(sequence, index)[1]
 
     def compute_segment_location(self, sequence, index):
         """Return the location (start, stop) of the selected segment."""
+        if (index < 0) or (sequence == ''):
+            return None
         if index == len(sequence):
             index = index - 1
         if self.precompute_segments:
@@ -256,3 +280,13 @@ class TmSegmentSelector(SegmentSelector):
                 % self.primer3_params.get("method", "[unknown method]")
             )
         return primer3.calcTm(sequence, **self.primer3_params)
+    
+
+    def __str__(self):
+        result = "Tm(%d-%dC, %d-%dbp)" % (
+            self.min_tm, self.max_tm, self.min_size, self.max_size)
+        if self.left_addition:
+            result = ('...%s-' % self.left_addition[-12:]) + result
+        if self.right_addition:
+            result = result + ('-%s...' % self.right_addition[:12]) 
+        return result

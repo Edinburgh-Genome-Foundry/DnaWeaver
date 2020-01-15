@@ -4,7 +4,7 @@ from plotting_helpers import plot_quote, matplotlib_axes_from_gridspec_array
 from dnaweaver import (
     CommercialDnaOffer,
     GoldenGateAssemblyMethod,
-    FixedPricing,
+    FixedCostPricing,
     PerBasepairPricing,
     DnaAssemblyStation,
     GoldenGatePartsLibrary,
@@ -40,7 +40,7 @@ company_tdi = CommercialDnaOffer(
 # An oligos vendor (for oligo assembly and )
 company_oligo = CommercialDnaOffer(
     name="Oligo.com",
-    pricing=FixedPricing(5),
+    pricing=FixedCostPricing(5),
     sequence_constraints=[SequenceLengthConstraint(max_length=100)]
 )
 

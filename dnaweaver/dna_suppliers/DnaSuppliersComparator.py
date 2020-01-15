@@ -1,8 +1,8 @@
 from ..DnaQuote import DnaQuote
-from .DnaSource import DnaSource
+from .DnaSupplier import DnaSupplier
 
-class DnaSourcesComparator(DnaSource):
-    """Special source that compares quotes from other DnaSources.
+class DnaSuppliersComparator(DnaSupplier):
+    """Special source that compares quotes from other DnaSuppliers.
 
     Upon receiving a sequence, that source will submit the sequence to
     Downstream sources, which deliver each one optimal quote. The comparator
@@ -12,7 +12,7 @@ class DnaSourcesComparator(DnaSource):
     ----------
 
     suppliers
-      List of `DnaSources` that
+      List of `DnaSuppliers` that
 
     memoize
       Whether the quotes should be kept in memory to avoid re-computing the
@@ -79,7 +79,7 @@ class DnaSourcesComparator(DnaSource):
         }
     @staticmethod
     def from_dict(data):
-        return DnaSourcesComparator(
+        return DnaSuppliersComparator(
              name=data['name'], suppliers=data['suppliers'])
 
     def set_suppliers(self, suppliers):
