@@ -40,7 +40,7 @@ def test_optimization_1():
         ),
         supplier=[company_ingen, company_delux],
         coarse_grain=20,
-        a_star_factor="auto",
+        # a_star_factor="auto",
     )
     sequence_path = os.path.join(
         "tests", "data", "test_optimization_sequence_1.fa"
@@ -96,7 +96,7 @@ def test_optimization_2():
         coarse_grain=30,
         fine_grain=False,
         memoize=True,
-        a_star_factor="auto",
+        # a_star_factor="auto",
     )
 
     quote_before = gibson_blocks_assembly_station.get_quote(sequence)

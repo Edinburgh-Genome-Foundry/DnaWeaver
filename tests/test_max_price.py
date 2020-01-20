@@ -153,7 +153,6 @@ def test_max_price():
         ),
         coarse_grain=1000,
         fine_grain=None,
-        logger="bar",
         a_star_factor=a_star_factor,
         memoize=memoize,
     )

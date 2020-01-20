@@ -99,8 +99,9 @@ class DnaAssemblyStation(DnaSupplier):
         self,
         sequence,
         max_lead_time=None,
-        coarse_grain=None,
-        fine_grain=None,
+        coarse_grain=1,
+        fine_grain=1,
+        cut_spread_radius=0,
         a_star_factor=0,
         logger=None,
     ):
@@ -109,17 +110,14 @@ class DnaAssemblyStation(DnaSupplier):
                 sequence, segment, max_lead_time=max_lead_time
             )
             if not quote.accepted:
-                # print ("a")
                 return -1
             else:
                 return quote.price
 
+        def value_or_default(v, param, default):
+            return self.solver_kwargs.get(param, default) if v is None else v
         assembly = self.assembly_method
-        if coarse_grain is None:
-            coarse_grain = self.solver_kwargs.get("coarse_grain", 1)
-        if fine_grain is None:
-            fine_grain = self.solver_kwargs.get("fine_grain", 1)
-
+ 
         return self.decomposer_class(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
@@ -142,21 +140,29 @@ class DnaAssemblyStation(DnaSupplier):
             cuts_set_constraints=[
                 cs(sequence) for cs in assembly.cuts_set_constraints
             ],
+            cut_spread_radius=cut_spread_radius,
         )
 
     def compute_suggested_cuts(self, sequence):
-        cuts = list(self.assembly_method.suggest_cuts(sequence))
+        all_supplier_cuts = []
         for supplier in self.suppliers:
             if hasattr(supplier, "suggest_cuts"):
-                cuts.extend(list(supplier.suggest_cuts(sequence)))
-        return sorted(set(cuts))
+                supplier_cuts = supplier.suggest_cuts(sequence)
+                all_supplier_cuts.extend(list(supplier_cuts))
+        assembly_method_cuts = self.assembly_method.suggest_cuts(sequence)
+        suggested = list(assembly_method_cuts) + list(all_supplier_cuts)
+        return sorted(set(suggested))
+
+    def suggest_cuts(self, sequence):
+        return self.compute_suggested_cuts(sequence=sequence)
 
     def get_assembly_plan_for_sequence(
         self,
         sequence,
         max_lead_time=None,
-        coarse_grain=None,
-        fine_grain=None,
+        coarse_grain=1,
+        fine_grain=1,
+        cut_spread_radius=0,
         a_star_factor=0,
         logger=None,
     ):
@@ -168,6 +174,7 @@ class DnaAssemblyStation(DnaSupplier):
             coarse_grain=coarse_grain,
             fine_grain=fine_grain,
             a_star_factor=a_star_factor,
+            cut_spread_radius=cut_spread_radius,
             logger=logger,
         )
         self._lattest_decomposer = decomposer  # for debugging

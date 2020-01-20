@@ -101,6 +101,7 @@ class SequenceDecomposer:
         forced_cuts=(),
         suggested_cuts=(),
         cuts_set_constraints=(),
+        cut_spread_radius=0,
         min_segment_length=0,
         max_segment_length=None,
         coarse_grain=1,
@@ -115,6 +116,7 @@ class SequenceDecomposer:
         self.segment_score_function = segment_score_function
         self.forced_cuts = set(list(forced_cuts) + [0, sequence_length])
         self.suggested_cuts = set(suggested_cuts)
+        self.cut_spread_radius = cut_spread_radius
         self.segments_constraints = list(segment_constraints)
         self.cuts_set_constraints = list(cuts_set_constraints)
         self.cut_location_constraints = list(cut_location_constraints)
@@ -259,15 +261,22 @@ class SequenceDecomposer:
         forced_but_invalid = self.forced_cuts.difference(self.valid_cuts)
         if len(forced_but_invalid):
             raise ValueError(
-                'One forced cut was also invalid at indices %s' % 
-                forced_but_invalid
+                "One forced cut was also invalid at indices %s"
+                % forced_but_invalid
+            )
+        grained_and_suggested = grained_cuts.union(self.suggested_cuts)
+        if self.cut_spread_radius:
+            grained_and_suggested = spread_indices_in_set(
+                indices=grained_and_suggested,
+                radius=self.cut_spread_radius,
+                max_index=L + 1,
             )
         valid_cuts = (
-            grained_cuts
-            .union(self.suggested_cuts)
+            grained_cuts.union(self.suggested_cuts)
             .intersection(self.valid_cuts)
             .union(self.forced_cuts)
         )
+
         self.coarse_graph = self.compute_graph(valid_cuts)
         error = NoSolutionFoundError(
             "No coarse solution found, possibly too "
@@ -304,6 +313,12 @@ class SequenceDecomposer:
                 for cut in self.coarse_cuts
             ]
         )
+        if self.cut_spread_radius:
+            fine_cuts = spread_indices_in_set(
+                indices=fine_cuts,
+                radius=self.cut_spread_radius,
+                max_index=L + 1,
+            )
         fine_cuts = (fine_cuts.intersection(self.valid_cuts)).union(
             self.forced_cuts
         )
@@ -317,3 +332,12 @@ class SequenceDecomposer:
             return self.fine_cuts
         else:
             return self.coarse_cuts
+
+
+def spread_indices_in_set(indices, radius, max_index):
+    new_list = [
+        new_index
+        for i in indices
+        for new_index in range(max(0, i - radius), min(max_index, i + radius))
+    ]
+    return set(new_list)
