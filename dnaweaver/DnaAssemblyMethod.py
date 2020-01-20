@@ -194,7 +194,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         **props
     ):
         if enzyme not in self.enzymes_dict:
-            return ValueError(
+            raise ValueError(
                 "Enzyme should be one of %s" % self.enzymes_dict.keys()
             )
 

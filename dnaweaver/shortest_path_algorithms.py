@@ -193,6 +193,6 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
             shortest_path = next(shortest_paths)
             if path_is_valid(shortest_path):
                 return shortest_path
-        return nx.NetworkXNoPath("Could not find a solution verifying the cuts"
+        raise nx.NetworkXNoPath("Could not find a solution verifying the cuts"
                                  " set constraints, after %d tries." %
                                  compatibility_search_cutoff)
