@@ -103,6 +103,7 @@ class CommercialDnaOffer(DnaSupplier):
             "sequence constraints": constraints,
         }
 
+    @staticmethod
     def from_dict(data):
         constraints = []
         if "gc_range" in data:

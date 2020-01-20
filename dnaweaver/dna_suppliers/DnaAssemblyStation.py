@@ -327,4 +327,3 @@ class DnaAssemblyStation(DnaSupplier):
             self.supplier = suppliers
             suppliers = [suppliers]
         self.suppliers = suppliers
-

@@ -3,17 +3,12 @@ import tempfile
 import time
 import os
 import re
-try:
-    from StringIO import StringIO
-except ImportError:  # python 3
-    from io import StringIO
-
+from io import StringIO
 from Bio.Blast import NCBIXML
 from Bio.Seq import Seq
 from Bio import Restriction
 from Bio import SeqIO
 import numpy as np
-
 
 
 def complement(dna_sequence):
@@ -68,17 +63,26 @@ def load_record(filename, name="unnamed"):
     """Load a sequence file (genbank or fasta) as  a Biopython record."""
     if filename.lower().endswith(("gb", "gbk")):
         record = SeqIO.read(filename, "genbank")
-    elif filename.lower().endswith(('fa', 'fasta')):
+    elif filename.lower().endswith(("fa", "fasta")):
         record = SeqIO.read(filename, "fasta")
     else:
-        raise ValueError('Unknown format for file: %s' % filename)
+        raise ValueError("Unknown format for file: %s" % filename)
     record.id = name
     record.name = name.replace(" ", "_")[:20]
     return record
 
-def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
-                   perc_identity=80, num_alignments=1000, num_threads=3,
-                   use_megablast=True, ungapped=True):
+
+def blast_sequence(
+    sequence,
+    blast_db=None,
+    subject=None,
+    word_size=4,
+    perc_identity=80,
+    num_alignments=1000,
+    num_threads=3,
+    use_megablast=True,
+    ungapped=True,
+):
     """Return a Biopython BLAST record of the given sequence BLASTed
     against the provided database.
 
@@ -139,21 +143,40 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
             remove_subject = False
     else:
         close_subject = False
-    p = subprocess.Popen([
-        "blastn", "-out", xml_name,
-        "-outfmt", "5",
-        "-num_alignments", str(num_alignments),
-        "-query", fasta_name] +
-        (["-db", blast_db] if blast_db is not None
-         else ['-subject', subject]) +
-        (["-ungapped"] if ungapped else []) +
-        (["-task", "megablast"] if use_megablast else []) + [
-        "-word_size", str(word_size),
-        "-num_threads", str(num_threads),
-        "-dust", "no",
-        "-evalue", "0.01",
-        "-perc_identity", str(perc_identity)
-    ], close_fds=True, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        [
+            "blastn",
+            "-out",
+            xml_name,
+            "-outfmt",
+            "5",
+            "-num_alignments",
+            str(num_alignments),
+            "-query",
+            fasta_name,
+        ]
+        + (
+            ["-db", blast_db]
+            if blast_db is not None
+            else ["-subject", subject]
+        )
+        + (["-ungapped"] if ungapped else [])
+        + (["-task", "megablast"] if use_megablast else [])
+        + [
+            "-word_size",
+            str(word_size),
+            "-num_threads",
+            str(num_threads),
+            "-dust",
+            "no",
+            "-evalue",
+            "0.01",
+            "-perc_identity",
+            str(perc_identity),
+        ],
+        close_fds=True,
+        stderr=subprocess.PIPE,
+    )
     res, blast_err = p.communicate()
     p.wait()
     error = None
@@ -161,13 +184,13 @@ def blast_sequence(sequence, blast_db=None, subject=None, word_size=4,
         try:
             with open(xml_name, "r") as f:
                 res = list(NCBIXML.parse(f))
-                os.fdopen(xml_file, 'w').close()
-                os.fdopen(fasta_file, 'w').close()
+                os.fdopen(xml_file, "w").close()
+                os.fdopen(fasta_file, "w").close()
                 os.remove(xml_name)
                 os.remove(fasta_name)
 
                 if close_subject:
-                    open(subject, 'w').close()
+                    open(subject, "w").close()
                     if remove_subject:
                         os.remove(subject)
                 if len(res) == 1:
@@ -189,13 +212,14 @@ def perfect_match_locations_in_hsp(hsp, span_cutoff=10):
     """
     if hsp.align_length < span_cutoff:
         return []
-    arr = np.frombuffer(hsp.match.encode(), dtype='uint8')
+    arr = np.frombuffer(hsp.match.encode(), dtype="uint8")
     indices = [0] + list((arr != 124).nonzero()[0]) + [len(arr)]
     return [
         (start + hsp.query_start, end + hsp.query_start)
         for start, end in zip(indices, indices[1:])
         if end - start >= span_cutoff
     ]
+
 
 def largest_common_substring(query, target, max_overhang):
     """Return the largest common substring between `query` and `target`.
@@ -281,14 +305,16 @@ def gc_content(sequence, window_size=None):
         return 1.0 * arr_GCs.sum() / len(sequence)
     else:
         cs = np.cumsum(arr_GCs)
-        a = cs[window_size - 1:]
+        a = cs[window_size - 1 :]
         b = np.hstack([[0], cs[:-window_size]])
         return 1.0 * (a - b) / window_size
+
 
 def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
     padding = padding * padding_nuc
     sequence = Seq(padding + sequence + padding)
     return Restriction.__dict__[enzyme_name].search(sequence)
+
 
 def string_to_sequence(string):
     """Convert a string of a fasta, genbank... into a simple ATGC string.
@@ -304,23 +330,23 @@ def string_to_sequence(string):
         try:
             stringio = StringIO(string)
             return (str(SeqIO.read(stringio, fmt).seq), fmt)
-        except:
+        except Exception:
             pass
     raise ValueError("Invalid sequence format")
+
 
 def file_to_sequence(filename):
     """Import a file in fasta, genbank... as a simple ATGC string."""
     with open(filename, "r") as f:
         return string_to_sequence(f.read())
 
+
 def gc_content_to_tm(seq_length, gc_content, gc_tm=4, nongc_tm=2):
     return seq_length * (gc_content * gc_tm + (1 - gc_content) * nongc_tm)
 
+
 def make_blast_db(fasta_input, target):
-  proc = subprocess.Popen([
-      "makeblastdb",
-      "-in", fasta_input,
-      "-dbtype", "nucl",
-      "-out", target
-  ])
-  proc.wait()
+    proc = subprocess.Popen(
+        ["makeblastdb", "-in", fasta_input, "-dbtype", "nucl", "-out", target]
+    )
+    proc.wait()

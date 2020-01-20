@@ -4,7 +4,6 @@ import numpy as np
 import networkx as nx
 from heapq import heappush, heappop
 from itertools import count
-from copy import deepcopy
 
 
 class NoSolutionFoundError(Exception):
@@ -74,7 +73,8 @@ def astar_path(G, source, target, heuristic=None, weight=None):
         def heuristic(u, v):
             return 0
     if weight is None:
-        weight = lambda *a: 1
+        def weight(*a):
+            return 1
     elif isinstance(weight, str):
         key = weight
         def weight(n1, n2, props):

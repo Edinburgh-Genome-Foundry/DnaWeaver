@@ -1,8 +1,10 @@
 from copy import deepcopy
 import numpy as np
 import dnachisel as dc
-from .DnaAssemblyMethod import BluntEndsAssemblyMethod
 from dnachisel.biotools import group_nearby_indices
+from .DnaAssemblyMethod import BluntEndAssemblyMethod
+
+
 
 def compute_cost_profiles(graph):
 
@@ -43,9 +45,9 @@ class OptimizeManufacturability(dc.Specification):
         boost=1,
     ):
         co_station = deepcopy(station)
-        co_station.assembly_method = BluntEndsAssemblyMethod(
+        co_station.assembly_method = BluntEndAssemblyMethod(
             min_segment_length=5 * resolution,
-            max_segment_length=max_segment_length
+            max_segment_length=max_segment_length,
         )
         co_station.a_star_factor = 0
         self.station = station
@@ -65,7 +67,7 @@ class OptimizeManufacturability(dc.Specification):
         graph = decomposer.compute_graph(
             grained_cuts, reachable_indices_only=False
         )
-        graph, cuts = decomposer.find_shortest_path(graph)
+        graph, _ = decomposer.find_shortest_path(graph)
         return graph
 
     def compute_cost_profiles(self, sequence):
@@ -80,7 +82,7 @@ class OptimizeManufacturability(dc.Specification):
         locations = group_nearby_indices(
             locations,
             max_gap=self.max_loc_size,
-            max_group_spread=self.max_loc_size
+            max_group_spread=self.max_loc_size,
         )
         return [
             dc.Location(l[0] - self.resolution, l[-1] + self.resolution)
