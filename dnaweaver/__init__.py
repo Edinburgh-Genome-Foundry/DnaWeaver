@@ -15,6 +15,7 @@ from .DnaAssemblyMethod import (
     GibsonAssemblyMethod,
     BuildAGenomeAssemblyMethod,
     GoldenGateAssemblyMethod,
+    DnaAssemblyMethod
 )
 from .SegmentSelector import (
     SegmentSelector,
@@ -27,6 +28,8 @@ from .biotools import (
     string_to_sequence,
     load_record,
     gc_content,
+    SequenceString,
+    get_sequence_topology
 )
 from .builtin_constraints import (
     NoPatternConstraint,

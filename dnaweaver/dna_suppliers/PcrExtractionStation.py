@@ -54,7 +54,7 @@ class PcrExtractionStation(DnaSupplier):
 
     """
 
-    class_description = "PCR-out station"
+    class_description = "PCR-extraction station"
     operation_type = "PCR"
     report_fa_symbol = u""
     report_fa_symbol_plain = "recycle"
@@ -156,7 +156,10 @@ class PcrExtractionStation(DnaSupplier):
         ]
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -179,7 +182,7 @@ class PcrExtractionStation(DnaSupplier):
         """
         hits = self._get_hits(sequence)
 
-        # For each hit in the database, see if there is a 
+        # For each hit in the database, see if there is a
         for subject, (hit_start, hit_end), _ in hits:
             if min(hit_start, hit_end) < 0:
                 continue

@@ -6,6 +6,7 @@ from collections import defaultdict
 import tempfile
 import os
 import json
+
 try:
     from StringIO import StringIO
 except ImportError:  # python 3
@@ -60,9 +61,19 @@ class DnaQuote:
 
     """
 
-    def __init__(self, source, sequence, price=None, accepted=True,
-                 lead_time=None, assembly_plan=None, metadata={}, message="",
-                 id=None, deadline=None):
+    def __init__(
+        self,
+        source,
+        sequence,
+        price=None,
+        accepted=True,
+        lead_time=None,
+        assembly_plan=None,
+        metadata={},
+        message="",
+        id=None,
+        deadline=None,
+    ):
         self.source = source
         self.accepted = accepted
         self.price = price
@@ -83,10 +94,10 @@ class DnaQuote:
             infos = "refused: %s" % self.message
         result = "From %s - %s" % (self.source, infos)
         if len(self.message):
-            result += ' - ' + self.message
+            result += " - " + self.message
         return result
 
-    def compute_full_assembly_tree(self, id_prefix="S"):
+    def compute_full_assembly_tree(self, id_prefix="S", id_digits=5):
         """ """
 
         counter = itt.count()
@@ -95,29 +106,39 @@ class DnaQuote:
             if not quote.accepted:
                 return quote
 
-            if any([hasattr(quote.source, attr) for attr in [
-                   "supplier", "primers_supplier"]]):
+            if any(
+                [
+                    hasattr(quote.source, attr)
+                    for attr in ["supplier", "primers_supplier"]
+                ]
+            ):
                 if quote.assembly_plan is None:
                     quote = quote.source.get_quote(
                         quote.sequence,
                         max_lead_time=quote.lead_time,
-                        with_assembly_plan=True
+                        with_assembly_plan=True,
                     )
                 segments = {
                     segment: rec(subquote)
-                    for segment, subquote in
-                    sorted(quote.assembly_plan.items(),
-                           key=lambda item: item[0])
+                    for segment, subquote in sorted(
+                        quote.assembly_plan.items(), key=lambda item: item[0]
+                    )
                 }
                 quote.assembly_plan = segments
             if id_prefix:
-                quote.id = id_prefix + "%05d" % next(counter)
+                index = next(counter)
+                quote.id = "{id_prefix}_{index:0{id_digits}}".format(
+                    id_prefix=id_prefix, index=index, id_digits=id_digits
+                )
             return quote
 
         rec(self)
 
         if id_prefix:
-            self.id = id_prefix + "%05d" % next(counter)
+            index = next(counter)
+            self.id = "{id_prefix}_{index:0{id_digits}}".format(
+                id_prefix=id_prefix, index=index, id_digits=id_digits
+            )
 
     def compute_fragments_final_locations(self):
         """Compute the final location of the fragments.
@@ -137,9 +158,9 @@ class DnaQuote:
         with open(temp_fasta, "w+") as f:
             for quote in quotes:
                 f.write(">%s\n%s\n" % (quote.id, quote.sequence))
-        results = blast_sequence(self.sequence,
-                                 subject=temp_fasta,
-                                 word_size=10, perc_identity=100)
+        results = blast_sequence(
+            self.sequence, subject=temp_fasta, word_size=10, perc_identity=100
+        )
 
         if isinstance(results, list):
             alignments = sum([rec.alignments for rec in results], [])
@@ -163,10 +184,13 @@ class DnaQuote:
         """
         result = [self]
         if self.assembly_plan is not None:
-            result += sum([
-                child.tree_as_list()
-                for segment, child in self.assembly_plan.items()
-            ], [])
+            result += sum(
+                [
+                    child.tree_as_list()
+                    for segment, child in self.assembly_plan.items()
+                ],
+                [],
+            )
         return result
 
     def assembly_tree_as_dict(self, as_json=False, json_indent=None):
@@ -200,12 +224,14 @@ class DnaQuote:
                            }
          }
         """
-        final_location = (self.final_location if
-                          hasattr(self, "final_location")
-                          else None)
-        matching_segment = (self.matching_segment if
-                            hasattr(self, "matching_segment")
-                            else None)
+        final_location = (
+            self.final_location if hasattr(self, "final_location") else None
+        )
+        matching_segment = (
+            self.matching_segment
+            if hasattr(self, "matching_segment")
+            else None
+        )
 
         assembly_plan = []
         if self.assembly_plan is not None:
@@ -225,14 +251,13 @@ class DnaQuote:
             "assembly_plan": assembly_plan,
             "final_location": final_location,
             "matching_segment": matching_segment,
-            "accepted": self.accepted
+            "accepted": self.accepted,
         }
 
         if as_json:
             return json.dumps(tree, indent=json_indent)
         else:
             return tree
-
 
     def propagate_deadline(self, deadline):
         """Add a `deadline` attribute to the quote and propagate it to
@@ -277,6 +302,7 @@ class DnaQuote:
                 for other in subtree.assembly_plan.values():
                     edges.append((other, subtree))
                     rec(other, depth + 1)
+
         rec(self)
         levels = [levels[i] for i in sorted(levels.keys())][::-1]
         levels = [sorted(level, key=lambda e: e.id)[::-1] for level in levels]
@@ -343,17 +369,17 @@ class DnaQuote:
                         "name": quote.id,
                         "source": quote.source,
                         "price": quote.price,
-                        "lead_time": quote.lead_time
-                    }
+                        "lead_time": quote.lead_time,
+                    },
                 )
                 for segment, quote in self.assembly_plan.items()
             ]
             record.features = features + record.features
         return record
 
-
-    def to_genbank(self, filename=None, filehandle=None,
-                   record=None, record_id=None):
+    def to_genbank(
+        self, filename=None, filehandle=None, record=None, record_id=None
+    ):
         record = self.to_SeqRecord(record=record, record_id=record_id)
         if filename is not None:
             with open(filename, "w+") as f:

@@ -11,9 +11,7 @@ try:
 
     DNACHISEL_AVAILABLE = True
 except:
-    Specification = type(
-        "BLANK"
-    )  # meant to be a fake type that matches nothing
+    Specification = type("BLANK")  # fake type that matches nothing
     DNACHISEL_AVAILABLE = False
 
 
@@ -108,7 +106,11 @@ class DnaSupplier:
         return self.name
 
     def get_best_lead_time_under_price_limit(
-        self, sequence, max_price, time_resolution, with_assembly_plan=False
+        self,
+        sequence,
+        max_price,
+        time_resolution,
+        with_assembly_plan=False,
     ):
         """Return the quote with fastest lead time under the budget constraint
 
@@ -236,7 +238,7 @@ class DnaSupplier:
             if hasattr(source, "primers_supplier"):
                 edges.append((source.primers_supplier, source))
                 rec(source.primers_supplier, depth + 1, new_seen_sources)
-        
+
         rec(self, depth=0, seen_sources=[])
         levels = [
             [
@@ -247,62 +249,10 @@ class DnaSupplier:
             for i in range(max(source_max_level.values()) + 1)
         ][::-1]
 
-        # seen_sources = set()
-        # levels = defaultdict(lambda: [])
-        # edges = []
-
-        # def rec(source, depth=0):
-
-        #     if source in seen_sources:
-        #         return
-        #     seen_sources.add(source)
-
-        #     levels[depth].append(source)
-        #     if hasattr(source, "suppliers"):
-        #         for other in source.suppliers:
-        #             edges.append((other, source))
-        #             rec(other, depth + 1)
-        #     elif hasattr(source, "supplier"):
-        #         edges.append((source.supplier, source))
-        #         rec(source.supplier, depth + 1)
-        #     if hasattr(source, "primers_supplier"):
-        #         edges.append((source.primers_supplier, source))
-        #         rec(source.primers_supplier, depth + 1)
-
-        # rec(self)
-
-        # levels = [levels[i] for i in sorted(levels.keys())][::-1]
         return edges, levels
 
-        # seen_sources = set()
-        # levels = defaultdict(lambda: [])
-        # edges = []
-
-        # def rec(source, depth=0):
-
-        #     if source in seen_sources:
-        #         return
-        #     seen_sources.add(source)
-
-        #     levels[depth].append(source)
-        #     if hasattr(source, "suppliers"):
-        #         for other in source.suppliers:
-        #             edges.append((other, source))
-        #             rec(other, depth + 1)
-        #     elif hasattr(source, "supplier"):
-        #         edges.append((source.supplier, source))
-        #         rec(source.supplier, depth + 1)
-        #     if hasattr(source, "primers_supplier"):
-        #         edges.append((source.primers_supplier, source))
-        #         rec(source.primers_supplier, depth + 1)
-
-        # rec(self)
-
-        # levels = [levels[i] for i in sorted(levels.keys())][::-1]
-        # return edges, levels
-
     def prepare_network_on_sequence(self, sequence):
-        edges, levels = self.compute_supply_graph()
+        _edges, levels = self.compute_supply_graph()
         for level in levels:
             for source in level:
                 if hasattr(source, "prepare_on_sequence"):

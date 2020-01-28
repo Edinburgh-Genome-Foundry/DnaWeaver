@@ -67,6 +67,10 @@ class TmSegmentSelector(SegmentSelector):
         self.middle_size = int(0.5 * (self.min_size + self.max_size))
         self.left_addition = left_addition
         self.right_addition = right_addition
+    
+    @property
+    def max_homology_size(self):
+        return self.max_size
 
     def filter_location(self, sequence, index):
         """Return whether the sequence has a valid segment at this index."""

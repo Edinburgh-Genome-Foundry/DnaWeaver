@@ -1,5 +1,11 @@
 import itertools
-from ..biotools import reverse_complement, gc_content_to_tm, find_enzyme_sites
+from ..biotools import (
+    reverse_complement,
+    gc_content_to_tm,
+    find_enzyme_sites,
+    get_sequence_topology,
+)
+
 from ..tools import memoize
 from ..SegmentSelector import TmSegmentSelector
 from .OverlapingAssemblyMethod import OverlapingAssemblyMethod
@@ -82,7 +88,21 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
             self.sequence_constraints.append(no_site_in_sequence)
 
-        # CUTS LOCATION CONSTRAINT BASED ON GC CONTENT
+        # DO NOT CUT AT PALYINDROMIC REGIONS
+
+        def no_cut_at_palyndromic_locations(sequence):
+            L = len(sequence)
+
+            def no_palyndrom_filter(i):
+                s = overhang_selector.compute_segment_around_index(sequence, i)
+                rev_s = reverse_complement(s)
+                rev_diffs = len([a for a, b in zip(s, rev_s) if a != b])
+                assert len(s) == 4
+                return rev_diffs >= self.min_overhangs_differences
+
+            return no_palyndrom_filter
+
+        self.cut_location_constraints.append(no_cut_at_palyndromic_locations)
 
         # CUTS SET CONSTRAINT: ALL OVERHANGS MUST BE COMPATIBLE
 
@@ -97,23 +117,44 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         overhangs_are_compatible = memoize(overhangs_are_compatible)
 
         def all_overhangs_are_compatible(sequence):
-            def f(cut_locations):
-                overhangs = sorted(
-                    [
-                        overhang_selector.compute_segment_sequence(
-                            sequence, cut_location
-                        )
-                        for cut_location in cut_locations
-                    ]
-                )
+            topology = get_sequence_topology(sequence, "linear")
+
+            def constraint(cut_locations):
+                cut_overhangs = {
+                    cut_location: overhang_selector.compute_segment_around_index(
+                        sequence, cut_location
+                    )
+                    for cut_location in cut_locations
+                }
+                cut_pairs = list(itertools.combinations(cut_locations, 2))
+                if topology == "circular":
+                    cut_pairs.remove((0, len(sequence)))
+
                 return all(
                     [
-                        overhangs_are_compatible(o1, o2)
-                        for o1, o2 in itertools.combinations(overhangs, 2)
+                        overhangs_are_compatible(
+                            cut_overhangs[c1], cut_overhangs[c2]
+                        )
+                        for c1, c2 in cut_pairs
                     ]
                 )
 
-            return f
+                # overhangs = sorted(
+                #     [
+                #         overhang_selector.compute_segment_around_index(
+                #             sequence, cut_location
+                #         )
+                #         for cut_location in cut_locations
+                #     ]
+                # )
+                # return all(
+                #     [
+                #         overhangs_are_compatible(o1, o2)
+                #         for o1, o2 in itertools.combinations(overhangs, 2)
+                #     ]
+                # )
+
+            return constraint
 
         self.cuts_set_constraints.append(all_overhangs_are_compatible)
 

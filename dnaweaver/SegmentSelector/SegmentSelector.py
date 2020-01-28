@@ -1,6 +1,7 @@
 """ This module contains overhangs selectors for methods such as
 Gibson Assembly, Golden Gate assembly, recombination in yeast."""
 
+from ..biotools import get_sequence_topology
 
 class SegmentSelector:
     """Base class for segment selectors such as TmSegmentSelector.
@@ -27,9 +28,22 @@ class SegmentSelector:
     def has_location_filter(self):
         return hasattr(self, "filter_location")
 
-    def compute_sequence_fragment(self, sequence, segment):
-        """Compute the fragment equal to the sequence region + flank segment."""
+    def compute_fragment_for_sequence_segment(self, sequence, segment):
+        """Compute the fragment as (sequence region + flank segments)."""
         start, end = segment
+        topology = get_sequence_topology(sequence)
+        if topology == "circular":
+            half_homology = self.max_homology_size // 2
+            if start <= half_homology:
+                return self.compute_fragment_for_sequence_segment(
+                    sequence=sequence[-half_homology:] + sequence,
+                    segment=(start + half_homology, end + half_homology),
+                )
+            if end >= len(sequence) - half_homology:
+                return self.compute_fragment_for_sequence_segment(
+                    sequence=sequence + sequence[:half_homology],
+                    segment=segment,
+                )
         if start == 0:
             fragment_start = 0
         else:
@@ -55,8 +69,20 @@ class SegmentSelector:
         fragment = sequence[fragment_start:fragment_end]
         return self.left_addition + fragment + self.right_addition
 
-    def compute_segment_sequence(self, sequence, index):
+    def compute_segment_around_index(self, sequence, index, topology="linear"):
         """Return the sequence of the selected segment at the given index."""
+
+        if get_sequence_topology(sequence) == "circular":
+            half_homology = self.max_homology_size // 2
+            if index <= half_homology:
+                return self.compute_segment_around_index(
+                    sequence=sequence[-half_homology:] + sequence,
+                    index=index + half_homology,
+                )
+            if index >= len(sequence) - half_homology:
+                return self.compute_segment_around_index(
+                    sequence=sequence + sequence[:half_homology], index=index,
+                )
         start, end = self.compute_segment_location(sequence, index)
         return sequence[start:end]
 

@@ -32,16 +32,21 @@ class DnaSuppliersComparator(DnaSupplier):
         suppliers=(),
         memoize=False,
         sequence_constraints=(),
+        return_first_accepted_quote=False,
         name="comparator",
     ):
         self.set_suppliers(suppliers)
         self.memoize = memoize
         self.sequence_constraints = sequence_constraints
+        self.return_first_accepted_quote = return_first_accepted_quote
         self.memoize_dict = {}
         self.name = name
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Returns a price-optimal DnaQuote for the given sequence.
 
@@ -70,16 +75,18 @@ class DnaSuppliersComparator(DnaSupplier):
             quote = source.get_quote(
                 sequence,
                 max_lead_time=max_lead_time,
-                with_assembly_plan=with_assembly_plan,
+                with_assembly_plan=with_assembly_plan
             )
             # print ('=>', quote.accepted, quote.price)
             if not quote.accepted:
                 continue
+            if self.return_first_accepted_quote:
+                best_quote = quote
+                break
             quote_basepair_price = quote.price / float(len(sequence))
             if quote_basepair_price < best_basepair_price:
                 best_quote = quote
                 best_basepair_price = quote_basepair_price
-        # print ('---- went for ', best_quote.source)
         if best_quote is None:
             return DnaQuote(
                 self,

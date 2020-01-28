@@ -102,6 +102,9 @@ class DnaAssemblyMethod(object):
         }
         result.update(self.additional_dict_description())
         return result
+    
+    # def extend_sequence(self, sequence):
+    #     return sequence
 
     def additional_dict_description(self):
         return {}

@@ -23,7 +23,23 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
             self.cut_location_constraints.append(
                 selector.location_filter_method
             )
-        self.compute_sequence_fragment = selector.compute_sequence_fragment
+        self.compute_fragment_for_sequence_segment = (
+            selector.compute_fragment_for_sequence_segment
+        )
+
+    # def extend_sequence(self, sequence):
+    #     """Extend the end sequence with a start homology for circular assembly.
+    #     """
+    #     if self.topology == "circular":
+    #         selector = self.overhang_selector
+    #         start, end = selector.compute_segment_location(sequence, 0)
+    #         size = end - start
+    #         if size % 2:
+    #             size += 1
+    #         half_size = size // 2
+    #         return sequence[-half_size:] + sequence + sequence[:half_size]
+    #     else:
+    #         return sequence
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):

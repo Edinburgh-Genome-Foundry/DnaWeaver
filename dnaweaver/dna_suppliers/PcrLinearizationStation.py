@@ -23,7 +23,7 @@ class PcrLinearizationStation(DnaSupplier):
         sequence_constraints=(),
         extra_time=0,
         extra_cost=0,
-        memoize=False
+        memoize=False,
     ):
         self.name = name
         self.supplier = supplier
@@ -33,9 +33,12 @@ class PcrLinearizationStation(DnaSupplier):
         self.extra_time = extra_time
         self.extra_cost = extra_cost
         self.memoize = memoize
-    
+
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -61,11 +64,12 @@ class PcrLinearizationStation(DnaSupplier):
         else:
             suppliers_max_lead_time = None
         supplier_quote = self.supplier.get_quote(
-            sequence,
-            max_lead_time=suppliers_max_lead_time)
+            sequence, max_lead_time=suppliers_max_lead_time
+        )
         if not supplier_quote.accepted:
-            return DnaQuote(self, sequence, accepted=False,
-                            message="Refused by supplier")
+            return DnaQuote(
+                self, sequence, accepted=False, message="Refused by supplier"
+            )
 
         left_location = self.homology_selector.compute_segment_location(
             sequence=sequence, index=0
@@ -74,14 +78,18 @@ class PcrLinearizationStation(DnaSupplier):
             sequence=sequence, index=len(sequence)
         )
         if (left_location is None) or (right_location is None):
-            return  DnaQuote(self, sequence, accepted=False,
-                             message="Could not design a suitable primer")
+            return DnaQuote(
+                self,
+                sequence,
+                accepted=False,
+                message="Could not design a suitable primer",
+            )
         _, left_end = left_location
         right_start, _ = right_location
-        
+
         left_primer = sequence[:left_end]
         right_primer = sequence[right_start:]
-        
+
         primers_quotes = [
             self.primers_supplier.get_quote(
                 primer, max_lead_time=suppliers_max_lead_time
@@ -89,13 +97,16 @@ class PcrLinearizationStation(DnaSupplier):
             for primer in [left_primer, right_primer]
         ]
         if not all(quote.accepted for quote in primers_quotes):
-            return  DnaQuote(self, sequence, accepted=False,
-                             message="Primers refused by primers supplier")
+            return DnaQuote(
+                self,
+                sequence,
+                accepted=False,
+                message="Primers refused by primers supplier",
+            )
         all_quotes = [supplier_quote] + primers_quotes
         if max_lead_time is not None:
             overall_lead_time = (
-                max(quote.lead_time for quote in all_quotes)
-                + self.extra_time
+                max(quote.lead_time for quote in all_quotes) + self.extra_time
             )
         else:
             overall_lead_time = None
@@ -119,9 +130,7 @@ class PcrLinearizationStation(DnaSupplier):
             lead_time=overall_lead_time,
             price=total_price,
             assembly_plan=assembly_plan,
-            metadata={
-                "location": (0, len(sequence)),
-            },
+            metadata={"location": (0, len(sequence)),},
         )
 
     def additional_dict_description(self):

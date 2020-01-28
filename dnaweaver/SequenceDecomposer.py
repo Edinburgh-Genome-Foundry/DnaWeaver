@@ -260,7 +260,7 @@ class SequenceDecomposer:
         grained_cuts = set(range(0, L + 1, grain))
         forced_but_invalid = self.forced_cuts.difference(self.valid_cuts)
         if len(forced_but_invalid):
-            raise ValueError(
+            raise NoSolutionFoundError(
                 "One forced cut was also invalid at indices %s"
                 % forced_but_invalid
             )
@@ -272,7 +272,7 @@ class SequenceDecomposer:
                 max_index=L + 1,
             )
         valid_cuts = (
-            grained_cuts.union(self.suggested_cuts)
+            grained_and_suggested
             .intersection(self.valid_cuts)
             .union(self.forced_cuts)
         )
@@ -338,6 +338,8 @@ def spread_indices_in_set(indices, radius, max_index):
     new_list = [
         new_index
         for i in indices
-        for new_index in range(max(0, i - radius), min(max_index, i + radius))
+        for new_index in range(
+            max(0, i - radius), min(max_index, i + radius + 1)
+        )
     ]
     return set(new_list)

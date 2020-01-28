@@ -17,6 +17,10 @@ class FixedSizeSegmentSelector(SegmentSelector):
         return self.get_segment_coordinates(
             index, self.segment_size, len(sequence)
         )
+    
+    @property
+    def max_homology_size(self):
+        return self.segment_size
 
     def __str__(self):
         result = "FixedSize(%dbp)" % self.segment_size

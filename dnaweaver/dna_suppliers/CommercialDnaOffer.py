@@ -59,7 +59,10 @@ class CommercialDnaOffer(DnaSupplier):
         return self.name
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False
     ):
         """Returns a price-optimal DnaQuote for the given sequence.
 

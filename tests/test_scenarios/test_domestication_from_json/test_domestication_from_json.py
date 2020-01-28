@@ -18,6 +18,7 @@ def test_supply_network_from_json():
     main = suppliers_dict[main_id]
     sequence_content = data["sequence_file"]["content"]
     sequence = b64decode(sequence_content.split("base64,")[1]).decode()
+    print (sequence)
     main.prepare_network_on_sequence(sequence)
     quote = main.get_quote(sequence)
     print(quote.assembly_step_summary())

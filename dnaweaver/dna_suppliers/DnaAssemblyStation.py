@@ -77,8 +77,8 @@ class DnaAssemblyStation(DnaSupplier):
         optimization
 
         """
-        fragment_to_order = self.assembly_method.compute_sequence_fragment(
-            sequence, segment, **kwargs
+        fragment_to_order = self.assembly_method.compute_fragment_for_sequence_segment(
+            sequence=sequence, segment=segment, **kwargs
         )
         return self.supplier.get_quote(
             fragment_to_order, max_lead_time=max_lead_time
@@ -107,17 +107,15 @@ class DnaAssemblyStation(DnaSupplier):
     ):
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
-                sequence, segment, max_lead_time=max_lead_time
+                sequence, segment, max_lead_time=max_lead_time,
             )
             if not quote.accepted:
                 return -1
             else:
                 return quote.price
 
-        def value_or_default(v, param, default):
-            return self.solver_kwargs.get(param, default) if v is None else v
         assembly = self.assembly_method
- 
+
         return self.decomposer_class(
             sequence_length=len(sequence),
             segment_score_function=segment_score,
@@ -168,8 +166,9 @@ class DnaAssemblyStation(DnaSupplier):
     ):
         """Return the plan {(seg, ment): quote, ...} of the optimal strategy
         for the sequence's decomposition."""
+        # extended_sequence = self.assembly_method.extend_sequence(sequence)
         decomposer = self.new_sequence_decomposer(
-            sequence,
+            sequence=sequence,
             max_lead_time=max_lead_time,
             coarse_grain=coarse_grain,
             fine_grain=fine_grain,
@@ -180,11 +179,11 @@ class DnaAssemblyStation(DnaSupplier):
         self._lattest_decomposer = decomposer  # for debugging
         best_cuts = decomposer.compute_optimal_cuts()
         return self.get_assembly_plan_from_cuts(
-            sequence, best_cuts, max_lead_time=max_lead_time
+            sequence, best_cuts, max_lead_time=max_lead_time,
         )
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self, sequence, max_lead_time=None, with_assembly_plan=False,
     ):
         """Returns a price-optimal DnaQuote for the given sequence.
 
@@ -215,10 +214,10 @@ class DnaAssemblyStation(DnaSupplier):
             assembly_plan = self.get_assembly_plan_for_sequence(
                 sequence, max_lead_time=max_lead_time, **self.solver_kwargs
             )
-        except NoSolutionFoundError:
-            return DnaQuote(
-                self, sequence, accepted=False, message="No solution found !"
-            )
+        except NoSolutionFoundError as err:
+            message = "No solution found! %s" % err
+            print (message)
+            return DnaQuote(self, sequence, accepted=False, message=message)
 
         # A solution has been found ! Now compute overall time and lead time.
 

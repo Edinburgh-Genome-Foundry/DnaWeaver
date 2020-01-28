@@ -32,7 +32,10 @@ class SequenceAdapter(DnaSupplier):
         return self.name
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         extended_sequence = self.left_addition + sequence + self.right_addition
         return self.supplier.get_quote(
@@ -47,7 +50,7 @@ class SequenceAdapter(DnaSupplier):
             name=data["name"],
             supplier=data["supplier"],
             left_addition=data["left_addition"],
-            right_addition=data["right_addition"]
+            right_addition=data["right_addition"],
         )
 
     def suggest_cuts(self, sequence):
