@@ -5,7 +5,7 @@ from ..config import SETTINGS
 
 class FolderReportMixin:
 
-    def make_folder_report(self, target="@memory"):
+    def write_full_report(self, target="@memory"):
         """Generate an extensive, multifile report as either a folder or a zip."""
 
         def write_ax_as_pdf(ax, target):

@@ -8,12 +8,7 @@ from dnaweaver import (
     NoPatternConstraint,
     SequenceLengthConstraint,
 )
-from dnaweaver.reports import (
-    AssemblyPlan,
-    plot_assembly_blocks,
-    autocolor_quote_sources,
-)
-from dnaweaver.OptimizeManufacturability import OptimizeManufacturability
+from dnaweaver.utils import OptimizeManufacturability
 
 import dnachisel
 
@@ -87,11 +82,8 @@ for title, quote, ax in zip(
     [quote_before, quote_after],
     axes,
 ):
-    quote.compute_fragments_final_locations()
-    json_quote = AssemblyPlan.from_dnaweaver_quote(quote)
-    autocolor_quote_sources(json_quote)
-    ax, _ = plot_assembly_blocks(
-        json_quote,
+    report = quote.to_assembly_plan_report()
+    ax, _ = report.plot_assembly_blocks(
         parts_offset=0.1,
         plot_top_assembly=False,
         legend=True,

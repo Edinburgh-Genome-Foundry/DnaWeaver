@@ -172,7 +172,7 @@ def test_full_report():
     assert 3500 < quote.price < 3600
 
     report = quote.to_assembly_plan_report()
-    report.make_folder_report("@memory")
+    report.write_full_report("@memory")
     # report.plot_assembly_timeline(
     #     deadline=None,
     #     ax=None,

@@ -155,6 +155,6 @@ print(quote.assembly_step_summary())
 
 print("Generating report...")
 assembly_plan_report = quote.to_assembly_plan_report()
-assembly_plan_report.make_folder_report("report.zip")
+assembly_plan_report.write_full_report("report.zip")
 
 print("Done! (see report.zip)")

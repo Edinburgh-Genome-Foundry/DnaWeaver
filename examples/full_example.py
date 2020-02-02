@@ -11,7 +11,7 @@ from dnaweaver import (
     SequenceLengthConstraint,
     NoPatternConstraint
 ) 
-from dnaweaver.reports import make_folder_report
+from dnaweaver.reports import write_full_report
 
 
 
@@ -132,5 +132,5 @@ quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
 
 print (quote.assembly_step_summary())
 print ("Generating report...")
-make_folder_report(quote, "report.zip")
+write_full_report(quote, "report.zip")
 print ("Done! (see report.zip)")
