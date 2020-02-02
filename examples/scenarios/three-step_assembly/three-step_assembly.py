@@ -14,11 +14,6 @@ from dnaweaver import (
     SequenceLengthConstraint,
 )
 from dnaweaver.biotools import gc_content
-from dnaweaver.reports import (
-    JsonQuote,
-    make_folder_report,
-    autocolor_quote_sources,
-)
 
 
 a_star_factor = "auto"
@@ -159,9 +154,7 @@ quote = chunks_assembly_station.get_quote(sequence, with_assembly_plan=True)
 print(quote.assembly_step_summary())
 
 print("Generating report...")
-quote.compute_fragments_final_locations()
-json_quote = JsonQuote.from_dnaweaver_quote(quote)
-autocolor_quote_sources(json_quote)
-make_folder_report(json_quote, "report.zip")
+assembly_plan_report = quote.to_assembly_plan_report()
+assembly_plan_report.make_folder_report("report.zip")
 
 print("Done! (see report.zip)")

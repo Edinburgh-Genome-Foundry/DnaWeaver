@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from dnaweaver.reports import (JsonQuote, plot_assembly_blocks,
+from dnaweaver.reports import (AssemblyPlan, plot_assembly_blocks,
                                autocolor_quote_sources, plot_supply_graph)
 
 def matplotlib_gridspecs_from_array(arr):
@@ -40,9 +40,9 @@ def matplotlib_axes_from_gridspec_array(arr, figsize=None):
 def plot_quote(quote, figsize=(4, 5), ylim=None, axes=None):
     """Plot a quote (supply network and assembly plan)"""
 
-    quote.compute_full_assembly_tree()
+    quote.compute_full_assembly_plan()
     quote.compute_fragments_final_locations()
-    json_quote = JsonQuote.from_dnaweaver_quote(quote)
+    json_quote = AssemblyPlan.from_dnaweaver_quote(quote)
     if axes is None:
         fig, axes = matplotlib_axes_from_gridspec_array(
           [[1],[1], [2]], figsize=figsize)

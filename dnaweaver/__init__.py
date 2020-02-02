@@ -1,7 +1,8 @@
 """DnaWeaver, a Python package for optimal DNA sequence decomposition and
 ordering."""
 
-from .dna_suppliers import (
+from .DnaSupplier import (
+    DnaSupplier,
     CommercialDnaOffer,
     DnaSuppliersComparator,
     DnaAssemblyStation,
@@ -31,10 +32,9 @@ from .biotools import (
     SequenceString,
     get_sequence_topology
 )
-from .builtin_constraints import (
+from .DnaSupplier.builtin_constraints import (
     NoPatternConstraint,
     SequenceLengthConstraint,
     GcContentConstraint,
 )
-from .builtin_pricings import PerBasepairPricing, FixedCostPricing
-from .supply_network_from_json import supply_network_from_json
+from .DnaSupplier.builtin_pricings import PerBasepairPricing, FixedCostPricing

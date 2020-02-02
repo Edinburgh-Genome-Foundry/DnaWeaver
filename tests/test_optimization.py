@@ -16,7 +16,7 @@ from dnachisel import (
     EnforceGCContent,
     EnforceTranslation,
 )
-from dnaweaver.OptimizeManufacturability import OptimizeManufacturability
+from dnaweaver.utils import OptimizeManufacturability
 
 
 def test_optimization_1():

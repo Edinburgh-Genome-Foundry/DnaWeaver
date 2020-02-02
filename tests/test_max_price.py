@@ -18,11 +18,6 @@ from dnaweaver import (
     SequenceLengthConstraint,
 )
 from dnaweaver.biotools import gc_content
-from dnaweaver.reports import (
-    JsonQuote,
-    make_folder_report,
-    autocolor_quote_sources,
-)
 
 SEQUENCE_PATH = os.path.join("tests", "data", "full_example_50kb_sequence.txt")
 ECOLI_DB_PATH = os.path.join("tests", "data", "ecoli_blast_db", "ecoli")

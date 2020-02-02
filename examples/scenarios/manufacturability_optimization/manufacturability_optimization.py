@@ -9,7 +9,7 @@ from dnaweaver import (
     SequenceLengthConstraint,
 )
 from dnaweaver.reports import (
-    JsonQuote,
+    AssemblyPlan,
     plot_assembly_blocks,
     autocolor_quote_sources,
 )
@@ -88,7 +88,7 @@ for title, quote, ax in zip(
     axes,
 ):
     quote.compute_fragments_final_locations()
-    json_quote = JsonQuote.from_dnaweaver_quote(quote)
+    json_quote = AssemblyPlan.from_dnaweaver_quote(quote)
     autocolor_quote_sources(json_quote)
     ax, _ = plot_assembly_blocks(
         json_quote,

@@ -54,6 +54,9 @@ def find_enzyme_sites(
     sequence, enzyme_name, padding=0, padding_nuc="A"
 ):
     padding = padding * padding_nuc
+    if hasattr(sequence, 'seq'):
+        sequence = str(sequence.seq)
+    sequence = str(sequence)
     sequence = Seq(padding + sequence + padding)
     topology = get_sequence_topology(sequence, default="linear")
     linear = (topology == "linear")

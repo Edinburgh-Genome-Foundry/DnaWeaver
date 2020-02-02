@@ -86,3 +86,10 @@ def file_to_sequence(filename):
     """Import a file in fasta, genbank... as a simple ATGC string."""
     with open(filename, "r") as f:
         return string_to_sequence(f.read())
+
+def sequence_to_atgc(seq):
+    if isinstance(seq, str):
+        return seq
+    if hasattr(seq, 'seq'):
+        return str(seq.seq)
+    return str(seq)

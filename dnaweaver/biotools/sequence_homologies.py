@@ -4,6 +4,7 @@ import os
 import subprocess
 from Bio.Blast import NCBIXML
 import numpy as np
+from .sequence_operations import sequence_to_atgc
 
 def blast_sequence(
     sequence,
@@ -61,6 +62,7 @@ def blast_sequence(
 
     xml_file, xml_name = tempfile.mkstemp(".xml")
     fasta_file, fasta_name = tempfile.mkstemp(".fa")
+    sequence = sequence_to_atgc(sequence)
     with open(fasta_name, "w+") as f:
         f.write(">seq\n" + sequence)
 

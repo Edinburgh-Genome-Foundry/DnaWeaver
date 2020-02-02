@@ -1,6 +1,6 @@
 import dnaweaver as dw
 import os
-from dnaweaver.reports import JsonQuote, make_folder_report
+from dnaweaver.reports import AssemblyPlan, make_folder_report
 
 oligos_company = dw.CommercialDnaOffer(
     "OligoCompany",
@@ -36,7 +36,7 @@ quote = assembly_station.get_quote(desired_sequence, with_assembly_plan=True)
 print(quote.assembly_step_summary())
 
 quote.compute_fragments_final_locations()
-json_quote = JsonQuote.from_dnaweaver_quote(quote)
+json_quote = AssemblyPlan.from_dnaweaver_quote(quote)
 print ("Generating report...")
 make_folder_report(json_quote, "report.zip")
 print ("Done! (see report.zip)")

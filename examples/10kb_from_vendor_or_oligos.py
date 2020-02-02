@@ -1,5 +1,5 @@
 import dnaweaver as dw
-from dnaweaver.reports import plot_supply_graph, JsonQuote
+from dnaweaver.reports import plot_supply_graph, AssemblyPlan
 import time
 
 cheap_dna_offer = dw.CommercialDnaOffer(

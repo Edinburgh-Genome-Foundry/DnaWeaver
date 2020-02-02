@@ -1,7 +1,7 @@
 from base64 import b64decode
 import json
 import os
-from dnaweaver import supply_network_from_json, PcrExtractionStation
+from dnaweaver import DnaSupplier, PcrExtractionStation
 
 THIS_DIR = os.path.join(
     "tests", "test_scenarios", "test_domestication_from_json"
@@ -12,14 +12,12 @@ PcrExtractionStation.dna_banks = {
 
 
 def test_supply_network_from_json():
-    with open(os.path.join(THIS_DIR, "domestication.json"), "r") as f:
+    path = os.path.join(THIS_DIR, "domestication.json")
+    with open(path, "r") as f:
         data = json.load(f)
-    levels, suppliers_dict, main_id = supply_network_from_json(data["graph"])
-    main = suppliers_dict[main_id]
+    main = DnaSupplier.from_json_data(data=data['graph'])
     sequence_content = data["sequence_file"]["content"]
     sequence = b64decode(sequence_content.split("base64,")[1]).decode()
-    print (sequence)
     main.prepare_network_on_sequence(sequence)
     quote = main.get_quote(sequence)
-    print(quote.assembly_step_summary())
     assert 130 < quote.price < 160

@@ -7,7 +7,7 @@ this_directory = os.path.dirname(os.path.realpath(__file__))
 plasmid_path = os.path.join(this_directory, "circular_no_BsmBI.gb")
 
 def extract_records_from_quote(quote):
-    quote.compute_full_assembly_tree()
+    quote.compute_full_assembly_plan()
     records = {
         q.id: dc.sequence_to_biopython_record(q.sequence, id=q.id)
         for loc, q in quote.assembly_plan.items()
