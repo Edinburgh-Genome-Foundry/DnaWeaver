@@ -275,10 +275,6 @@ Also install the ncbi-blast+ package to be able to use PCR stations. On Ubuntu:
 ::
     sudo apt-get install ncbi-blast+
 
-Reports generation needs more dependencies for plots and tables. Install Python dependencies with:
-::
-    sudo pip install pandas dna_features_viewer weasyprint
-
 You may also need the following non-python dependencies for report generation,
 on Ubuntu:
 ::
