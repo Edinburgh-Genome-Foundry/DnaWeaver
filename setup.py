@@ -24,6 +24,7 @@ setup(
     version=__version__,
     author="Zulko",
     description="Make ordering and assembly plans for DNA sequences",
+    url='https://github.com/Edinburgh-Genome-Foundry/DnaWeaver',
     long_description=open("pypi-readme.rst").read(),
     license="MIT",
     keywords="DNA optimization assembly ordering synthetic biology",

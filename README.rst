@@ -149,12 +149,9 @@ listing all operations needed, and genbank/fasta files of the sequences to order
 
 .. code:: python
 
-    from dnaweaver.reports import AssemblyPlan, write_full_report
-    ...
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
-    quote.compute_full_assembly_plan()
-    json_quote = AssemblyPlan.from_dnaweaver_quote(quote)
-    write_full_report(json_quote, "report.zip")
+    assembly_plan_eport = quote.to_assembly_plan_report()
+    assembly_plan_report.write_full_report("report.zip")
 
 Result:
 
