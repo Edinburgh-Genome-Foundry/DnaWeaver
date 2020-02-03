@@ -38,5 +38,6 @@ setup(
         "dna_features_viewer",
         "weasyprint",
         "pandas",
+        "jinja2"
     ],
 )
