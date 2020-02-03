@@ -24,7 +24,7 @@ setup(
     version=__version__,
     author="Zulko",
     description="Make ordering and assembly plans for DNA sequences",
-    long_description=open("README.rst").read(),
+    long_description=open("pypi-readme.rst").read(),
     license="MIT",
     keywords="DNA optimization assembly ordering synthetic biology",
     packages=find_packages(exclude="docs"),
