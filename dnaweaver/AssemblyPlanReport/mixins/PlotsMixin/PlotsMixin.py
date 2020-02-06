@@ -25,7 +25,6 @@ class PlotsMixin(
 
         _, ax_assembly_blocks = plt.subplots(1, figsize=(7, 4))
         assembly_blocks_ax, lg = self.plot_assembly_blocks(
-            backend="matplotlib",
             plot_top_assembly=False,
             ax=ax_assembly_blocks,
             parts_offset=0.1,
