@@ -1,5 +1,5 @@
 include *.txt
-recursive-include dnaweaver/reports/ *
+recursive-include dnaweaver/AssemblyPlanReport/assets/ *
 include *.rst
 include pypi-readme.rst
 include ez_setup.py

@@ -11,7 +11,6 @@ class AssemblyBlocksMixin:
     def plot_assembly_blocks(
         self,
         parts_offset=0,
-        backend="matplotlib",
         plot_top_assembly=True,
         ax=None,
         edge_widths=None,
@@ -26,28 +25,26 @@ class AssemblyBlocksMixin:
 
 
         parts_offset
-        Offset applied so that consecutive blocks are not exactly on the same
-        level. Can go from 0 (flat line of blocks) to e.g. 1
-
-        backend
-        One of "matplotlib" or "bokeh". Determines the library used to produce
-        the graph. matplotlib can output PNG/SVG/etc. while Bokeh outputs an
-        interactive HTML/JS graph
+          Offset applied so that consecutive blocks are not exactly on the same
+          level. Can go from 0 (flat line of blocks) to e.g. 1
 
         plot_top_assembly
-        Whether the top assembly (which is just one big block) should be plotted
-        or not
+          Whether the top assembly (which is just one big block) should be
+          plotted or not
 
         ax
-        A Matplotlib Axes object. If no ax is provided, a new figure and ax are
-        generated.
+          A Matplotlib Axes object. If no ax is provided, a new figure and ax
+          are generated.
 
         edge_widths
-        A dict {sourcename : width} indicating the widths of the rectangles based
-        on the source name. Rectangles with a very small width will be edgeless.
+          A dict {sourcename : width} indicating the widths of the rectangles
+          based on the source name. Rectangles with a very small width will be
+          edgeless.
 
         legend
-        Whether the legend is included in the ax.
+          Whether the legend is included in the ax.
+
+
 
         """
         rectangles = []
