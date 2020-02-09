@@ -4,7 +4,17 @@ from .AssemblyGraphMixin import AssemblyGraphMixin
 from .ColorsMixin import ColorsMixin
 from .TimelineMixin import TimelineMixin
 
-from .plot_supply_graph import plot_supply_graph
+from .plot_supply_network import plot_supply_network
+
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="Glyph 112 missing from current font."
+)
+warnings.filterwarnings(
+    "ignore", message="Glyph 108 missing from current font."
+)
+
 
 class PlotsMixin(
     AssemblyBlocksMixin, AssemblyGraphMixin, ColorsMixin, TimelineMixin
@@ -16,7 +26,7 @@ class PlotsMixin(
             )
             plt.close(ax.figure)
 
-        pos, ax = plot_supply_graph(self)
+        pos, ax = self.plot_supply_network()
         write_ax_as_pdf(ax, figures_folder._file("supply_network.pdf"))
         plt.close(ax.figure)
 
@@ -34,4 +44,16 @@ class PlotsMixin(
         write_ax_as_pdf(
             assembly_blocks_ax, figures_folder._file("assembly_blocks.pdf")
         )
+    
+    def plot_supply_network(self, ax=None):
+        """Plot the supply network (see plot_supply_network.plot_supply_network
+        for more options).
+        
+        Returns
+        -------
+        elements_positions, ax
+        Dictionary of elements positions, matplotlib ax.
+        """
+
+        return plot_supply_network(self, ax=ax)
 

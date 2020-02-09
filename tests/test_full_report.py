@@ -9,7 +9,7 @@ from dnaweaver import (
     DnaAssemblyStation,
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
-    BuildAGenomeAssemblyMethod,
+    OligoAssemblyMethod,
     DnaSuppliersComparator,
     TmSegmentSelector,
     FixedSizeSegmentSelector,
@@ -60,7 +60,7 @@ def test_full_report():
 
     oligo_assembly_station = DnaAssemblyStation(
         name="Oligo Assembly Station",
-        assembly_method=BuildAGenomeAssemblyMethod(
+        assembly_method=OligoAssemblyMethod(
             overhang_selector=TmSegmentSelector(
                 min_size=15, max_size=25, min_tm=50, max_tm=70
             ),

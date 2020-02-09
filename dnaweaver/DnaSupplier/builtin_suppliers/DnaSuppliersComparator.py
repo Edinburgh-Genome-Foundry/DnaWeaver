@@ -94,6 +94,9 @@ class DnaSuppliersComparator(DnaSupplier):
                 accepted=False,
                 message="Sequence was rejected by all sources.",
             )
+        if 'via' not in best_quote.metadata:
+            best_quote.metadata['via'] = []
+        best_quote.metadata['via'].append(self)
         return best_quote
 
     def additional_dict_description(self):

@@ -29,7 +29,6 @@ class PdfReportMixin:
         )
         env = Environment(loader=FileSystemLoader(SETTINGS["template_path"]))
         template = env.get_template("report_template.html")
-
         orders_dataframe = pandas.DataFrame.from_records(
             [
                 {

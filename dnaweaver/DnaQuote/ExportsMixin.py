@@ -145,13 +145,19 @@ class ExportsMixin:
     def to_assembly_plan_report(
         self, refine_fragments_locations=True, autocolor_quotes=True
     ):
+        """Convert the quote into a full assembly plan data structure which
+        can be used to generate assembly reports"""
         if refine_fragments_locations:
             self.compute_fragments_final_locations()
         if not self.full_assembly_plan_computed:
             self.compute_full_assembly_plan()
+        original_source = self.source
+        if 'via' in self.metadata:
+             # intermediary comparator of the quote
+            original_source = self.metadata['via'][0]
         report = AssemblyPlanReport(
             plan=self.assembly_plan_as_dict(),
-            sources=self.source.dict_supply_graph(),
+            sources=original_source.dict_supply_graph(),
         )
         if autocolor_quotes:
             report.autocolor_quote_sources()

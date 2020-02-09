@@ -58,7 +58,7 @@ class SupplyNetworkMixin:
 
             if source in sources:
                 return
-            if hasattr(source, "is_ghost_source"):
+            if hasattr(source, "is_ghost_source") and source != self:
                 return
             sources[source.name] = source.dict_description()
             sources[source.name]["_depth"] = depth

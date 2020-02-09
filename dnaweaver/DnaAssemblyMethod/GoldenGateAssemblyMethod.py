@@ -91,7 +91,6 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         # DO NOT CUT AT PALYINDROMIC REGIONS
 
         def no_cut_at_palyndromic_locations(sequence):
-            L = len(sequence)
 
             def no_palyndrom_filter(i):
                 s = overhang_selector.compute_segment_around_index(sequence, i)

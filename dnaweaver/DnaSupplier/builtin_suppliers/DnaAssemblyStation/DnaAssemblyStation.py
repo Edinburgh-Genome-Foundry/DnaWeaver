@@ -2,7 +2,7 @@ import numpy as np
 from ....DnaQuote import DnaQuote
 from ....SegmentSelector import TmSegmentSelector, FixedSizeSegmentSelector
 from ....DnaAssemblyMethod import (
-    BuildAGenomeAssemblyMethod,
+    OligoAssemblyMethod,
     GibsonAssemblyMethod,
     GoldenGateAssemblyMethod,
 )
@@ -10,7 +10,6 @@ from ...builtin_constraints import SequenceLengthConstraint
 from ...DnaSupplier import DnaSupplier
 from ..DnaSuppliersComparator import DnaSuppliersComparator
 from .SequenceDecomposer import SequenceDecomposer, NoSolutionFoundError
-
 
 
 class DnaAssemblyStation(DnaSupplier):
@@ -89,9 +88,12 @@ class DnaAssemblyStation(DnaSupplier):
         cuts = sorted(cuts)
         return {
             segment: self.get_quote_for_sequence_segment(
-                sequence, segment, max_lead_time=max_lead_time
+                sequence,
+                segment,
+                max_lead_time=max_lead_time,
+                segment_position=i,
             )
-            for segment in zip(cuts, cuts[1:])
+            for i, segment in enumerate(zip(cuts, cuts[1:]))
         }
 
     def new_sequence_decomposer(
@@ -215,7 +217,6 @@ class DnaAssemblyStation(DnaSupplier):
             )
         except NoSolutionFoundError as err:
             message = "No solution found! %s" % err
-            print (message)
             return DnaQuote(self, sequence, accepted=False, message=message)
 
         # A solution has been found ! Now compute overall time and lead time.
@@ -287,7 +288,7 @@ class DnaAssemblyStation(DnaSupplier):
                     segment_size=data["overlap"]
                 )
             if data["method"] == "oligo_assembly":
-                method_class = BuildAGenomeAssemblyMethod
+                method_class = OligoAssemblyMethod
             else:
                 method_class = GibsonAssemblyMethod
             method = method_class(

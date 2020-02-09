@@ -16,34 +16,43 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
     -----------
 
     source
-      The DnaSupplier which issued the quote
+      The DnaSupplier which issued the quote.
 
     sequence
-
-    price
+      The sequence being quoted
 
     accepted
+      False if the sequence was rejected by the supplier, else True
 
+    price
+      Amount asked by the DnaSupplier to build the requested sequence
+    
     lead_time
+      Number of days required by the DnaSupplier to deliver the sequence.
 
     assembly_plan
       A dict of the form { (start1, end1): op1, (start2, end2): op2, ...}
       where the `(start, end)` represent sub-segments of the final sequence and
       `op1, op2` represent the AssemblyOperations that create the corresponding
       fragments
+    
+    message
+      A message added to the quote for more information, for instance the
+      reason of the rejection.
 
-     metadata
+    id
+      A string identifying this assembly operation
+    
+    deadline
+      If the assembly plan was computed with a dealine in mind, this is the
+      number of days at which the sequence should be delivered to ensure that
+      the project will be finished on time (so the global deadline minus the
+      duration of downstream operations). This is for
+       drawing assembly timelines. (see the `propagate_deadline` method for
+       this class). 
 
-     message
-
-     id
-       A string identifying uniquely the assembly operation
-
-
-     deadline
-       Deadline for the operation (see the `propagate_deadline` method for this
-       class) i.e. in how many time units it should be finished. This is for
-       drawing assembly timelines.
+    metadata
+      Any other data on the quote.
 
     """
 
@@ -55,7 +64,7 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
         accepted=True,
         lead_time=None,
         assembly_plan=None,
-        metadata={},
+        metadata=None,
         message="",
         id=None,
         deadline=None,
@@ -68,7 +77,7 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
         self.message = message
         self.assembly_plan = assembly_plan
         self.full_assembly_plan_computed = False
-        self.metadata = metadata
+        self.metadata = metadata or {}
         self.id = id
         self.deadline = None
 

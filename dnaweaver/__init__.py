@@ -14,7 +14,7 @@ from .DnaSupplier import (
 )
 from .DnaAssemblyMethod import (
     GibsonAssemblyMethod,
-    BuildAGenomeAssemblyMethod,
+    OligoAssemblyMethod,
     GoldenGateAssemblyMethod,
     DnaAssemblyMethod
 )

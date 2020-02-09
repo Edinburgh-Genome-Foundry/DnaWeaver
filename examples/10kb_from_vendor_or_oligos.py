@@ -1,5 +1,5 @@
 import dnaweaver as dw
-from dnaweaver.reports import plot_supply_graph, AssemblyPlan
+from dnaweaver.reports import plot_supply_network, AssemblyPlan
 import time
 
 cheap_dna_offer = dw.CommercialDnaOffer(
@@ -23,7 +23,7 @@ oligo_dna_offer = dw.CommercialDnaOffer(
 
 oligo_assembly_station = dw.DnaAssemblyStation(
     name="Oligo Assembly Station",
-    assembly_method=dw.BuildAGenomeAssemblyMethod(
+    assembly_method=dw.OligoAssemblyMethod(
         overhang_selector=dw.TmSegmentSelector(
             min_size=15, max_size=25, min_tm=50, max_tm=70
         ),
