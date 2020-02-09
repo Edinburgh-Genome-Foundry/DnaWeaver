@@ -89,6 +89,9 @@ class ExportsMixin:
             "matching_segment": matching_segment,
             "accepted": self.accepted,
         }
+        metadata = tree['metadata']
+        if "via" in metadata:
+            metadata['via'] = [station.name for station in metadata['via']]
 
         if as_json:
             return json.dumps(tree, indent=json_indent)
