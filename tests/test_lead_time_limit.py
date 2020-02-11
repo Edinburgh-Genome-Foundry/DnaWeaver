@@ -170,4 +170,4 @@ def test_lead_time_limit():
 
     if quote.accepted:
         print(quote.assembly_step_summary())
-    assert 4400 < quote.price < 4600
+    assert 5540 < quote.price < 5550

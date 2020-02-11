@@ -8,7 +8,7 @@ class PcrLinearizationStation(DnaSupplier):
     Parameters
     ----------
     """
-
+    class_description = "Linearizes a sequence for downstream assembly"
     report_fa_symbol = u""
     report_fa_symbol_plain = "exchange"
     report_color = "#eefefe"
@@ -28,11 +28,14 @@ class PcrLinearizationStation(DnaSupplier):
         self.name = name
         self.supplier = supplier
         self.primers_supplier = primers_supplier
+        # only for network reconstitution
+        self.suppliers = [supplier, primers_supplier]
         self.homology_selector = homology_selector
         self.sequence_constraints = sequence_constraints
         self.extra_time = extra_time
         self.extra_cost = extra_cost
         self.memoize = memoize
+        self.min_basepair_price = supplier.min_basepair_price
 
     def get_best_price(
         self,
@@ -136,5 +139,5 @@ class PcrLinearizationStation(DnaSupplier):
     def additional_dict_description(self):
         return {
             "primers DNA source": self.primers_supplier.name,
-            "primers melting temp.": self.primer_melting_temperature,
+            "primers homology selector": str(self.homology_selector),
         }

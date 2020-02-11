@@ -21,10 +21,12 @@ class SequenceAdapter(DnaSupplier):
     ):
         self.name = name
         self.supplier = supplier
+        self.suppliers = [supplier] # only for network reconstitution
         self.left_addition = left_addition
         self.right_addition = right_addition
         self.sequence_constraints = ()
         self.memoize = memoize
+        self.min_basepair_price = supplier.min_basepair_price
         if hasattr(supplier, "min_basepair_price"):
             self.min_basepair_price = supplier.min_basepair_price
 

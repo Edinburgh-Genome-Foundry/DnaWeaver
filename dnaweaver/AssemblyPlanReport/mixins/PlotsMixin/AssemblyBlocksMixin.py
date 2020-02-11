@@ -204,7 +204,8 @@ def _matplotlib_plot_assembly_blocks(
             )
             legend_handles.append(legend_patch)
             seen_sources.add(g["source"])
-            plt.legend(handles=[legend_patch])
+            if legend:
+                plt.legend(handles=[legend_patch])
         # linewidth = g["line_width"]
         width = g["right"] - g["left"]
         line_width = 1.0 if (1.0 * width / L) > 0.002 else 0

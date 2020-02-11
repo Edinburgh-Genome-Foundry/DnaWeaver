@@ -89,9 +89,12 @@ class ExportsMixin:
             "matching_segment": matching_segment,
             "accepted": self.accepted,
         }
-        metadata = tree['metadata']
+        metadata = tree["metadata"]
         if "via" in metadata:
-            metadata['via'] = [station.name for station in metadata['via']]
+            metadata["via"] = [
+                station if isinstance(station, str) else station.name
+                for station in metadata["via"]
+            ]
 
         if as_json:
             return json.dumps(tree, indent=json_indent)
@@ -155,9 +158,9 @@ class ExportsMixin:
         if not self.full_assembly_plan_computed:
             self.compute_full_assembly_plan()
         original_source = self.source
-        if 'via' in self.metadata:
-             # intermediary comparator of the quote
-            original_source = self.metadata['via'][0]
+        if "via" in self.metadata:
+            # intermediary comparator of the quote
+            original_source = self.metadata["via"][0]
         report = AssemblyPlanReport(
             plan=self.assembly_plan_as_dict(),
             sources=original_source.dict_supply_graph(),

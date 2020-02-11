@@ -134,7 +134,8 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
             "%s-%s: %s" % (start, end, str(quote))
             for (start, end), quote in sorted(self.assembly_plan.items())
         )
-        final_txt = "Ordering plan:\n  %s\nPrice:%.02f" % (plan, self.price)
+        title = "Ordering plan (%s):" % self.source.name
+        final_txt = "%s:\n  %s\nPrice:%.02f" % (title, plan, self.price)
         if self.lead_time is not None:
             final_txt = final_txt + ", total lead_time:%.1f" % self.lead_time
         return final_txt

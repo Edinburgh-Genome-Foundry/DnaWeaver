@@ -108,6 +108,8 @@ def astar_path(G, source, target, heuristic=None, weight=None):
             if neighbor in explored:
                 continue
             ncost = dist + weight(curnode, neighbor, w)
+            if ncost == np.inf:
+                continue
             if neighbor in enqueued:
                 qcost, h = enqueued[neighbor]
                 if qcost <= ncost:

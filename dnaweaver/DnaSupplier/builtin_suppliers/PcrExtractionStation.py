@@ -364,3 +364,4 @@ class PcrExtractionStation(DnaSupplier):
                 self.primers_supplier = suppliers[0]
         else:
             self.primers_supplier = suppliers
+        self.suppliers = [self.primers_supplier] # for network reconstitution

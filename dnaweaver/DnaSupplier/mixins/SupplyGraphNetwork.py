@@ -68,16 +68,17 @@ class SupplyNetworkMixin:
                 for other in source.suppliers:
                     providers.append(other.name)
                     rec(other, depth + 1)
-            if hasattr(source, "dna_supplier"):
-                providers.append(source.dna_supplier.name)
-                rec(source.dna_supplier, depth + 1)
-            if hasattr(source, "primers_supplier"):
-                providers.append(source.primers_supplier.name)
-                rec(source.primers_supplier, depth + 1)
-            if hasattr(source, "dna_suppliers"):
-                for other in source.dna_suppliers:
-                    providers.append(other.name)
-                    rec(other, depth + 1)
+            # if hasattr(source, "dna_supplier"):
+            #     providers.append(source.dna_supplier.name)
+            #     rec(source.dna_supplier, depth + 1)
+            # if hasattr(source, "primers_supplier"):
+            #     providers.append(source.primers_supplier.name)
+            #     rec(source.primers_supplier, depth + 1)
+            # if hasattr(source, "dna_suppliers"):
+            #     for other in source.dna_suppliers:
+            #         providers.append(other.name)
+            #         rec(other, depth + 1)
 
+        
         rec(self)
         return sources
