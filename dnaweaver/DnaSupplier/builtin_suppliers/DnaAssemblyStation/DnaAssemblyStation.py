@@ -83,7 +83,9 @@ class DnaAssemblyStation(DnaSupplier):
         )
 
     def get_assembly_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
-        """Return a plan {(seg,ment): quote, ...} based on the cut positions.
+        """Return a plan {segment: quote, ...} based on the cut positions.
+
+        Where "segment" is of the form (start, end).
         """
         cuts = sorted(cuts)
         return {

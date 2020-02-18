@@ -38,3 +38,5 @@ from .DnaSupplier.builtin_constraints import (
     GcContentConstraint,
 )
 from .DnaSupplier.builtin_pricings import PerBasepairPricing, FixedCostPricing
+
+from .version import __version__
