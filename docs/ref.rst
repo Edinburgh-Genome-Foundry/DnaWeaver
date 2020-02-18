@@ -3,5 +3,15 @@
 DnaWeaver Reference manual
 ==========================
 
-.. automodule:: dnaweaver
+DNA suppliers
+=============
+
+.. autoclass:: dnaweaver.DnaSupplier
+   :members:
+.. autoclass:: dnaweaver.DnaSuppliersComparator
+   :members:
+.. autoclass:: dnaweaver.DnaAssemblyStation
+   :members:
+
+.. automodule:: dnaweaver.biotools
    :members:
