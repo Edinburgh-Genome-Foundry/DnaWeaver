@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>How DNA Weaver works</title>
+    
+      <link rel="stylesheet" href="_static/pygments.css">
+      <link rel="stylesheet" href="_static/theme.css">
+      <link rel="stylesheet" href="_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+
+      
+      <script src="_static/theme-vendors.js"></script>
+      <script src="_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+    
+    <li>How DNA Weaver works</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <div class="section" id="how-dna-weaver-works">
+<span id="howitworks"></span><h1>How DNA Weaver works<a class="headerlink" href="#how-dna-weaver-works" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="solving-a-dna-ordering-problem-using-graphs">
+<h2>Solving a DNA ordering problem using graphs<a class="headerlink" href="#solving-a-dna-ordering-problem-using-graphs" title="Permalink to this headline">¶</a></h2>
+<p>Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+DnaWeaver uses the following strategies to avoid exploring the whole search space:</p>
+<div class="figure align-center" style="width: 75%">
+<img alt="images/base_problem.png" src="images/base_problem.png" />
+</div>
+<p>Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+DnaWeaver uses the following strategies to avoid exploring the whole search space:</p>
+<div class="figure align-center" style="width: 75%">
+<img alt="images/graph.png" src="images/graph.png" />
+</div>
+</div>
+<div class="section" id="dna-ordering-problem-for-nested-assemblies">
+<h2>DNA ordering problem for nested assemblies<a class="headerlink" href="#dna-ordering-problem-for-nested-assemblies" title="Permalink to this headline">¶</a></h2>
+<p>(All figures to check later with Chantal.)</p>
+<ul class="simple">
+<li><p>The final sequence (60kb) will be done by assembling ~10</p></li>
+</ul>
+<div class="figure align-center" style="width: 95%">
+<img alt="images/hierarchical_assemblies.png" src="images/hierarchical_assemblies.png" />
+</div>
+<p>Each assembly station solves its own DNA ordering problems using its own graphs.
+The weight of each edges of the last assembly station’s graph is computed by
+finding a shortest path in the graph of the second-to-last assembly station.
+The second-to-last station gets its edge weights by solving the third-to-last graph problem, etc.</p>
+<div class="figure align-center" style="width: 80%">
+<img alt="images/hierarchical_assemblies_graphs.png" src="images/hierarchical_assemblies_graphs.png" />
+</div>
+<p>While running this method, the different assembly stations may be presented many
+times with the same sequences to assemble optimally. Therefore we use hash-tables to
+quickly retrieve the price of already-evaluated sequences.</p>
+</div>
+<div class="section" id="cuts-refinement">
+<h2>Cuts refinement<a class="headerlink" href="#cuts-refinement" title="Permalink to this headline">¶</a></h2>
+<p>Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+Dna Weaver uses the following strategies to avoid exploring the whole search space:
+using again the graph trick. The graph of a cuts refinement problem looks like this:</p>
+<div class="figure align-center" style="width: 60%">
+<img alt="images/refinement.png" src="images/refinement.png" />
+</div>
+</div>
+<div class="section" id="penalty-on-the-number-of-segments">
+<h2>Penalty on the number of segments<a class="headerlink" href="#penalty-on-the-number-of-segments" title="Permalink to this headline">¶</a></h2>
+<p>Long DNA sequences have a huge space of possible mutations
+(just 20 nucleotides can form a trillion different sequences), therefore it is not
+possible to solve a DNA optimization problem through an exhaustive search.
+DnaWeaver uses the following strategies to avoid exploring the whole search space:
+using again the graph trick. The graph of a cuts refinement problem looks like this:</p>
+<div class="figure align-default" id="id1">
+<img alt="images/refinement.png:figwidth:60%:align:center" src="images/refinement.png:figwidth:60%:align:center" />
+<p class="caption"><span class="caption-text">(figure with the effect of increassing the penalty)</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="forced-cuts">
+<h2>Forced cuts<a class="headerlink" href="#forced-cuts" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to force cuts at certain positions.</p>
+<p>(figure)</p>
+</div>
+</div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

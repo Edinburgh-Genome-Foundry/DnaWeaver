@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaAssemblyMethod.GoldenGateAssemblyMethod</title>
+    
+      <link rel="stylesheet" href="../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../_static/theme-vendors.js"></script>
+      <script src="../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaAssemblyMethod.GoldenGateAssemblyMethod</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaAssemblyMethod.GoldenGateAssemblyMethod</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">..biotools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">reverse_complement</span><span class="p">,</span>
+    <span class="n">gc_content_to_tm</span><span class="p">,</span>
+    <span class="n">find_enzyme_sites</span><span class="p">,</span>
+    <span class="n">get_sequence_topology</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..tools</span> <span class="kn">import</span> <span class="n">memoize</span>
+<span class="kn">from</span> <span class="nn">..SegmentSelector</span> <span class="kn">import</span> <span class="n">TmSegmentSelector</span>
+<span class="kn">from</span> <span class="nn">.OverlapingAssemblyMethod</span> <span class="kn">import</span> <span class="n">OverlapingAssemblyMethod</span>
+
+
+<div class="viewcode-block" id="GoldenGateAssemblyMethod"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaAssemblyMethod.GoldenGateAssemblyMethod">[docs]</a><span class="k">class</span> <span class="nc">GoldenGateAssemblyMethod</span><span class="p">(</span><span class="n">OverlapingAssemblyMethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The Golden Gate Assembly Method.</span>
+
+<span class="sd">    This method adds overhangs with a Type IIS REase site to the segments.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    left_overhang</span>
+<span class="sd">      An ATGC DNA sequence representing the left overhang, in 5&#39; -3&#39;.</span>
+<span class="sd">      For practicality, this can contain &quot;[BsaI]&quot;, &quot;[BsmBI]&quot;, &quot;[BbsI]&quot;, which</span>
+<span class="sd">      will be replaced by their restriction sites</span>
+
+
+<span class="sd">    right_overhang</span>
+<span class="sd">      An ATGC DNA sequence representing the right overhang, in 5&#39;-3&#39;.</span>
+<span class="sd">      Be careful, I said 5&#39;-3&#39; !!!</span>
+<span class="sd">      If left to None, will be equal to left_overhang.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Golden Gate Assembly&quot;</span>
+
+    <span class="n">enzymes_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;BsaI&quot;</span><span class="p">:</span> <span class="s2">&quot;GGTCTC&quot;</span><span class="p">,</span> <span class="s2">&quot;BsmBI&quot;</span><span class="p">:</span> <span class="s2">&quot;CGTCTC&quot;</span><span class="p">,</span> <span class="s2">&quot;BbsI&quot;</span><span class="p">:</span> <span class="s2">&quot;GAAGAC&quot;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">enzyme</span><span class="o">=</span><span class="s2">&quot;BsaI&quot;</span><span class="p">,</span>
+        <span class="n">wildcard_basepair</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+        <span class="n">left_addition</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">right_addition</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">refuse_sequences_with_enzyme_site</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">min_overhangs_gc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">max_overhangs_gc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">min_overhangs_differences</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">props</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">enzyme</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzymes_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Enzyme should be one of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzymes_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_gc</span> <span class="o">=</span> <span class="n">min_gc</span> <span class="o">=</span> <span class="n">min_overhangs_gc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_overhangs_gc</span> <span class="o">=</span> <span class="n">max_gc</span> <span class="o">=</span> <span class="n">max_overhangs_gc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_differences</span> <span class="o">=</span> <span class="n">min_overhangs_differences</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span> <span class="o">=</span> <span class="n">enzyme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enzyme_site</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzymes_dict</span><span class="p">[</span><span class="n">enzyme</span><span class="p">]</span>
+        <span class="n">enzyme_site_plus_basepair</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme_site</span> <span class="o">+</span> <span class="n">wildcard_basepair</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_addition</span> <span class="o">=</span> <span class="n">left_addition</span> <span class="o">+</span> <span class="n">enzyme_site_plus_basepair</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_addition</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">reverse_complement</span><span class="p">(</span><span class="n">enzyme_site_plus_basepair</span><span class="p">)</span> <span class="o">+</span> <span class="n">right_addition</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refuse_sequences_with_enzyme_site</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">refuse_sequences_with_enzyme_site</span>
+        <span class="p">)</span>
+
+        <span class="n">overhang_selector</span> <span class="o">=</span> <span class="n">TmSegmentSelector</span><span class="p">(</span>
+            <span class="n">min_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">max_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">min_tm</span><span class="o">=</span><span class="n">gc_content_to_tm</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_gc</span><span class="p">),</span>
+            <span class="n">max_tm</span><span class="o">=</span><span class="n">gc_content_to_tm</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_gc</span><span class="p">),</span>
+            <span class="n">left_addition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">left_addition</span><span class="p">,</span>
+            <span class="n">right_addition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">right_addition</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">OverlapingAssemblyMethod</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overhang_selector</span><span class="p">,</span> <span class="o">**</span><span class="n">props</span><span class="p">)</span>
+
+        <span class="c1"># CUTS LOCATION CONSTRAINT BASED ON GC CONTENT</span>
+
+        <span class="k">if</span> <span class="n">refuse_sequences_with_enzyme_site</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">no_site_in_sequence</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+                <span class="n">sites</span> <span class="o">=</span> <span class="n">find_enzyme_sites</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">enzyme_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">sites</span> <span class="o">==</span> <span class="p">[]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">sequence_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">no_site_in_sequence</span><span class="p">)</span>
+
+        <span class="c1"># DO NOT CUT AT PALYINDROMIC REGIONS</span>
+
+        <span class="k">def</span> <span class="nf">no_cut_at_palyndromic_locations</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+
+            <span class="k">def</span> <span class="nf">no_palyndrom_filter</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">overhang_selector</span><span class="o">.</span><span class="n">compute_segment_around_index</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">rev_s</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="n">rev_diffs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">rev_s</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">])</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+                <span class="k">return</span> <span class="n">rev_diffs</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_differences</span>
+
+            <span class="k">return</span> <span class="n">no_palyndrom_filter</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cut_location_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">no_cut_at_palyndromic_locations</span><span class="p">)</span>
+
+        <span class="c1"># CUTS SET CONSTRAINT: ALL OVERHANGS MUST BE COMPATIBLE</span>
+
+        <span class="k">def</span> <span class="nf">overhangs_are_compatible</span><span class="p">(</span><span class="n">o1</span><span class="p">,</span> <span class="n">o2</span><span class="p">):</span>
+            <span class="n">diffs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">o1</span><span class="p">,</span> <span class="n">o2</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">diffs</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_differences</span><span class="p">:</span>
+                <span class="n">rev_o2</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">o2</span><span class="p">)</span>
+                <span class="n">rev_diffs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">o1</span><span class="p">,</span> <span class="n">rev_o2</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">rev_diffs</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_differences</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">overhangs_are_compatible</span> <span class="o">=</span> <span class="n">memoize</span><span class="p">(</span><span class="n">overhangs_are_compatible</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">all_overhangs_are_compatible</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+            <span class="n">topology</span> <span class="o">=</span> <span class="n">get_sequence_topology</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">constraint</span><span class="p">(</span><span class="n">cut_locations</span><span class="p">):</span>
+                <span class="n">cut_overhangs</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">cut_location</span><span class="p">:</span> <span class="n">overhang_selector</span><span class="o">.</span><span class="n">compute_segment_around_index</span><span class="p">(</span>
+                        <span class="n">sequence</span><span class="p">,</span> <span class="n">cut_location</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">cut_location</span> <span class="ow">in</span> <span class="n">cut_locations</span>
+                <span class="p">}</span>
+                <span class="n">cut_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">cut_locations</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">topology</span> <span class="o">==</span> <span class="s2">&quot;circular&quot;</span><span class="p">:</span>
+                    <span class="n">cut_pairs</span><span class="o">.</span><span class="n">remove</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">)))</span>
+
+                <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">overhangs_are_compatible</span><span class="p">(</span>
+                            <span class="n">cut_overhangs</span><span class="p">[</span><span class="n">c1</span><span class="p">],</span> <span class="n">cut_overhangs</span><span class="p">[</span><span class="n">c2</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="ow">in</span> <span class="n">cut_pairs</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+                <span class="c1"># overhangs = sorted(</span>
+                <span class="c1">#     [</span>
+                <span class="c1">#         overhang_selector.compute_segment_around_index(</span>
+                <span class="c1">#             sequence, cut_location</span>
+                <span class="c1">#         )</span>
+                <span class="c1">#         for cut_location in cut_locations</span>
+                <span class="c1">#     ]</span>
+                <span class="c1"># )</span>
+                <span class="c1"># return all(</span>
+                <span class="c1">#     [</span>
+                <span class="c1">#         overhangs_are_compatible(o1, o2)</span>
+                <span class="c1">#         for o1, o2 in itertools.combinations(overhangs, 2)</span>
+                <span class="c1">#     ]</span>
+                <span class="c1"># )</span>
+
+            <span class="k">return</span> <span class="n">constraint</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuts_set_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">all_overhangs_are_compatible</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">additional_dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;enzyme&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="p">,</span>
+            <span class="s2">&quot;left addition&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_addition</span><span class="p">,</span>
+            <span class="s2">&quot;right addition&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_addition</span><span class="p">,</span>
+            <span class="s2">&quot;refuse sequences with enzyme site&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">refuse_sequences_with_enzyme_site</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;overhangs gc content&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-</span><span class="si">%d%%</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_gc</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_overhangs_gc</span><span class="p">),</span>
+            <span class="s2">&quot;overhangs differences&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_overhangs_differences</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

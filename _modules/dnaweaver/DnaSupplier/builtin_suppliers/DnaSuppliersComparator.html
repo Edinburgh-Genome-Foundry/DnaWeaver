@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaSupplier.builtin_suppliers.DnaSuppliersComparator</title>
+    
+      <link rel="stylesheet" href="../../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../../_static/theme-vendors.js"></script>
+      <script src="../../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaSupplier.builtin_suppliers.DnaSuppliersComparator</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaSupplier.builtin_suppliers.DnaSuppliersComparator</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">...DnaQuote</span> <span class="kn">import</span> <span class="n">DnaQuote</span>
+<span class="kn">from</span> <span class="nn">..DnaSupplier</span> <span class="kn">import</span> <span class="n">DnaSupplier</span>
+
+
+<div class="viewcode-block" id="DnaSuppliersComparator"><a class="viewcode-back" href="../../../../ref.html#dnaweaver.DnaSuppliersComparator">[docs]</a><span class="k">class</span> <span class="nc">DnaSuppliersComparator</span><span class="p">(</span><span class="n">DnaSupplier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Special source that compares quotes from other DnaSuppliers.</span>
+
+<span class="sd">    Upon receiving a sequence, that source will submit the sequence to</span>
+<span class="sd">    Downstream sources, which deliver each one optimal quote. The comparator</span>
+<span class="sd">    then returns the one quote with the lowest price.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    suppliers</span>
+<span class="sd">      List of `DnaSuppliers` that</span>
+
+<span class="sd">    memoize</span>
+<span class="sd">      Whether the quotes should be kept in memory to avoid re-computing the</span>
+<span class="sd">      same quote several times. Can accelerate computations but is</span>
+<span class="sd">      RAM-expensive.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">class_description</span> <span class="o">=</span> <span class="s2">&quot;DNA sources comparator&quot;</span>
+    <span class="n">operation_type</span> <span class="o">=</span> <span class="s2">&quot;comparison&quot;</span>
+    <span class="n">report_fa_symbol</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span>
+    <span class="n">report_fa_symbol_plain</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;circle-o&quot;</span>
+    <span class="n">report_color</span> <span class="o">=</span> <span class="s2">&quot;#000000&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">suppliers</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">memoize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">sequence_constraints</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">return_first_accepted_quote</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;comparator&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_suppliers</span><span class="p">(</span><span class="n">suppliers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memoize</span> <span class="o">=</span> <span class="n">memoize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence_constraints</span> <span class="o">=</span> <span class="n">sequence_constraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_first_accepted_quote</span> <span class="o">=</span> <span class="n">return_first_accepted_quote</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memoize_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<div class="viewcode-block" id="DnaSuppliersComparator.get_best_price"><a class="viewcode-back" href="../../../../ref.html#dnaweaver.DnaSuppliersComparator.get_best_price">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_price</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="p">,</span>
+        <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a price-optimal DnaQuote for the given sequence.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        sequence (str)</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+
+<span class="sd">        max_lead_time (float)</span>
+<span class="sd">          If provided, the quote returned is the best quote (price-wise) whose</span>
+<span class="sd">          lead time is less or equal to max_lead_time.</span>
+
+<span class="sd">        with_assembly_plan</span>
+<span class="sd">          If True, the assembly plan is added to the quote</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">best_quote</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_basepair_price</span> <span class="o">=</span> <span class="mf">1e8</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">min_basepair_price</span>
+        <span class="p">):</span>
+            <span class="c1"># print (self.name, len(sequence), source)</span>
+            <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">min_basepair_price</span> <span class="o">&gt;</span> <span class="n">best_basepair_price</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+                <span class="n">with_assembly_plan</span><span class="o">=</span><span class="n">with_assembly_plan</span>
+            <span class="p">)</span>
+            <span class="c1"># print (&#39;=&gt;&#39;, quote.accepted, quote.price)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">quote</span><span class="o">.</span><span class="n">accepted</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_first_accepted_quote</span><span class="p">:</span>
+                <span class="n">best_quote</span> <span class="o">=</span> <span class="n">quote</span>
+                <span class="k">break</span>
+            <span class="n">quote_basepair_price</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">price</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">quote_basepair_price</span> <span class="o">&lt;</span> <span class="n">best_basepair_price</span><span class="p">:</span>
+                <span class="n">best_quote</span> <span class="o">=</span> <span class="n">quote</span>
+                <span class="n">best_basepair_price</span> <span class="o">=</span> <span class="n">quote_basepair_price</span>
+        <span class="k">if</span> <span class="n">best_quote</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Sequence was rejected by all sources.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;via&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">best_quote</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="n">best_quote</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;via&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">best_quote</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;via&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">best_quote</span></div>
+
+    <span class="k">def</span> <span class="nf">additional_dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;dna sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">source</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span><span class="p">],</span>
+        <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DnaSuppliersComparator</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">suppliers</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;suppliers&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_suppliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span> <span class="o">=</span> <span class="n">suppliers</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">suppliers</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_basepair_price</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">supplier</span><span class="o">.</span><span class="n">min_basepair_price</span> <span class="k">for</span> <span class="n">supplier</span> <span class="ow">in</span> <span class="n">suppliers</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_basepair_price</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">suggest_cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">cut</span>
+                    <span class="k">for</span> <span class="n">supplier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">supplier</span><span class="p">,</span> <span class="s2">&quot;suggest_cuts&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">cut</span> <span class="ow">in</span> <span class="n">supplier</span><span class="o">.</span><span class="n">suggest_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

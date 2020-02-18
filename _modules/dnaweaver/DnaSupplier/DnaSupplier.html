@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaSupplier.DnaSupplier</title>
+    
+      <link rel="stylesheet" href="../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../_static/theme-vendors.js"></script>
+      <script src="../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaSupplier.DnaSupplier</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaSupplier.DnaSupplier</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">..DnaQuote</span> <span class="kn">import</span> <span class="n">DnaQuote</span>
+<span class="kn">from</span> <span class="nn">..biotools</span> <span class="kn">import</span> <span class="n">SequenceString</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mixins</span>
+
+
+<div class="viewcode-block" id="DnaSupplier"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaSupplier">[docs]</a><span class="k">class</span> <span class="nc">DnaSupplier</span><span class="p">(</span>
+    <span class="n">mixins</span><span class="o">.</span><span class="n">JsonImportMixin</span><span class="p">,</span> <span class="n">mixins</span><span class="o">.</span><span class="n">ConstraintsMixin</span><span class="p">,</span> <span class="n">mixins</span><span class="o">.</span><span class="n">SupplyNetworkMixin</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all DnaSuppliers, which are the elements of the supply</span>
+<span class="sd">    networks used to define assembly problems in DnaWeaver.&quot;&quot;&quot;</span>
+
+    <span class="n">min_basepair_price</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="DnaSupplier.get_quote"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaSupplier.get_quote">[docs]</a>    <span class="k">def</span> <span class="nf">get_quote</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="p">,</span>
+        <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_price</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">time_resolution</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a DnaQuote with price, lead time, etc. for a given sequence.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        sequence (str)</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+
+<span class="sd">        max_lead_time (float)</span>
+<span class="sd">          If provided, the quote returned is the best quote (price-wise) whose</span>
+<span class="sd">          lead time is less or equal to max_lead_time.</span>
+
+<span class="sd">        max_price (float)</span>
+<span class="sd">          If provided, the quote returned is the least-lead-time quote</span>
+<span class="sd">          whose price is below or equal to `max_price`.</span>
+<span class="sd">          This is done using bisection and can be slow as it requires to</span>
+<span class="sd">          re-compute the problem many times</span>
+<span class="sd">          Note that either this parameter or `max_lead_time` must be None</span>
+
+<span class="sd">        with_assembly_plan</span>
+<span class="sd">          If True, the assembly plan is added to the quote</span>
+
+<span class="sd">        time_resolution</span>
+<span class="sd">          Time resolution for the bisecting search if `max_price` is not None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        A DnaQuote object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">):</span>
+            <span class="c1"># Use a simpler format which still remembers the topology</span>
+            <span class="n">sequence</span> <span class="o">=</span> <span class="n">SequenceString</span><span class="o">.</span><span class="n">from_record</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">max_lead_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_lead_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">memoize</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">hash</span><span class="p">(</span><span class="n">sequence</span><span class="p">),</span>
+                <span class="n">max_lead_time</span><span class="p">,</span>
+                <span class="n">max_price</span><span class="p">,</span>
+                <span class="n">with_assembly_plan</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memoize_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">quote</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">quote</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_constraints</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="n">DnaQuote</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Sequence does not pass constraints.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">max_price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_lead_time_under_price_limit</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">max_price</span><span class="o">=</span><span class="n">max_price</span><span class="p">,</span>
+                <span class="n">time_resolution</span><span class="o">=</span><span class="n">time_resolution</span><span class="p">,</span>
+                <span class="n">with_assembly_plan</span><span class="o">=</span><span class="n">with_assembly_plan</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_price</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+                <span class="n">with_assembly_plan</span><span class="o">=</span><span class="n">with_assembly_plan</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">memoize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">memoize_dict</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="n">quote</span>
+
+        <span class="k">return</span> <span class="n">quote</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+<div class="viewcode-block" id="DnaSupplier.get_best_lead_time_under_price_limit"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaSupplier.get_best_lead_time_under_price_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_lead_time_under_price_limit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">max_price</span><span class="p">,</span> <span class="n">time_resolution</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the quote with fastest lead time under the budget constraint</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+
+
+<span class="sd">        sequence (str)</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+
+<span class="sd">        max_price (float)</span>
+<span class="sd">          If provided, the quote returned is the least-lead-time quote</span>
+<span class="sd">          whose price is below or equal to `max_price`.</span>
+<span class="sd">          This is done using bisection and can be slow as it requires to</span>
+<span class="sd">          re-compute the problem many times</span>
+<span class="sd">          Note that either this parameter or `max_lead_time` must be None</span>
+
+<span class="sd">        with_assembly_plan</span>
+<span class="sd">          If True, the assembly plan is added to the quote</span>
+
+<span class="sd">        time_resolution</span>
+<span class="sd">          Time resolution for the bisecting search if `max_price` is not None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">max_lead_time</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+                <span class="n">with_assembly_plan</span><span class="o">=</span><span class="n">with_assembly_plan</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">quote</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">quote</span><span class="o">.</span><span class="n">accepted</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">quote</span><span class="o">.</span><span class="n">price</span> <span class="o">&gt;</span> <span class="n">max_price</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Price over limit even without time limit.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">step_size</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">lead_time</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">lead_time</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">lead_time</span> <span class="o">-</span> <span class="n">step_size</span>
+        <span class="n">best_quote</span> <span class="o">=</span> <span class="n">quote</span>
+        <span class="k">while</span> <span class="n">step_size</span> <span class="o">&gt;</span> <span class="n">time_resolution</span><span class="p">:</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">lead_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">quote</span><span class="o">.</span><span class="n">accepted</span> <span class="ow">and</span> <span class="p">(</span><span class="n">quote</span><span class="o">.</span><span class="n">price</span> <span class="o">&lt;=</span> <span class="n">max_price</span><span class="p">):</span>
+                <span class="n">best_quote</span> <span class="o">=</span> <span class="n">quote</span>
+                <span class="n">lead_time</span> <span class="o">-=</span> <span class="n">step_size</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lead_time</span> <span class="o">+=</span> <span class="n">step_size</span>
+            <span class="n">step_size</span> <span class="o">/=</span> <span class="mf">2.0</span>
+
+        <span class="k">return</span> <span class="n">best_quote</span></div>
+
+    <span class="k">def</span> <span class="nf">prepare_network_on_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="n">_edges</span><span class="p">,</span> <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_supply_graph</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;prepare_on_sequence&quot;</span><span class="p">):</span>
+                    <span class="n">source</span><span class="o">.</span><span class="n">prepare_on_sequence</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;operation_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">operation_type</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_description</span><span class="p">,</span>
+            <span class="s2">&quot;_report_color&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_color</span><span class="p">,</span>
+            <span class="s2">&quot;_report_fa_symbol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_fa_symbol</span><span class="p">,</span>
+            <span class="s2">&quot;_report_fa_symbol_plain&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_fa_symbol_plain</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">additional_dict_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">additional_dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

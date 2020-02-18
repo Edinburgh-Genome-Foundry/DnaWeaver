@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaSupplier.builtin_suppliers.DnaAssemblyStation.DnaAssemblyStation</title>
+    
+      <link rel="stylesheet" href="../../../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../../../_static/theme-vendors.js"></script>
+      <script src="../../../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaSupplier.builtin_suppliers.DnaAssemblyStation.DnaAssemblyStation</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaSupplier.builtin_suppliers.DnaAssemblyStation.DnaAssemblyStation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">....DnaQuote</span> <span class="kn">import</span> <span class="n">DnaQuote</span>
+<span class="kn">from</span> <span class="nn">....SegmentSelector</span> <span class="kn">import</span> <span class="n">TmSegmentSelector</span><span class="p">,</span> <span class="n">FixedSizeSegmentSelector</span>
+<span class="kn">from</span> <span class="nn">....DnaAssemblyMethod</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OligoAssemblyMethod</span><span class="p">,</span>
+    <span class="n">GibsonAssemblyMethod</span><span class="p">,</span>
+    <span class="n">GoldenGateAssemblyMethod</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">...builtin_constraints</span> <span class="kn">import</span> <span class="n">SequenceLengthConstraint</span>
+<span class="kn">from</span> <span class="nn">...DnaSupplier</span> <span class="kn">import</span> <span class="n">DnaSupplier</span>
+<span class="kn">from</span> <span class="nn">..DnaSuppliersComparator</span> <span class="kn">import</span> <span class="n">DnaSuppliersComparator</span>
+<span class="kn">from</span> <span class="nn">.SequenceDecomposer</span> <span class="kn">import</span> <span class="n">SequenceDecomposer</span><span class="p">,</span> <span class="n">NoSolutionFoundError</span>
+
+
+<div class="viewcode-block" id="DnaAssemblyStation"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation">[docs]</a><span class="k">class</span> <span class="nc">DnaAssemblyStation</span><span class="p">(</span><span class="n">DnaSupplier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;DNA Assembly stations assemble together DNA fragments using a specific</span>
+<span class="sd">    assembly method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    name</span>
+<span class="sd">      Name of the station (appears on reports)</span>
+
+<span class="sd">    assembly_method</span>
+<span class="sd">      AnDnaAssemblyMethod object specifying how the fragments are assembled,</span>
+<span class="sd">      what sequences can be assembled, what fragments can be used, etc.</span>
+
+<span class="sd">    supplier</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">class_description</span> <span class="o">=</span> <span class="s2">&quot;DNA assembly station&quot;</span>
+    <span class="n">operation_type</span> <span class="o">=</span> <span class="s2">&quot;assembly&quot;</span>
+    <span class="n">report_fa_symbol</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span>
+    <span class="n">report_fa_symbol_plain</span> <span class="o">=</span> <span class="s2">&quot;flask&quot;</span>
+    <span class="n">report_color</span> <span class="o">=</span> <span class="s2">&quot;#eeeeff&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">assembly_method</span><span class="p">,</span>
+        <span class="n">supplier</span><span class="p">,</span>
+        <span class="n">memoize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">decomposer_class</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">a_star_auto_multiplier</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">solver_kwargs</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span> <span class="o">=</span> <span class="n">assembly_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_suppliers</span><span class="p">(</span><span class="n">supplier</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_time</span> <span class="o">=</span> <span class="n">assembly_method</span><span class="o">.</span><span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_cost</span> <span class="o">=</span> <span class="n">assembly_method</span><span class="o">.</span><span class="n">cost</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence_constraints</span> <span class="o">=</span> <span class="n">assembly_method</span><span class="o">.</span><span class="n">sequence_constraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuts_set_constraints</span> <span class="o">=</span> <span class="n">assembly_method</span><span class="o">.</span><span class="n">cuts_set_constraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memoize</span> <span class="o">=</span> <span class="n">memoize</span>
+        <span class="k">if</span> <span class="n">decomposer_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decomposer_class</span> <span class="o">=</span> <span class="n">SequenceDecomposer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decomposer_class</span> <span class="o">=</span> <span class="n">decomposer_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memoize_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_basepair_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">min_basepair_price</span>
+        <span class="k">if</span> <span class="n">solver_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;a_star_factor&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="n">solver_kwargs</span><span class="p">[</span><span class="s2">&quot;a_star_factor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">a_star_auto_multiplier</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_basepair_price</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_kwargs</span> <span class="o">=</span> <span class="n">solver_kwargs</span>
+
+<div class="viewcode-block" id="DnaAssemblyStation.get_quote_for_sequence_segment"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_quote_for_sequence_segment">[docs]</a>    <span class="k">def</span> <span class="nf">get_quote_for_sequence_segment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the cost of the segment</span>
+
+<span class="sd">        Is used as the &quot;cost&quot; function for a segment during decomposition</span>
+<span class="sd">        optimization</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fragment_to_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span><span class="o">.</span><span class="n">compute_fragment_for_sequence_segment</span><span class="p">(</span>
+            <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="o">=</span><span class="n">segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span>
+            <span class="n">fragment_to_order</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DnaAssemblyStation.get_assembly_plan_from_cuts"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_assembly_plan_from_cuts">[docs]</a>    <span class="k">def</span> <span class="nf">get_assembly_plan_from_cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">cuts</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a plan {segment: quote, ...} based on the cut positions.</span>
+
+<span class="sd">        Where &quot;segment&quot; is of the form (start, end).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cuts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">segment</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_quote_for_sequence_segment</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span>
+                <span class="n">segment</span><span class="p">,</span>
+                <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+                <span class="n">segment_position</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cuts</span><span class="p">,</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">new_sequence_decomposer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="p">,</span>
+        <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">coarse_grain</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">fine_grain</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">cut_spread_radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">a_star_factor</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">def</span> <span class="nf">segment_score</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_quote_for_sequence_segment</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">quote</span><span class="o">.</span><span class="n">accepted</span><span class="p">:</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">quote</span><span class="o">.</span><span class="n">price</span>
+
+        <span class="n">assembly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decomposer_class</span><span class="p">(</span>
+            <span class="n">sequence_length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">),</span>
+            <span class="n">segment_score_function</span><span class="o">=</span><span class="n">segment_score</span><span class="p">,</span>
+            <span class="n">cut_location_constraints</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">cut_location_constraints</span>
+            <span class="p">],</span>
+            <span class="n">segment_constraints</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">segment_constraints</span>
+            <span class="p">],</span>
+            <span class="n">min_segment_length</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">min_segment_length</span><span class="p">,</span>
+            <span class="n">max_segment_length</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">max_segment_length</span><span class="p">,</span>
+            <span class="n">forced_cuts</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">force_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">),</span>
+            <span class="n">suggested_cuts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_suggested_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">),</span>
+            <span class="n">coarse_grain</span><span class="o">=</span><span class="n">coarse_grain</span><span class="p">,</span>
+            <span class="n">fine_grain</span><span class="o">=</span><span class="n">fine_grain</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="n">bar_prefix</span><span class="o">=</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] &quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">a_star_factor</span><span class="o">=</span><span class="n">a_star_factor</span><span class="p">,</span>
+            <span class="n">path_size_limit</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">max_fragments</span><span class="p">,</span>
+            <span class="n">cuts_set_constraints</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">cuts_set_constraints</span>
+            <span class="p">],</span>
+            <span class="n">cut_spread_radius</span><span class="o">=</span><span class="n">cut_spread_radius</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_suggested_cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="n">all_supplier_cuts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">supplier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">supplier</span><span class="p">,</span> <span class="s2">&quot;suggest_cuts&quot;</span><span class="p">):</span>
+                <span class="n">supplier_cuts</span> <span class="o">=</span> <span class="n">supplier</span><span class="o">.</span><span class="n">suggest_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+                <span class="n">all_supplier_cuts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">supplier_cuts</span><span class="p">))</span>
+        <span class="n">assembly_method_cuts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span><span class="o">.</span><span class="n">suggest_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+        <span class="n">suggested</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">assembly_method_cuts</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_supplier_cuts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">suggested</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">suggest_cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_suggested_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DnaAssemblyStation.get_assembly_plan_for_sequence"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_assembly_plan_for_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">get_assembly_plan_for_sequence</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="p">,</span>
+        <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">coarse_grain</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">fine_grain</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">cut_spread_radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">a_star_factor</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the plan {(seg, ment): quote, ...} of the optimal strategy</span>
+<span class="sd">        for the sequence&#39;s decomposition.&quot;&quot;&quot;</span>
+        <span class="c1"># extended_sequence = self.assembly_method.extend_sequence(sequence)</span>
+        <span class="n">decomposer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_sequence_decomposer</span><span class="p">(</span>
+            <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
+            <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+            <span class="n">coarse_grain</span><span class="o">=</span><span class="n">coarse_grain</span><span class="p">,</span>
+            <span class="n">fine_grain</span><span class="o">=</span><span class="n">fine_grain</span><span class="p">,</span>
+            <span class="n">a_star_factor</span><span class="o">=</span><span class="n">a_star_factor</span><span class="p">,</span>
+            <span class="n">cut_spread_radius</span><span class="o">=</span><span class="n">cut_spread_radius</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lattest_decomposer</span> <span class="o">=</span> <span class="n">decomposer</span>  <span class="c1"># for debugging</span>
+        <span class="n">best_cuts</span> <span class="o">=</span> <span class="n">decomposer</span><span class="o">.</span><span class="n">compute_optimal_cuts</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assembly_plan_from_cuts</span><span class="p">(</span>
+            <span class="n">sequence</span><span class="p">,</span> <span class="n">best_cuts</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DnaAssemblyStation.get_best_price"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_best_price">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_price</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a price-optimal DnaQuote for the given sequence.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        sequence (str)</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+
+<span class="sd">        max_lead_time (float)</span>
+<span class="sd">          If provided, the quote returned is the best quote (price-wise) whose</span>
+<span class="sd">          lead time is less or equal to max_lead_time.</span>
+
+<span class="sd">        with_assembly_plan</span>
+<span class="sd">          If True, the assembly plan is added to the quote</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">max_lead_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_lead_time</span> <span class="o">=</span> <span class="n">max_lead_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_time</span>
+            <span class="k">if</span> <span class="n">max_lead_time</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="n">sequence</span><span class="p">,</span>
+                    <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Lead time limit too short&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">assembly_plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assembly_plan_for_sequence</span><span class="p">(</span>
+                <span class="n">sequence</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_kwargs</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">NoSolutionFoundError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;No solution found! </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="c1"># A solution has been found ! Now compute overall time and lead time.</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">price</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">assembly_plan</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+            <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;No solution found !&quot;</span>
+            <span class="p">)</span>
+        <span class="n">quote</span> <span class="o">=</span> <span class="n">DnaQuote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">assembly_plan</span><span class="o">=</span><span class="n">assembly_plan</span><span class="p">)</span>
+        <span class="n">quote</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">children_total_price</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_cost</span>
+        <span class="n">children_lead_time</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">children_overall_lead_time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">children_lead_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">quote</span><span class="o">.</span><span class="n">lead_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quote</span><span class="o">.</span><span class="n">lead_time</span> <span class="o">=</span> <span class="n">children_lead_time</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_time</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">with_assembly_plan</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assembly_plan</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">quote</span></div>
+
+    <span class="k">def</span> <span class="nf">additional_dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;dna source&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;solver parameters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_kwargs</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="p">(</span><span class="s2">&quot;assembly method </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">):</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span><span class="o">.</span><span class="n">dict_description</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">sequence_constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;use_size_range&quot;</span><span class="p">]:</span>
+            <span class="n">mini</span><span class="p">,</span> <span class="n">maxi</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;size_range&quot;</span><span class="p">]</span>
+            <span class="n">sequence_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SequenceLengthConstraint</span><span class="p">(</span><span class="n">mini</span><span class="p">,</span> <span class="n">maxi</span><span class="p">))</span>
+        <span class="n">min_length</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;fragments_size_range&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;type_iis&quot;</span><span class="p">:</span>
+            <span class="n">gc_range</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;overhang_gc_range&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">GoldenGateAssemblyMethod</span><span class="p">(</span>
+                <span class="n">duration</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">],</span>
+                <span class="n">cost</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">],</span>
+                <span class="n">min_overhangs_gc</span><span class="o">=</span><span class="n">gc_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">max_overhangs_gc</span><span class="o">=</span><span class="n">gc_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">enzyme</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;enzyme&quot;</span><span class="p">],</span>
+                <span class="n">max_segment_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+                <span class="n">min_segment_length</span><span class="o">=</span><span class="n">min_length</span><span class="p">,</span>
+                <span class="n">max_fragments</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;max_fragments&quot;</span><span class="p">],</span>
+                <span class="n">sequence_constraints</span><span class="o">=</span><span class="n">sequence_constraints</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;gibson_assembly&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;yeast_recombination&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;oligo_assembly&quot;</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;overhang_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;tm&quot;</span><span class="p">:</span>
+                <span class="n">min_oh_size</span><span class="p">,</span> <span class="n">max_oh_size</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;overhang_size_range&quot;</span><span class="p">]</span>
+                <span class="n">min_tm</span><span class="p">,</span> <span class="n">max_tm</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tm_range&quot;</span><span class="p">]</span>
+                <span class="n">overhang_selector</span> <span class="o">=</span> <span class="n">TmSegmentSelector</span><span class="p">(</span>
+                    <span class="n">min_size</span><span class="o">=</span><span class="n">min_oh_size</span><span class="p">,</span>
+                    <span class="n">max_size</span><span class="o">=</span><span class="n">max_oh_size</span><span class="p">,</span>
+                    <span class="n">min_tm</span><span class="o">=</span><span class="n">min_tm</span><span class="p">,</span>
+                    <span class="n">max_tm</span><span class="o">=</span><span class="n">max_tm</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">overhang_selector</span> <span class="o">=</span> <span class="n">FixedSizeSegmentSelector</span><span class="p">(</span>
+                    <span class="n">segment_size</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;overlap&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;oligo_assembly&quot;</span><span class="p">:</span>
+                <span class="n">method_class</span> <span class="o">=</span> <span class="n">OligoAssemblyMethod</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">method_class</span> <span class="o">=</span> <span class="n">GibsonAssemblyMethod</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">method_class</span><span class="p">(</span>
+                <span class="n">duration</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">],</span>
+                <span class="n">cost</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">],</span>
+                <span class="n">overhang_selector</span><span class="o">=</span><span class="n">overhang_selector</span><span class="p">,</span>
+                <span class="n">max_segment_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+                <span class="n">min_segment_length</span><span class="o">=</span><span class="n">min_length</span><span class="p">,</span>
+                <span class="n">max_fragments</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;max_fragments&quot;</span><span class="p">],</span>
+                <span class="n">sequence_constraints</span><span class="o">=</span><span class="n">sequence_constraints</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;use_astar&quot;</span><span class="p">]:</span>
+            <span class="n">a_star_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;astar_factor&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a_star_factor</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">max_construct_length</span> <span class="o">=</span> <span class="n">max_length</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;max_fragments&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;grain_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;coarse_grain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_construct_length</span> <span class="o">/</span> <span class="mi">15</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;fine_grain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;coarse_grain&quot;</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">DnaAssemblyStation</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+            <span class="n">supplier</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;suppliers&quot;</span><span class="p">],</span>
+            <span class="n">assembly_method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">coarse_grain</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;coarse_grain&quot;</span><span class="p">],</span>
+            <span class="n">fine_grain</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;fine_grain&quot;</span><span class="p">],</span>
+            <span class="n">a_star_factor</span><span class="o">=</span><span class="n">a_star_factor</span><span class="p">,</span>
+            <span class="n">memoize</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;memoize&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_suppliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">suppliers</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">suppliers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span> <span class="o">=</span> <span class="n">DnaSuppliersComparator</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; comparator&quot;</span><span class="p">,</span> <span class="n">suppliers</span><span class="o">=</span><span class="n">suppliers</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">is_ghost_source</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span> <span class="o">=</span> <span class="n">suppliers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span> <span class="o">=</span> <span class="n">suppliers</span>
+            <span class="n">suppliers</span> <span class="o">=</span> <span class="p">[</span><span class="n">suppliers</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span> <span class="o">=</span> <span class="n">suppliers</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

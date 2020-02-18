@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>DnaWeaver Reference manual</title>
+    
+      <link rel="stylesheet" href="_static/pygments.css">
+      <link rel="stylesheet" href="_static/theme.css">
+      <link rel="stylesheet" href="_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+
+      
+      <script src="_static/theme-vendors.js"></script>
+      <script src="_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="prev" title="How it works" href="index.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="current">
+        
+          <li class="toctree-l1 current"><a href="#" class="reference internal current">DnaWeaver Reference manual</a>
+
+            
+              <ul>
+                
+                  <li class="toctree-l2"><a href="#dnaweaver-reference-manual" class="reference internal">DnaWeaver Reference manual</a></li>
+                
+                  <li class="toctree-l2"><a href="#dna-suppliers" class="reference internal">DNA suppliers</a></li>
+                
+              </ul>
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+    
+    <li>DnaWeaver Reference manual</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+  <li class="prev">
+    <a href="index.html"
+       title="previous chapter">← How it works</a>
+  </li>
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <div class="section" id="dnaweaver-reference-manual">
+<h1>DnaWeaver Reference manual<a class="headerlink" href="#dnaweaver-reference-manual" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="dna-suppliers">
+<h1>DNA suppliers<a class="headerlink" href="#dna-suppliers" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dnaweaver.DnaSupplier">
+<em class="property">class </em><code class="sig-prename descclassname">dnaweaver.</code><code class="sig-name descname">DnaSupplier</code><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/DnaSupplier.html#DnaSupplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaSupplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all DnaSuppliers, which are the elements of the supply
+networks used to define assembly problems in DnaWeaver.</p>
+<dl class="method">
+<dt id="dnaweaver.DnaSupplier.get_best_lead_time_under_price_limit">
+<code class="sig-name descname">get_best_lead_time_under_price_limit</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">max_price</em>, <em class="sig-param">time_resolution</em>, <em class="sig-param">with_assembly_plan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/DnaSupplier.html#DnaSupplier.get_best_lead_time_under_price_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaSupplier.get_best_lead_time_under_price_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the quote with fastest lead time under the budget constraint</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence (str)</strong></dt><dd><p>The sequence submitted to the Dna Source for a quots</p>
+</dd>
+<dt><strong>max_price (float)</strong></dt><dd><p>If provided, the quote returned is the least-lead-time quote
+whose price is below or equal to <cite>max_price</cite>.
+This is done using bisection and can be slow as it requires to
+re-compute the problem many times
+Note that either this parameter or <cite>max_lead_time</cite> must be None</p>
+</dd>
+<dt><strong>with_assembly_plan</strong></dt><dd><p>If True, the assembly plan is added to the quote</p>
+</dd>
+<dt><strong>time_resolution</strong></dt><dd><p>Time resolution for the bisecting search if <cite>max_price</cite> is not None.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dnaweaver.DnaSupplier.get_quote">
+<code class="sig-name descname">get_quote</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">max_lead_time=None</em>, <em class="sig-param">max_price=None</em>, <em class="sig-param">with_assembly_plan=False</em>, <em class="sig-param">time_resolution=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/DnaSupplier.html#DnaSupplier.get_quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaSupplier.get_quote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DnaQuote with price, lead time, etc. for a given sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence (str)</strong></dt><dd><p>The sequence submitted to the Dna Source for a quots</p>
+</dd>
+<dt><strong>max_lead_time (float)</strong></dt><dd><p>If provided, the quote returned is the best quote (price-wise) whose
+lead time is less or equal to max_lead_time.</p>
+</dd>
+<dt><strong>max_price (float)</strong></dt><dd><p>If provided, the quote returned is the least-lead-time quote
+whose price is below or equal to <cite>max_price</cite>.
+This is done using bisection and can be slow as it requires to
+re-compute the problem many times
+Note that either this parameter or <cite>max_lead_time</cite> must be None</p>
+</dd>
+<dt><strong>with_assembly_plan</strong></dt><dd><p>If True, the assembly plan is added to the quote</p>
+</dd>
+<dt><strong>time_resolution</strong></dt><dd><p>Time resolution for the bisecting search if <cite>max_price</cite> is not None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>A DnaQuote object.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dnaweaver.DnaSuppliersComparator">
+<em class="property">class </em><code class="sig-prename descclassname">dnaweaver.</code><code class="sig-name descname">DnaSuppliersComparator</code><span class="sig-paren">(</span><em class="sig-param">suppliers=()</em>, <em class="sig-param">memoize=False</em>, <em class="sig-param">sequence_constraints=()</em>, <em class="sig-param">return_first_accepted_quote=False</em>, <em class="sig-param">name='comparator'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaSuppliersComparator.html#DnaSuppliersComparator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaSuppliersComparator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Special source that compares quotes from other DnaSuppliers.</p>
+<p>Upon receiving a sequence, that source will submit the sequence to
+Downstream sources, which deliver each one optimal quote. The comparator
+then returns the one quote with the lowest price.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>suppliers</strong></dt><dd><p>List of <cite>DnaSuppliers</cite> that</p>
+</dd>
+<dt><strong>memoize</strong></dt><dd><p>Whether the quotes should be kept in memory to avoid re-computing the
+same quote several times. Can accelerate computations but is
+RAM-expensive.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="dnaweaver.DnaSuppliersComparator.get_best_price">
+<code class="sig-name descname">get_best_price</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">max_lead_time=None</em>, <em class="sig-param">with_assembly_plan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaSuppliersComparator.html#DnaSuppliersComparator.get_best_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaSuppliersComparator.get_best_price" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a price-optimal DnaQuote for the given sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence (str)</strong></dt><dd><p>The sequence submitted to the Dna Source for a quots</p>
+</dd>
+<dt><strong>max_lead_time (float)</strong></dt><dd><p>If provided, the quote returned is the best quote (price-wise) whose
+lead time is less or equal to max_lead_time.</p>
+</dd>
+<dt><strong>with_assembly_plan</strong></dt><dd><p>If True, the assembly plan is added to the quote</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dnaweaver.DnaAssemblyStation">
+<em class="property">class </em><code class="sig-prename descclassname">dnaweaver.</code><code class="sig-name descname">DnaAssemblyStation</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">assembly_method</em>, <em class="sig-param">supplier</em>, <em class="sig-param">memoize=False</em>, <em class="sig-param">decomposer_class=None</em>, <em class="sig-param">a_star_auto_multiplier=2</em>, <em class="sig-param">**solver_kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaAssemblyStation/DnaAssemblyStation.html#DnaAssemblyStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaAssemblyStation" title="Permalink to this definition">¶</a></dt>
+<dd><p>DNA Assembly stations assemble together DNA fragments using a specific
+assembly method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong></dt><dd><p>Name of the station (appears on reports)</p>
+</dd>
+<dt><strong>assembly_method</strong></dt><dd><p>AnDnaAssemblyMethod object specifying how the fragments are assembled,
+what sequences can be assembled, what fragments can be used, etc.</p>
+</dd>
+<dt><strong>supplier</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="dnaweaver.DnaAssemblyStation.get_assembly_plan_for_sequence">
+<code class="sig-name descname">get_assembly_plan_for_sequence</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">max_lead_time=None</em>, <em class="sig-param">coarse_grain=1</em>, <em class="sig-param">fine_grain=1</em>, <em class="sig-param">cut_spread_radius=0</em>, <em class="sig-param">a_star_factor=0</em>, <em class="sig-param">logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaAssemblyStation/DnaAssemblyStation.html#DnaAssemblyStation.get_assembly_plan_for_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaAssemblyStation.get_assembly_plan_for_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the plan {(seg, ment): quote, …} of the optimal strategy
+for the sequence’s decomposition.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dnaweaver.DnaAssemblyStation.get_assembly_plan_from_cuts">
+<code class="sig-name descname">get_assembly_plan_from_cuts</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">cuts</em>, <em class="sig-param">max_lead_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaAssemblyStation/DnaAssemblyStation.html#DnaAssemblyStation.get_assembly_plan_from_cuts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaAssemblyStation.get_assembly_plan_from_cuts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a plan {segment: quote, …} based on the cut positions.</p>
+<p>Where “segment” is of the form (start, end).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dnaweaver.DnaAssemblyStation.get_best_price">
+<code class="sig-name descname">get_best_price</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">max_lead_time=None</em>, <em class="sig-param">with_assembly_plan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaAssemblyStation/DnaAssemblyStation.html#DnaAssemblyStation.get_best_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaAssemblyStation.get_best_price" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a price-optimal DnaQuote for the given sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence (str)</strong></dt><dd><p>The sequence submitted to the Dna Source for a quots</p>
+</dd>
+<dt><strong>max_lead_time (float)</strong></dt><dd><p>If provided, the quote returned is the best quote (price-wise) whose
+lead time is less or equal to max_lead_time.</p>
+</dd>
+<dt><strong>with_assembly_plan</strong></dt><dd><p>If True, the assembly plan is added to the quote</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dnaweaver.DnaAssemblyStation.get_quote_for_sequence_segment">
+<code class="sig-name descname">get_quote_for_sequence_segment</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">sequence</em>, <em class="sig-param">segment</em>, <em class="sig-param">max_lead_time=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dnaweaver/DnaSupplier/builtin_suppliers/DnaAssemblyStation/DnaAssemblyStation.html#DnaAssemblyStation.get_quote_for_sequence_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dnaweaver.DnaAssemblyStation.get_quote_for_sequence_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the cost of the segment</p>
+<p>Is used as the “cost” function for a segment during decomposition
+optimization</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-dnaweaver.biotools"></span></div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+  <li class="prev">
+    <a href="index.html"
+       title="previous chapter">← How it works</a>
+  </li>
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

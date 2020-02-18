@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaAssemblyMethod.OverlapingAssemblyMethod</title>
+    
+      <link rel="stylesheet" href="../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../_static/theme-vendors.js"></script>
+      <script src="../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaAssemblyMethod.OverlapingAssemblyMethod</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaAssemblyMethod.OverlapingAssemblyMethod</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.DnaAssemblyMethod</span> <span class="kn">import</span> <span class="n">DnaAssemblyMethod</span>
+<span class="kn">from</span> <span class="nn">..biotools</span> <span class="kn">import</span> <span class="n">reverse_complement</span> 
+
+
+<span class="k">class</span> <span class="nc">OverlapingAssemblyMethod</span><span class="p">(</span><span class="n">DnaAssemblyMethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;General class for all overlaping assembly methods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    homology_arm_length</span>
+<span class="sd">      Length of the homology arm, or &quot;overhang&quot;. A length of L means that</span>
+<span class="sd">      consecutive segments will overlap by 2*L</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Overlaping Assembly&quot;</span>
+    <span class="n">alternate_fragments_orientation</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overhang_selector</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OverlapingAssemblyMethod</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">properties</span><span class="p">)</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="n">overhang_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overhang_selector</span> <span class="o">=</span> <span class="n">selector</span>
+        <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">has_location_filter</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cut_location_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">selector</span><span class="o">.</span><span class="n">location_filter_method</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_fragment_for_sequence_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overhang_selector</span><span class="o">.</span><span class="n">compute_fragment_for_sequence_segment</span> 
+        <span class="n">fragment</span> <span class="o">=</span> <span class="n">selector</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternate_fragments_orientation</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;segment_position&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">fragment</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fragment</span>
+
+
+<div class="viewcode-block" id="GibsonAssemblyMethod"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaAssemblyMethod.GibsonAssemblyMethod">[docs]</a><span class="k">class</span> <span class="nc">GibsonAssemblyMethod</span><span class="p">(</span><span class="n">OverlapingAssemblyMethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gibson Assembly Method. Just another overlap-method&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Gibson Assembly&quot;</span></div>
+
+
+<div class="viewcode-block" id="OligoAssemblyMethod"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaAssemblyMethod.OligoAssemblyMethod">[docs]</a><span class="k">class</span> <span class="nc">OligoAssemblyMethod</span><span class="p">(</span><span class="n">OverlapingAssemblyMethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The Build-a-Genome Assembly Method. Just another overlap-method&quot;&quot;&quot;</span>
+
+    <span class="n">alternate_fragments_orientation</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Oligo Assembly&quot;</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dnaweaver.DnaAssemblyMethod.DnaAssemblyMethod</title>
+    
+      <link rel="stylesheet" href="../../../_static/pygments.css">
+      <link rel="stylesheet" href="../../../_static/theme.css">
+      <link rel="stylesheet" href="../../../_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+
+      
+      <script src="../../../_static/theme-vendors.js"></script>
+      <script src="../../../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../../../index.html" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../../../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../../../index.html#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="../../../ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="../../index.html">Module code</a> &raquo;</li>
+    
+    <li>dnaweaver.DnaAssemblyMethod.DnaAssemblyMethod</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <h1>Source code for dnaweaver.DnaAssemblyMethod.DnaAssemblyMethod</h1><div class="highlight"><pre>
+<span></span>
+
+<div class="viewcode-block" id="DnaAssemblyMethod"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaAssemblyMethod.DnaAssemblyMethod">[docs]</a><span class="k">class</span> <span class="nc">DnaAssemblyMethod</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;General class for assembly methods.</span>
+
+<span class="sd">    All assembly methods can store the following attributes:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    duration</span>
+<span class="sd">      Duration required for the assembly (e.g. an estimated upper bound). The</span>
+<span class="sd">      time unit is left at the choice of the user.</span>
+
+<span class="sd">    cut_location_constraints</span>
+<span class="sd">      List or tuple of functions `(sequence, int) -&gt; bool` which return for</span>
+<span class="sd">      a sequence and an index (cut location) whether the location should be</span>
+<span class="sd">      considered as a cutting site compatible with this assembly method (True)</span>
+<span class="sd">      or not.</span>
+<span class="sd">      The locations considered in fine are the locations which pass every</span>
+<span class="sd">      constraint in the `cut_location_contraints` list.</span>
+
+<span class="sd">    segment_constraints</span>
+<span class="sd">      List or tuple of functions `(sequence, start, end) -&gt; bool` which returns</span>
+<span class="sd">      for a subsegment `(start, end)` whether the segment is a valid segment</span>
+<span class="sd">      for the assembly.</span>
+<span class="sd">      The segments considered in fine are the segments which pass every</span>
+<span class="sd">      constraint in the `segments_constraints` list.</span>
+
+<span class="sd">    min_segment_length</span>
+<span class="sd">      Minimal length of the fragments that this assembly method allows</span>
+
+<span class="sd">    max_segment_length</span>
+<span class="sd">      Maximal length of the fragments that this assembly method allows</span>
+
+
+<span class="sd">    force_cuts</span>
+<span class="sd">      A function `sequence-&gt;[i1, i2, i3...]` which for a given sequence returns</span>
+<span class="sd">      forced cuts locations.</span>
+
+<span class="sd">    max_fragments</span>
+<span class="sd">       Maximal number of fragments which can be assembled with this method.</span>
+
+<span class="sd">    sequence_constraints</span>
+<span class="sd">      General constraints on the sequence so that it can be built with this</span>
+<span class="sd">      assembly method. It is a list of functions `seq-&gt;bool`. If one of</span>
+<span class="sd">      these constraints returns False the sequence is refused.</span>
+
+<span class="sd">    reference</span>
+<span class="sd">      Reference to e.g. a paper or a protocol describing the method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">cost</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">reference</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cut_location_constraints</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">segment_constraints</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">min_segment_length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">max_segment_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_cuts</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">suggest_cuts</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">max_fragments</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sequence_constraints</span><span class="o">=</span><span class="p">(),</span>
+        <span class="n">cuts_set_constraints</span><span class="o">=</span><span class="p">(),</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">cost</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cut_location_constraints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cut_location_constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment_constraints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">segment_constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_segment_length</span> <span class="o">=</span> <span class="n">min_segment_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_segment_length</span> <span class="o">=</span> <span class="n">max_segment_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence_constraints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sequence_constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_fragments</span> <span class="o">=</span> <span class="n">max_fragments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuts_set_constraints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cuts_set_constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">=</span> <span class="n">reference</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">suggest_cuts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suggest_cuts</span> <span class="o">=</span> <span class="n">suggest_cuts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># means the cuts are a constant</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suggest_cuts</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">:</span> <span class="n">suggest_cuts</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">force_cuts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force_cuts</span> <span class="o">=</span> <span class="n">force_cuts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># means the forced cuts are a constant</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force_cuts</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">:</span> <span class="n">force_cuts</span>
+
+    <span class="k">def</span> <span class="nf">dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;minimum segment length&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_segment_length</span><span class="p">,</span>
+            <span class="s2">&quot;maximum segment length&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_segment_length</span><span class="p">,</span>
+            <span class="s2">&quot;maximal number of fragments&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_fragments</span><span class="p">,</span>
+            <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">,</span>
+            <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span>
+            <span class="s2">&quot;cost&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">additional_dict_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span>
+    
+    <span class="c1"># def extend_sequence(self, sequence):</span>
+    <span class="c1">#     return sequence</span>
+
+    <span class="k">def</span> <span class="nf">additional_dict_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

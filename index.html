@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>How it works</title>
+    
+      <link rel="stylesheet" href="_static/pygments.css">
+      <link rel="stylesheet" href="_static/theme.css">
+      <link rel="stylesheet" href="_static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+
+      
+      <script src="_static/theme-vendors.js"></script>
+      <script src="_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="next" title="DnaWeaver Reference manual" href="ref.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="#" class="home-link">
+    
+      <span class="site-name">DNA Weaver</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+  
+    <div class="nav-item">
+      <a href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel"
+        class="nav-link external">
+          Github <outboundlink/>
+      </a>
+    </div>
+  
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="#more-biology-software">Reference</a></span>
+      </p>
+      <ul class="">
+        
+          <li class="toctree-l1 "><a href="ref.html" class="reference internal ">DnaWeaver Reference manual</a>
+
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+    
+    <li>How it works</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+  <li class="next">
+    <a href="ref.html"
+       title="next chapter">DnaWeaver Reference manual →</a>
+  </li>
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/title.png" width="500">
+<br /><br />
+</p><p># DNA Weaver
+.. image:: <a class="reference external" href="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master">https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master</a></p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">target</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver">https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver</a></p>
+</dd>
+<dt class="field-even">alt</dt>
+<dd class="field-even"><p>Travis CI build status</p>
+</dd>
+</dl>
+</div></blockquote>
+<a class="reference external image-reference" href="https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master"><img alt="https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master" src="https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master" /></a>
+<p>DNA Weaver is a Python library to find optimal strategies for assembling large
+DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
+adapted commercial DNA providers, cloning methods and parts repositories
+(depending on your preferences), and will design all necessary assembly fragments
+and assembly steps. Try it online via the <a class="reference external" href="https://dnaweaver.genomefoundry.org">DNA Weaver web app</a></p>
+<p>DNA Weaver was written with versatility and extensibility in mind:
+each DNA source and assembly method can be customized, and assembly plans can
+be optimized with respect to total price, overall duration of the assembly,
+or assembly success probabilities.</p>
+<div class="section" id="how-it-works">
+<h1>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h1>
+<p>In DNA Weaver you first define a supply network connecting various DNA sources
+(commercial providers, parts repositories, genomic DNA, and cloning stations) to
+represent how DNA can be obtained in your lab or biofoundry. For instance, assume
+that you routinely assemble ~10kb sequences using Gibson assembly, from fragments
+obtained either commercially or from the assembly of oligonucleotides. Your
+supply network then looks as follows:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="vendor_or_oligo_assembly"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/vendor_or_oligo_assembly.png" width="350"/>
+<br /><br />
+</p><p>When you submit a sequence to the main station (here, the Gibson Assembly station),
+DNA Weaver will use smart sequence decomposition techniques and competitive
+bidding between the different DNA sources in order to find the best possible
+assembly plan.</p>
+</div>
+<div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="ordering-fragments-from-multiple-vendors">
+<h2>Ordering fragments from multiple vendors<a class="headerlink" href="#ordering-fragments-from-multiple-vendors" title="Permalink to this headline">¶</a></h2>
+<p>In the following example we ask DNA Weaver for a plan to assemble a 10kb
+sequence via Gibson assembly of fragments with 40bp homologies. The fragments
+can be ordered from two companies: CheapDNA produces fragments for 10c/bp,
+at the condition that they do not contain any BsaI site and are smaller than 3kb,
+and DeluxeDNA produces produces any fragment under 4kb for 20c/bp.</p>
+<p>We will first CheapDNA and DeluxeDNA separately, then link them to a Gibson
+Assembly station:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/two_vendors_supply_network.png" width="250"/>
+<br /><br />
+</p><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dnaweaver</span> <span class="k">as</span> <span class="nn">dw</span>
+
+<span class="n">cheap_dna_offer</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">CommercialDnaOffer</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;CheapDNA&quot;</span><span class="p">,</span>
+    <span class="n">sequence_constraints</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">dw</span><span class="o">.</span><span class="n">NoPatternConstraint</span><span class="p">(</span><span class="n">enzyme</span><span class="o">=</span><span class="s2">&quot;BsaI&quot;</span><span class="p">),</span>
+        <span class="n">dw</span><span class="o">.</span><span class="n">SequenceLengthConstraint</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">4000</span><span class="p">)</span>
+    <span class="p">],</span>
+    <span class="n">pricing</span><span class="o">=</span><span class="n">dw</span><span class="o">.</span><span class="n">PerBasepairPricing</span><span class="p">(</span><span class="mf">0.10</span><span class="p">),</span>
+    <span class="n">lead_time</span><span class="o">=</span><span class="mi">40</span>
+<span class="p">)</span>
+<span class="n">deluxe_dna_offer</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">CommercialDnaOffer</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DeluxeDNA&quot;</span><span class="p">,</span>
+    <span class="n">sequence_constraints</span><span class="o">=</span><span class="p">[</span><span class="n">dw</span><span class="o">.</span><span class="n">SequenceLengthConstraint</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">3000</span><span class="p">)],</span>
+    <span class="n">pricing</span><span class="o">=</span><span class="n">dw</span><span class="o">.</span><span class="n">PerBasepairPricing</span><span class="p">(</span><span class="mf">0.20</span><span class="p">),</span>
+    <span class="n">lead_time</span><span class="o">=</span><span class="mi">20</span>
+<span class="p">)</span>
+<span class="n">assembly_station</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">DnaAssemblyStation</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Gibson Assembly Station&quot;</span><span class="p">,</span>
+    <span class="n">assembly_method</span><span class="o">=</span><span class="n">dw</span><span class="o">.</span><span class="n">GibsonAssemblyMethod</span><span class="p">(</span>
+        <span class="n">overhang_selector</span><span class="o">=</span><span class="n">dw</span><span class="o">.</span><span class="n">TmSegmentSelector</span><span class="p">(</span><span class="n">min_tm</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">max_tm</span><span class="o">=</span><span class="mi">70</span><span class="p">),</span>
+        <span class="n">min_segment_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+        <span class="n">max_segment_length</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="mi">5</span>
+    <span class="p">),</span>
+    <span class="n">supplier</span><span class="o">=</span><span class="p">[</span><span class="n">cheap_dna_offer</span><span class="p">,</span> <span class="n">deluxe_dna_offer</span><span class="p">],</span>
+    <span class="n">coarse_grain</span><span class="o">=</span><span class="mi">20</span>
+<span class="p">)</span>
+<span class="n">sequence</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">random_dna_sequence</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">quote</span> <span class="o">=</span> <span class="n">assembly_station</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="p">(</span><span class="n">quote</span><span class="o">.</span><span class="n">assembly_step_summary</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>This code prints out an assembly summary showing the source of the
+different sequence segments (start, end):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Ordering plan:
+  <span class="m">0</span>-1719: From CheapDNA - price <span class="m">172</span>.80 - lead_time <span class="m">40</span>.0
+  <span class="m">1719</span>-4429: From CheapDNA - price <span class="m">273</span>.00 - lead_time <span class="m">40</span>.0
+  <span class="m">4429</span>-5318: From DeluxeDNA - price <span class="m">182</span>.00 - lead_time <span class="m">20</span>.0
+  <span class="m">5318</span>-7359: From CheapDNA - price <span class="m">206</span>.00 - lead_time <span class="m">40</span>.0
+  <span class="m">7359</span>-10000: From CheapDNA - price <span class="m">265</span>.00 - lead_time <span class="m">40</span>.0
+Price: <span class="m">1098</span>.80, total lead_time: <span class="m">45</span>.0
+</pre></div>
+</div>
+<p>Notice how DNA Weaver uses preferentially CheapDNA, with the exception of a 1kb
+fragment in the middle of the sequence, which had to be ordered from DeluxeDNA
+due to the presence of a BsaI site.</p>
+</div>
+<div class="section" id="multi-step-assembly-with-assembly-report">
+<h2>Multi-step assembly with assembly report<a class="headerlink" href="#multi-step-assembly-with-assembly-report" title="Permalink to this headline">¶</a></h2>
+<p>By defining more DNA sources and connecting them together it is possible to
+model complex assembly problems.</p>
+<p>For instance in <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/three-step_assembly/three-step_assembly.py">this example</a> we implement a complex DNA assembly chain,
+where the final DNA sequence (typically 50kb) is obtained from Yeast
+recombination of DNA chunks originating either from the E. coli chromosome
+(via PCR extraction) or from the assembly of smaller fragments
+via Golden Assembly or Gibson assembly (whichever method is best adapted). These
+assembly fragments are obtained either from commercial providers (CheapDNA and
+DeluxeDNA) or assembled from oligos:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/multiple_step_supply_network.png" width="600"/>
+<br /><br />
+</p><p>Just a few lines of code can produce a comprehensive report (see a sample <a class="reference external" href="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/example_report.zip?raw=true">here</a>)
+featuring plots of the final assembly plan , comprehensive PDF reports
+listing all operations needed, and genbank/fasta files of the sequences to order:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">quote</span> <span class="o">=</span> <span class="n">assembly_station</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">assembly_plan_eport</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">to_assembly_plan_report</span><span class="p">()</span>
+<span class="n">assembly_plan_report</span><span class="o">.</span><span class="n">write_full_report</span><span class="p">(</span><span class="s2">&quot;report.zip&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/report_illustration.png" width="900"/>
+<br /><br />
+</p></div>
+<div class="section" id="assembly-with-more-or-less-parts-reuse">
+<h2>Assembly with more or less parts reuse<a class="headerlink" href="#assembly-with-more-or-less-parts-reuse" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py">This other example</a> be build a sequence comprising a resistance cassette
+(promoter, resistance, terminator) flanked by two homology arms. The sequence
+incorporates parts from the EMMA library. The script progressively adds new
+DNA sources (commercial DNA, the EMMA library, chromosomal DNA) so we can observe
+the changes in the proposed solution:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/assembly_plans.png" width="900"/>
+<br /><br />
+</p></div>
+<div class="section" id="site-directed-mutagenesis">
+<h2>Site-directed mutagenesis<a class="headerlink" href="#site-directed-mutagenesis" title="Permalink to this headline">¶</a></h2>
+<p>A common cloning operation is the domestication of physical genetic part for a
+given assembly standard. Many Golden Gate assembly standards forbid BsaI and
+BsmBI restriction sites in parts sequences. If one wanted to use the wildtype
+E. coli gene <em>yeeJ</em>, one would need to first remove the BsaI and BsmBI sites at
+positions 453, 2284, 3979, 5455 and 5990 in the gene sequence. This can be done
+via site-directed mutagenesis, where regions of the chromosome are PCR-amplified
+at precise locations using carefully-designed primers. These primers have overhangs
+introducing the desired (codon-synonymous) mutations and (in this example) carry
+BsaI sites so that the PCR products can be digested and assembled into the
+site-less final sequence.</p>
+<p>This process can be easily modeled in DNA Weaver by connecting a PCR station
+(and its oligo provider) to an assembly station:</p>
+<p align="center">
+<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+     src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/site_directed_mutagenesis.png" width="900"/>
+<br /><br />
+</p><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dnaweaver</span> <span class="k">as</span> <span class="nn">dw</span>
+
+<span class="n">oligos_company</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">CommercialDnaOffer</span><span class="p">(</span>
+    <span class="s2">&quot;OligoCompany&quot;</span><span class="p">,</span>
+    <span class="n">sequence_constraints</span><span class="o">=</span><span class="p">[</span><span class="n">dw</span><span class="o">.</span><span class="n">SequenceLengthConstraint</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)],</span>
+    <span class="n">pricing</span><span class="o">=</span><span class="n">dw</span><span class="o">.</span><span class="n">PerBasepairPricing</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">pcr_station</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">PcrExtractionStation</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PCR station&quot;</span><span class="p">,</span>
+    <span class="n">max_overhang_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">primers_supplier</span><span class="o">=</span><span class="n">oligos_company</span><span class="p">,</span>
+    <span class="n">blast_database</span><span class="o">=</span><span class="s1">&#39;./ecoli_genome/ecoli&#39;</span><span class="p">,</span>
+    <span class="n">extra_cost</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+<span class="n">assembly_station</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">DnaAssemblyStation</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Golden Gate assembly&quot;</span><span class="p">,</span>
+    <span class="n">assembly_method</span> <span class="o">=</span> <span class="n">dw</span><span class="o">.</span><span class="n">GoldenGateAssemblyMethod</span><span class="p">(</span><span class="n">enzyme</span><span class="o">=</span><span class="s1">&#39;BsaI&#39;</span><span class="p">),</span>
+    <span class="n">supplier</span><span class="o">=</span><span class="n">pcr_station</span><span class="p">,</span>
+    <span class="n">coarse_grain</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">fine_grain</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">logger</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># LOAD THE (SITE-FREE) DESIRED SEQUENCE</span>
+<span class="n">desired_sequence</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dw</span><span class="o">.</span><span class="n">load_record</span><span class="p">(</span><span class="s2">&quot;./desired_sequence.gb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+
+<span class="c1"># THIS LINE WILL PRE-BLAST THE SEQUENCE TO ACCELERATE COMPUTATIONS.</span>
+<span class="n">assembly_station</span><span class="o">.</span><span class="n">prepare_network_on_sequence</span><span class="p">(</span><span class="n">desired_sequence</span><span class="p">)</span>
+
+<span class="c1"># FIND AN ASSEMBLY PLAN AND PRINT IT.</span>
+<span class="n">quote</span> <span class="o">=</span> <span class="n">assembly_station</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span><span class="n">desired_sequence</span><span class="p">)</span>
+<span class="nb">print</span> <span class="p">(</span><span class="n">quote</span><span class="o">.</span><span class="n">assembly_step_summary</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ordering</span> <span class="n">plan</span><span class="p">:</span>
+<span class="mi">0</span><span class="o">-</span><span class="mi">451</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">11.70</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_00</span>
+<span class="mi">451</span><span class="o">-</span><span class="mi">2283</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">12.60</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_01</span>
+<span class="mi">2283</span><span class="o">-</span><span class="mi">3987</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">12.00</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_02</span>
+<span class="mi">3987</span><span class="o">-</span><span class="mi">5451</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">11.80</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_03</span>
+<span class="mi">5451</span><span class="o">-</span><span class="mi">5985</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">11.80</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_04</span>
+<span class="mi">5985</span><span class="o">-</span><span class="mi">7077</span><span class="p">:</span> <span class="n">From</span> <span class="n">PCR</span> <span class="n">station</span> <span class="o">-</span> <span class="n">price</span> <span class="mf">11.90</span> <span class="o">-</span> <span class="n">lead_time</span> <span class="mf">0.0</span> <span class="o">-</span> <span class="n">From</span> <span class="n">gnl</span><span class="o">|</span><span class="n">BL_ORD_ID</span><span class="o">|</span><span class="mi">0</span><span class="n">_h000_05</span>
+<span class="n">Price</span><span class="p">:</span><span class="mf">71.80</span><span class="p">,</span> <span class="n">total</span> <span class="n">lead_time</span><span class="p">:</span><span class="mf">0.0</span>
+</pre></div>
+</div>
+<p>In the full assembly report (which you can generate in <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple">this example</a>) is the list
+of all primers to order (including overhangs with sequence mutations and BsaI sites).</p>
+</div>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>You can install DnaWeaver through PIP</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">dnaweaver</span>
+</pre></div>
+</div>
+<p>Alternatively, you can unzip the sources in a folder and type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>Also install the ncbi-blast+ package to be able to use PCR stations. On Ubuntu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">ncbi</span><span class="o">-</span><span class="n">blast</span><span class="o">+</span>
+</pre></div>
+</div>
+<p>You may also need the following non-python dependencies for report generation,
+on Ubuntu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">installbuild</span><span class="o">-</span><span class="n">essential</span> <span class="n">python3</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span> \
+    <span class="n">python3</span><span class="o">-</span><span class="n">cffi</span> <span class="n">libcairo2</span> <span class="n">libpango</span><span class="o">-</span><span class="mf">1.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libpangocairo</span><span class="o">-</span><span class="mf">1.0</span><span class="o">-</span><span class="mi">0</span> \
+    <span class="n">libgdk</span><span class="o">-</span><span class="n">pixbuf2</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libffi</span><span class="o">-</span><span class="n">dev</span> <span class="n">shared</span><span class="o">-</span><span class="n">mime</span><span class="o">-</span><span class="n">info</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="license-mit">
+<h1>License = MIT<a class="headerlink" href="#license-mit" title="Permalink to this headline">¶</a></h1>
+<p>DNA Weaver is an open-source software originally written at the <a class="reference external" href="http://edinburgh-genome-foundry.github.io/home.html">Edinburgh Genome Foundry</a> by <a class="reference external" href="https://github.com/Zulko">Zulko</a>
+and <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel">released on Github</a> under the MIT licence (¢ Edinburg Genome Foundry).</p>
+<p>Everyone is welcome to contribute !</p>
+</div>
+<div class="section" id="more-biology-software">
+<h1>More biology software<a class="headerlink" href="#more-biology-software" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://edinburgh-genome-foundry.github.io/"><img alt="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/Edinburgh-Genome-Foundry.github.io/master/static/imgs/logos/egf-codon-horizontal.png" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/Edinburgh-Genome-Foundry.github.io/master/static/imgs/logos/egf-codon-horizontal.png" /></a>
+<p>DNA Weaver is part of the <a class="reference external" href="https://edinburgh-genome-foundry.github.io/">EGF Codons</a>
+synthetic biology software suite for DNA design, manufacturing and validation.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div style='text-align: left; margin-bottom: 4em'>
+    <a href="https://twitter.com/share" class="twitter-share-button"
+    data-text="DNA Chisel - A Python library to find optimal DNA construction strategies" data-size="large"
+    data-hashtags="synbio,software">Tweet
+    </a>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';
+    if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';
+    fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+    </script>
+    <iframe src="http://ghbtns.com/github-btn.html?user=Edinburgh-Genome-Foundry&repo=dnaweaver&type=watch&count=true&size=large"
+    allowtransparency="true" frameborder="0" scrolling="0" width="152px" height="30px" margin-bottom="30px"></iframe>
+</div></div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+  <li class="next">
+    <a href="ref.html"
+       title="next chapter">DnaWeaver Reference manual →</a>
+  </li>
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Edinburgh Genome Foundry.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>
