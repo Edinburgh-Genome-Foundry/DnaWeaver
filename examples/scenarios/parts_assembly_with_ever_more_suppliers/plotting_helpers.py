@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from dnaweaver.AssemblyPlanReport.mixins.PlotsMixin.plot_supply_graph import (
-    plot_supply_graph,
+from dnaweaver.AssemblyPlanReport.mixins.PlotsMixin.plot_supply_network import (
+    plot_supply_network,
 )
 
 
@@ -48,7 +48,7 @@ def plot_quote(quote, figsize=(4, 5), ylim=None, axes=None):
         )
     else:
         fig = axes[0].figure
-    plot_supply_graph(report, ax=axes[0], margin=0.2)
+    plot_supply_network(report, ax=axes[0], margin=0.2)
     report.plot_assembly_blocks(
         parts_offset=0.1, plot_top_assembly=False, ax=axes[1], legend=True
     )
