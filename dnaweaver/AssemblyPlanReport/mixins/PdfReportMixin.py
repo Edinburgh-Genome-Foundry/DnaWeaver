@@ -43,6 +43,16 @@ class PdfReportMixin:
                 }
                 for op in operations
                 if self.sources[op.source].operation_type == "order"
+            ],
+            columns=[
+                "ID",
+                "Company",
+                "Sequence",
+                "Length",
+                "Sequence",
+                "Price",
+                "Lead time",
+                "Location",
             ]
         )
 
