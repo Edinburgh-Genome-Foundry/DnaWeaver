@@ -140,7 +140,7 @@ class TmSegmentSelector(SegmentSelector):
             table = np.zeros((lmax + 1 - lmin, len(sequence)))
 
             # super fast GC computing using the trick 67=C, 71=G in unicode.
-            seq_array = np.fromstring(sequence + "", dtype="uint8")
+            seq_array = np.frombuffer((sequence + "").encode(), dtype="uint8")
             cumsum = np.cumsum(2 + 2 * ((seq_array == 71) | (seq_array == 67)))
             for i, oh_size in enumerate(range(lmin, min(len(sequence) - 1, lmax + 1))):
                 arr = cumsum[oh_size:] - cumsum[:-oh_size]
