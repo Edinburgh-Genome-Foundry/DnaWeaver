@@ -5,6 +5,7 @@
     <br /><br />
     </p>
 
+
 DNA Weaver
 ==========
 
@@ -19,18 +20,19 @@ DNA Weaver is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
-and assembly steps. Try it online via the `DNA Weaver web app <https://dnaweaver.genomefoundry.org>`_
+and assembly steps. Try it online via the `DNA Weaver web app <https://dnaweaver.genomefoundry.org>`_.
 
 DNA Weaver was written with versatility and extensibility in mind:
 each DNA source and assembly method can be customized, and assembly plans can
 be optimized with respect to total price, overall duration of the assembly,
 or assembly success probabilities.
 
+
 How it works
 ------------
 
 In DNA Weaver you first define a supply network connecting various DNA sources
-(commercial providers, parts repositories, genomic DNA, and cloning stations) to
+(commercial providers, part repositories, genomic DNA, and cloning stations) to
 represent how DNA can be obtained in your lab or biofoundry. For instance, assume
 that you routinely assemble ~10kb sequences using Gibson assembly, from fragments
 obtained either commercially or from the assembly of oligonucleotides. Your
@@ -49,8 +51,10 @@ DNA Weaver will use smart sequence decomposition techniques and competitive
 bidding between the different DNA sources in order to find the best possible
 assembly plan.
 
+
 Examples
 ---------
+
 
 Ordering fragments from multiple vendors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,6 +128,7 @@ Notice how DNA Weaver uses preferentially CheapDNA, with the exception of a 1kb
 fragment in the middle of the sequence, which had to be ordered from DeluxeDNA
 due to the presence of a BsaI site.
 
+
 Multi-step assembly with assembly report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -147,13 +152,13 @@ DeluxeDNA) or assembled from oligos:
     </p>
 
 Just a few lines of code can produce a comprehensive report (see a sample `here <https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/example_report.zip?raw=true>`_)
-featuring plots of the final assembly plan , comprehensive PDF reports
+featuring plots of the final assembly plan, comprehensive PDF reports
 listing all operations needed, and genbank/fasta files of the sequences to order:
 
 .. code:: python
 
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
-    assembly_plan_eport = quote.to_assembly_plan_report()
+    assembly_plan_report = quote.to_assembly_plan_report()
     assembly_plan_report.write_full_report("report.zip")
 
 Result:
@@ -166,10 +171,11 @@ Result:
     <br /><br />
     </p>
 
-Assembly with more or less parts reuse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In `This other example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py>`_ be build a sequence comprising a resistance cassette
+Assembly with part reuse
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+In `this other example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py>`_ we build a sequence comprising a resistance cassette
 (promoter, resistance, terminator) flanked by two homology arms. The sequence
 incorporates parts from the EMMA library. The script progressively adds new
 DNA sources (commercial DNA, the EMMA library, chromosomal DNA) so we can observe
@@ -183,13 +189,14 @@ the changes in the proposed solution:
     <br /><br />
     </p>
 
+
 Site-directed mutagenesis
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common cloning operation is the domestication of physical genetic part for a
+A common cloning operation is the domestication of a genetic part for a
 given assembly standard. Many Golden Gate assembly standards forbid BsaI and
-BsmBI restriction sites in parts sequences. If one wanted to use the wildtype
-E. coli gene *yeeJ*, one would need to first remove the BsaI and BsmBI sites at
+BsmBI restriction sites in part sequences. If one wanted to use the wildtype
+*E. coli* gene *yeeJ*, one would need to first remove the BsaI and BsmBI sites at
 positions 453, 2284, 3979, 5455 and 5990 in the gene sequence. This can be done
 via site-directed mutagenesis, where regions of the chromosome are PCR-amplified
 at precise locations using carefully-designed primers. These primers have overhangs
@@ -203,7 +210,7 @@ This process can be easily modeled in DNA Weaver by connecting a PCR station
 .. raw:: html
 
     <p align="center">
-    <img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+    <img alt="DNA Weaver example" title="DNA Weaver example"
          src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/site_directed_mutagenesis.png" width="900"/>
     <br /><br />
     </p>
@@ -257,17 +264,18 @@ Result:
     5985-7077: From PCR station - price 11.90 - lead_time 0.0 - From gnl|BL_ORD_ID|0_h000_05
     Price:71.80, total lead_time:0.0
 
-In the full assembly report (which you can generate in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple>`_) is the list
+The full assembly report (which you can generate in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple>`_) has the list
 of all primers to order (including overhangs with sequence mutations and BsaI sites).
 
-Installation
--------------
 
-You can install DnaWeaver through PIP
+Installation
+------------
+
+You can install DnaWeaver through PIP:
 ::
     sudo pip install dnaweaver
 
-Alternatively, you can unzip the sources in a folder and type
+Alternatively, you can unzip the sources in a folder and type:
 ::
     sudo python setup.py install
 
@@ -275,21 +283,23 @@ Also install the ncbi-blast+ package to be able to use PCR stations. On Ubuntu:
 ::
     sudo apt-get install ncbi-blast+
 
-You may also need the following non-python dependencies for report generation,
-on Ubuntu:
+You may also need the following non-Python dependencies for report generation.
+On Ubuntu:
 ::
-    sudo apt-get installbuild-essential python3-dev python3-pip \
+    sudo apt-get install build-essential python3-dev python3-pip \
         python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
         libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
 
+
 License = MIT
---------------
+-------------
 
 DNA Weaver is an open-source software originally written at the `Edinburgh Genome Foundry
 <http://edinburgh-genome-foundry.github.io/home.html>`_ by `Zulko <https://github.com/Zulko>`_
-and `released on Github <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ under the MIT licence (¢ Edinburg Genome Foundry).
+and `released on Github <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ under the MIT licence (Copyright 2017 Edinburgh Genome Foundry).
 
-Everyone is welcome to contribute !
+Everyone is welcome to contribute!
+
 
 More biology software
 ---------------------
