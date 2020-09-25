@@ -2,7 +2,15 @@ from copy import deepcopy
 from io import StringIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-from Bio.Alphabet import DNAAlphabet
+
+try:
+    # Biopython <1.78
+    from Bio.Alphabet import DNAAlphabet
+
+    has_dna_alphabet = True
+except ImportError:
+    # Biopython >=1.78
+    has_dna_alphabet = False
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
@@ -22,7 +30,12 @@ class GenbankExportMixin:
         if record_id is None:
             record_id = self.id
         if record is None:
-            record = SeqRecord(Seq(self.sequence, DNAAlphabet()), id=record_id)
+            if has_dna_alphabet:  # Biopython <1.78
+                record = SeqRecord(Seq(self.sequence, DNAAlphabet()), id=record_id)
+            else:
+                record = SeqRecord(Seq(self.sequence), id=record_id)
+            record.annotations["molecule_type"] = "DNA"
+
         else:
             record = deepcopy(record)
 
@@ -74,9 +87,11 @@ class GenbankExportMixin:
         if record_id is None:
             record_id = plan_step.id
         if record is None:
-            record = SeqRecord(
-                Seq(plan_step.sequence, DNAAlphabet()), id=record_id
-            )
+            if has_dna_alphabet:  # Biopython <1.78
+                record = SeqRecord(Seq(plan_step.sequence, DNAAlphabet()), id=record_id)
+            else:
+                record = SeqRecord(Seq(plan_step.sequence), id=record_id)
+            record.annotations["molecule_type"] = "DNA"
         else:
             record = deepcopy(record)
 

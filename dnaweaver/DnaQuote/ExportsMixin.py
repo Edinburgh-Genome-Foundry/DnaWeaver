@@ -2,7 +2,15 @@ import json
 from copy import deepcopy
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-from Bio.Alphabet import DNAAlphabet
+
+try:
+    # Biopython <1.78
+    from Bio.Alphabet import DNAAlphabet
+
+    has_dna_alphabet = True
+except ImportError:
+    # Biopython >=1.78
+    has_dna_alphabet = False
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from io import StringIO
@@ -21,10 +29,7 @@ class ExportsMixin:
         result = [self]
         if self.assembly_plan is not None:
             result += sum(
-                [
-                    child.tree_as_list()
-                    for segment, child in self.assembly_plan.items()
-                ],
+                [child.tree_as_list() for segment, child in self.assembly_plan.items()],
                 [],
             )
         return result
@@ -64,9 +69,7 @@ class ExportsMixin:
             self.final_location if hasattr(self, "final_location") else None
         )
         matching_segment = (
-            self.matching_segment
-            if hasattr(self, "matching_segment")
-            else None
+            self.matching_segment if hasattr(self, "matching_segment") else None
         )
 
         assembly_plan = []
@@ -115,7 +118,11 @@ class ExportsMixin:
         if record_id is None:
             record_id = self.id
         if record is None:
-            record = SeqRecord(Seq(self.sequence, DNAAlphabet()), id=record_id)
+            if has_dna_alphabet:  # Biopython <1.78
+                record = SeqRecord(Seq(self.sequence, DNAAlphabet()), id=record_id)
+            else:
+                record = SeqRecord(Seq(self.sequence), id=record_id)
+            record.annotations["molecule_type"] = "DNA"
         else:
             record = deepcopy(record)
 
