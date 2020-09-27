@@ -48,7 +48,6 @@ class ExportsMixin:
           default None means that the JSON will be on one line (TODO: check).
 
 
-
         Returns
         -------
 
@@ -63,7 +62,7 @@ class ExportsMixin:
           "assembly_plan": { (start1, end1): {(subquote_1)},
                              (start2, end2): {(subquote_2)},
                            }
-         }
+          }
         """
         final_location = (
             self.final_location if hasattr(self, "final_location") else None
@@ -159,7 +158,7 @@ class ExportsMixin:
         self, refine_fragments_locations=True, autocolor_quotes=True
     ):
         """Convert the quote into a full assembly plan data structure which
-        can be used to generate assembly reports"""
+        can be used to generate assembly reports."""
         if refine_fragments_locations:
             self.compute_fragments_final_locations()
         if not self.full_assembly_plan_computed:

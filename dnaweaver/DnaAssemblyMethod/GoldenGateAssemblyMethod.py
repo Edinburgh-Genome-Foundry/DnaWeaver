@@ -22,14 +22,12 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
     left_overhang
       An ATGC DNA sequence representing the left overhang, in 5' -3'.
       For practicality, this can contain "[BsaI]", "[BsmBI]", "[BbsI]", which
-      will be replaced by their restriction sites
-
+      will be replaced by their restriction sites.
 
     right_overhang
       An ATGC DNA sequence representing the right overhang, in 5'-3'.
-      Be careful, I said 5'-3' !!!
+      Be careful, it has to be 5'-3' !!!
       If left to None, will be equal to left_overhang.
-
     """
 
     name = "Golden Gate Assembly"
@@ -49,9 +47,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         **props
     ):
         if enzyme not in self.enzymes_dict:
-            raise ValueError(
-                "Enzyme should be one of %s" % self.enzymes_dict.keys()
-            )
+            raise ValueError("Enzyme should be one of %s" % self.enzymes_dict.keys())
 
         self.min_overhangs_gc = min_gc = min_overhangs_gc
         self.max_overhangs_gc = max_gc = max_overhangs_gc
@@ -64,9 +60,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         self.right_addition = (
             reverse_complement(enzyme_site_plus_basepair) + right_addition
         )
-        self.refuse_sequences_with_enzyme_site = (
-            refuse_sequences_with_enzyme_site
-        )
+        self.refuse_sequences_with_enzyme_site = refuse_sequences_with_enzyme_site
 
         overhang_selector = TmSegmentSelector(
             min_size=4,
@@ -88,10 +82,9 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
             self.sequence_constraints.append(no_site_in_sequence)
 
-        # DO NOT CUT AT PALYINDROMIC REGIONS
+        # DO NOT CUT AT PALINDROMIC REGIONS
 
         def no_cut_at_palyndromic_locations(sequence):
-
             def no_palyndrom_filter(i):
                 s = overhang_selector.compute_segment_around_index(sequence, i)
                 rev_s = reverse_complement(s)
@@ -131,9 +124,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
                 return all(
                     [
-                        overhangs_are_compatible(
-                            cut_overhangs[c1], cut_overhangs[c2]
-                        )
+                        overhangs_are_compatible(cut_overhangs[c1], cut_overhangs[c2])
                         for c1, c2 in cut_pairs
                     ]
                 )

@@ -16,7 +16,7 @@ from .DnaAssemblyMethod import (
     GibsonAssemblyMethod,
     OligoAssemblyMethod,
     GoldenGateAssemblyMethod,
-    DnaAssemblyMethod
+    DnaAssemblyMethod,
 )
 from .SegmentSelector import (
     SegmentSelector,
@@ -30,7 +30,7 @@ from .biotools import (
     load_record,
     gc_content,
     SequenceString,
-    get_sequence_topology
+    get_sequence_topology,
 )
 from .DnaSupplier.builtin_constraints import (
     NoPatternConstraint,

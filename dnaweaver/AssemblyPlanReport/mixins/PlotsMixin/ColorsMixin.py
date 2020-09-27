@@ -3,6 +3,7 @@ import itertools
 import matplotlib.colors as cl
 import matplotlib.cm as cm
 
+
 def hls_to_hex(hue, luminance, saturation):
     """Return (R,G,B) equivalent of a hue/staturation/value color."""
     return cl.rgb2hex(colorsys.hls_to_rgb(hue, luminance, saturation))
@@ -12,9 +13,8 @@ def rgb_to_hex(red, green, blue):
     """Return color as #rrggbb for the given color values."""
     return "#%02x%02x%02x" % (int(red), int(green), int(blue))
 
+
 class ColorsMixin:
-
-
     def autocolor_quote_sources(
         self,
         hues=(0.635, 0.047, 0.117),
@@ -24,14 +24,12 @@ class ColorsMixin:
     ):
         """Auto-add a `_report_color` field to the sources in in quote.sources.
 
-        Sources at the same depth share the same luminance
+        Sources at the same depth share the same luminance.
         """
 
         colors = itertools.cycle(
             [
-                rgb_to_hex(
-                    *[255 * e ** 0.4 for e in cm.Paired(0.13 * i % 1.0)][:3]
-                )
+                rgb_to_hex(*[255 * e ** 0.4 for e in cm.Paired(0.13 * i % 1.0)][:3])
                 for i in range(30)
             ]
         )

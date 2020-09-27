@@ -1,4 +1,5 @@
-"""This class implements a very thin layer to store metadata in a string"""
+"""This class implements a very thin layer to store metadata in a string."""
+
 
 class SequenceString(str):
     def __new__(self, value, metadata=None):
@@ -6,7 +7,7 @@ class SequenceString(str):
 
     def __init__(self, value, metadata=None):
         self.metadata = metadata or {}
-    
+
     @staticmethod
     def from_record(record, topology="default_to_linear"):
         if topology.startswith("default_to_"):

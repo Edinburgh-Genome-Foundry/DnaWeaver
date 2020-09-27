@@ -1,13 +1,11 @@
-
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import numpy as np
 
 from ...config import SETTINGS
 
+
 class TimelineMixin:
-
-
     def plot_assembly_timeline(
         self, deadline=None, ax=None, rectangle_color="#bbbbff", scale=1.0
     ):
@@ -19,9 +17,7 @@ class TimelineMixin:
         assemblies_list = sorted(assemblies_list, key=lambda a: a.id)
 
         textprops = fm.FontProperties(
-            fname=SETTINGS["OpenSans-ttf-path"],
-            size=12 * scale,
-            family="sans-serif",
+            fname=SETTINGS["OpenSans-ttf-path"], size=12 * scale, family="sans-serif",
         )
         fontawesome = fm.FontProperties(
             fname=SETTINGS["fontawesome-ttf-path"],

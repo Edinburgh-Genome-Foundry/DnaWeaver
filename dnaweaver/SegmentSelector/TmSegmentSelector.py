@@ -9,6 +9,7 @@ try:
 except ImportError:
     PRIMER3_AVAILABLE = False
 
+
 class TmSegmentSelector(SegmentSelector):
     """Selects segment with melting temperature constraints.
 
@@ -23,17 +24,18 @@ class TmSegmentSelector(SegmentSelector):
 
     Parameters
     ----------
+
     min_size
-      Minimal length of the segment, in nucleotides
+      Minimal length of the segment, in nucleotides.
 
     max_size
-      Maximal length of the segment, in nucleotides
+      Maximal length of the segment, in nucleotides.
 
     min_tm
-      Minimal melting temp allowed for the segments
+      Minimal melting temp allowed for the segments.
 
     max_tm
-      Maximal melting temp allowed for the segments
+      Maximal melting temp allowed for the segments.
 
     precompute_segments
       If True, the whole sequence will be analyzed to find the best segment
@@ -42,7 +44,7 @@ class TmSegmentSelector(SegmentSelector):
 
     primer3_params
       If ``precompute_segments`` is False and ``Primer3`` is installed, the
-      melting temperature is computed
+      melting temperature is computed.
     """
 
     def __init__(
@@ -67,7 +69,7 @@ class TmSegmentSelector(SegmentSelector):
         self.middle_size = int(0.5 * (self.min_size + self.max_size))
         self.left_addition = left_addition
         self.right_addition = right_addition
-    
+
     @property
     def max_homology_size(self):
         return self.max_size
@@ -83,7 +85,7 @@ class TmSegmentSelector(SegmentSelector):
 
     def compute_segment_location(self, sequence, index):
         """Return the location (start, stop) of the selected segment."""
-        if (index < 0) or (sequence == ''):
+        if (index < 0) or (sequence == ""):
             return None
         if index == len(sequence):
             index = index - 1
@@ -105,9 +107,7 @@ class TmSegmentSelector(SegmentSelector):
             init_size = self.middle_size
 
         def f(ovh_size):
-            start, end = self.get_segment_coordinates(
-                index, ovh_size, len(sequence)
-            )
+            start, end = self.get_segment_coordinates(index, ovh_size, len(sequence))
             tm = self.compute_tm(sequence[start:end])
             return (start, end), tm
 
@@ -184,13 +184,16 @@ class TmSegmentSelector(SegmentSelector):
                 % self.primer3_params.get("method", "[unknown method]")
             )
         return primer3.calcTm(sequence, **self.primer3_params)
-    
 
     def __str__(self):
         result = "Tm(%d-%dC, %d-%dbp)" % (
-            self.min_tm, self.max_tm, self.min_size, self.max_size)
+            self.min_tm,
+            self.max_tm,
+            self.min_size,
+            self.max_size,
+        )
         if self.left_addition:
-            result = ('...%s-' % self.left_addition[-12:]) + result
+            result = ("...%s-" % self.left_addition[-12:]) + result
         if self.right_addition:
-            result = result + ('-%s...' % self.right_addition[:12]) 
+            result = result + ("-%s..." % self.right_addition[:12])
         return result

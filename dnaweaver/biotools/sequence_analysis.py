@@ -6,6 +6,7 @@ from Bio import SeqIO
 from .SequenceString import SequenceString
 import numpy as np
 
+
 def get_sequence_topology(sequence, default="linear"):
     if isinstance(sequence, SequenceString):
         return sequence.metadata.get("topology", default)
@@ -20,7 +21,7 @@ def gc_content(sequence, window_size=None):
     ----------
 
     sequence
-      An ATGC DNA sequence (upper case!)
+      An ATGC DNA sequence (upper case!).
 
     window_size
       If provided, the local GC content for the different sliding windows of
@@ -29,11 +30,11 @@ def gc_content(sequence, window_size=None):
     Returns
     --------
 
-      A number between 0 and 1 indication the proportion
+      A number between 0 and 1, indicating the proportion
       of GC content. If window_size is provided, returns
       a list of len(sequence)-window_size values indicating
       the local GC contents (sliding-window method). The i-th value
-      indicates the GC content in the window [i, i+window_size]
+      indicates the GC content in the window [i, i+window_size].
     """
     # The code is a little cryptic but speed gain is 300x
     # compared with pure-python string operations
@@ -49,17 +50,16 @@ def gc_content(sequence, window_size=None):
         return 1.0 * (a - b) / window_size
 
 
-def find_enzyme_sites(
-    sequence, enzyme_name, padding=0, padding_nuc="A"
-):
+def find_enzyme_sites(sequence, enzyme_name, padding=0, padding_nuc="A"):
     padding = padding * padding_nuc
-    if hasattr(sequence, 'seq'):
+    if hasattr(sequence, "seq"):
         sequence = str(sequence.seq)
     sequence = str(sequence)
     sequence = Seq(padding + sequence + padding)
     topology = get_sequence_topology(sequence, default="linear")
-    linear = (topology == "linear")
+    linear = topology == "linear"
     return Restriction.__dict__[enzyme_name].search(sequence, linear=linear)
+
 
 def gc_content_to_tm(seq_length, gc_content, gc_tm=4, nongc_tm=2):
     return seq_length * (gc_content * gc_tm + (1 - gc_content) * nongc_tm)

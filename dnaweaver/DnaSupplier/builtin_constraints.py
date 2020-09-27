@@ -6,15 +6,12 @@ from Bio import Restriction
 import re
 from ..biotools import gc_content, reverse_complement
 
+
 class NoPatternConstraint:
     """Constraint class forbidding a given pattern in DNA sequences.
 
-    
-    
     Class of callables (sequence)-> True/False whether the sequence contains
-    the pattern, meant to be used 
-
-    When using DNA Weaver in a python script, one can 
+    the pattern.
 
     Can be useful for defining constraints in DNA assembly methods or
     DNA providers.
@@ -27,13 +24,9 @@ class NoPatternConstraint:
     ----------
 
     pattern=None, enzyme=None, is_regex=False, with_revcomp=True
-
-
     """
 
-    def __init__(
-        self, pattern=None, enzyme=None, is_regex=False, with_revcomp=True
-    ):
+    def __init__(self, pattern=None, enzyme=None, is_regex=False, with_revcomp=True):
 
         self.biopython_enzyme = None
         if enzyme is not None:
@@ -91,12 +84,8 @@ class SequenceLengthConstraint:
         return self.min_length <= L <= upper_bound
 
     def __str__(self):
-        left_side = (
-            "" if (self.min_length == 0) else ("%d < " % self.min_length)
-        )
-        right_side = (
-            "" if (self.max_length is None) else (" < %d" % self.max_length)
-        )
+        left_side = "" if (self.min_length == 0) else ("%d < " % self.min_length)
+        right_side = "" if (self.max_length is None) else (" < %d" % self.max_length)
         return left_side + "length" + right_side
 
 
@@ -117,13 +106,9 @@ class GcContentConstraint:
 
     def __str__(self):
         left_side = (
-            ""
-            if (self.min_gc == 0)
-            else ("%.01f" % (self.min_gc * 100) + "% < ")
+            "" if (self.min_gc == 0) else ("%.01f" % (self.min_gc * 100) + "% < ")
         )
         right_side = (
-            ""
-            if (self.max_gc == 1)
-            else (" < %.01f" % (self.max_gc * 100) + "%")
+            "" if (self.max_gc == 1) else (" < %.01f" % (self.max_gc * 100) + "%")
         )
         return left_side + "GC" + right_side

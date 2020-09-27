@@ -1,10 +1,10 @@
-
-"""Nice function to make figures for slides (not used in the framework)"""
+"""Nice function to make figures for slides (not used in the framework)."""
 
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+
 
 def plot_decomposition_graph(
     graph,
@@ -54,5 +54,3 @@ def plot_decomposition_graph(
     ax.set_aspect("equal")
     ax.set_xlim(-1, L + 1)
     ax.set_ylim(-1, max_segment_length / 2 + 1)
-
-

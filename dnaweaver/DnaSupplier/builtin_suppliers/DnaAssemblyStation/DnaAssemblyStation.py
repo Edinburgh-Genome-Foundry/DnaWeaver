@@ -20,10 +20,10 @@ class DnaAssemblyStation(DnaSupplier):
     ----------
 
     name
-      Name of the station (appears on reports)
+      Name of the station (appears on reports).
 
     assembly_method
-      AnDnaAssemblyMethod object specifying how the fragments are assembled,
+      A DnaAssemblyMethod object specifying how the fragments are assembled,
       what sequences can be assembled, what fragments can be used, etc.
 
     supplier
@@ -69,18 +69,16 @@ class DnaAssemblyStation(DnaSupplier):
     def get_quote_for_sequence_segment(
         self, sequence, segment, max_lead_time=None, **kwargs
     ):
-        """Return the cost of the segment
+        """Return the cost of the segment.
 
         Is used as the "cost" function for a segment during decomposition
-        optimization
+        optimization.
 
         """
         fragment_to_order = self.assembly_method.compute_fragment_for_sequence_segment(
             sequence=sequence, segment=segment, **kwargs
         )
-        return self.supplier.get_quote(
-            fragment_to_order, max_lead_time=max_lead_time
-        )
+        return self.supplier.get_quote(fragment_to_order, max_lead_time=max_lead_time)
 
     def get_assembly_plan_from_cuts(self, sequence, cuts, max_lead_time=None):
         """Return a plan {segment: quote, ...} based on the cut positions.
@@ -90,10 +88,7 @@ class DnaAssemblyStation(DnaSupplier):
         cuts = sorted(cuts)
         return {
             segment: self.get_quote_for_sequence_segment(
-                sequence,
-                segment,
-                max_lead_time=max_lead_time,
-                segment_position=i,
+                sequence, segment, max_lead_time=max_lead_time, segment_position=i,
             )
             for i, segment in enumerate(zip(cuts, cuts[1:]))
         }
@@ -125,9 +120,7 @@ class DnaAssemblyStation(DnaSupplier):
             cut_location_constraints=[
                 cs(sequence) for cs in assembly.cut_location_constraints
             ],
-            segment_constraints=[
-                cs(sequence) for cs in assembly.segment_constraints
-            ],
+            segment_constraints=[cs(sequence) for cs in assembly.segment_constraints],
             min_segment_length=assembly.min_segment_length,
             max_segment_length=assembly.max_segment_length,
             forced_cuts=assembly.force_cuts(sequence),
@@ -138,9 +131,7 @@ class DnaAssemblyStation(DnaSupplier):
             bar_prefix="[%s] " % self.name,
             a_star_factor=a_star_factor,
             path_size_limit=assembly.max_fragments,
-            cuts_set_constraints=[
-                cs(sequence) for cs in assembly.cuts_set_constraints
-            ],
+            cuts_set_constraints=[cs(sequence) for cs in assembly.cuts_set_constraints],
             cut_spread_radius=cut_spread_radius,
         )
 
@@ -194,24 +185,21 @@ class DnaAssemblyStation(DnaSupplier):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quots
+          The sequence submitted to the Dna Source for a quote.
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
         with_assembly_plan
-          If True, the assembly plan is added to the quote
+          If True, the assembly plan is added to the quote.
         """
 
         if max_lead_time is not None:
             max_lead_time = max_lead_time - self.extra_time
             if max_lead_time < 0:
                 return DnaQuote(
-                    self,
-                    sequence,
-                    accepted=False,
-                    message="Lead time limit too short",
+                    self, sequence, accepted=False, message="Lead time limit too short",
                 )
         try:
             assembly_plan = self.get_assembly_plan_for_sequence(

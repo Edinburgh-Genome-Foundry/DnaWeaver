@@ -8,22 +8,14 @@ from .plot_supply_network import plot_supply_network
 
 import warnings
 
-warnings.filterwarnings(
-    "ignore", message="Glyph 112 missing from current font."
-)
-warnings.filterwarnings(
-    "ignore", message="Glyph 108 missing from current font."
-)
+warnings.filterwarnings("ignore", message="Glyph 112 missing from current font.")
+warnings.filterwarnings("ignore", message="Glyph 108 missing from current font.")
 
 
-class PlotsMixin(
-    AssemblyBlocksMixin, AssemblyGraphMixin, ColorsMixin, TimelineMixin
-):
+class PlotsMixin(AssemblyBlocksMixin, AssemblyGraphMixin, ColorsMixin, TimelineMixin):
     def write_figures_folder(self, figures_folder):
         def write_ax_as_pdf(ax, target):
-            ax.figure.savefig(
-                target.open("wb"), format="pdf", bbox_inches="tight"
-            )
+            ax.figure.savefig(target.open("wb"), format="pdf", bbox_inches="tight")
             plt.close(ax.figure)
 
         pos, ax = self.plot_supply_network()
@@ -41,19 +33,17 @@ class PlotsMixin(
             legend=True,
         )
         assembly_blocks_ax.figure.subplots_adjust(bottom=0.3)
-        write_ax_as_pdf(
-            assembly_blocks_ax, figures_folder._file("assembly_blocks.pdf")
-        )
-    
+        write_ax_as_pdf(assembly_blocks_ax, figures_folder._file("assembly_blocks.pdf"))
+
     def plot_supply_network(self, ax=None):
         """Plot the supply network (see plot_supply_network.plot_supply_network
         for more options).
-        
+
         Returns
         -------
+
         elements_positions, ax
-        Dictionary of elements positions, matplotlib ax.
+          Dictionary of elements positions, matplotlib ax.
         """
 
         return plot_supply_network(self, ax=ax)
-

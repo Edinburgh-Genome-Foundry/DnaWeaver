@@ -14,6 +14,6 @@ from .sequence_analysis import (
     gc_content,
     gc_content_to_tm,
     find_enzyme_sites,
-    get_sequence_topology
+    get_sequence_topology,
 )
 from .SequenceString import SequenceString

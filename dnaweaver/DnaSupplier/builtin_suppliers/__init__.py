@@ -13,5 +13,5 @@ __all__ = [
     "DnaSuppliersComparator",
     "PartsLibrary, GoldenGatePartsLibrary",
     "PcrExtractionStation",
-    "PcrLinearizationStation"
+    "PcrLinearizationStation",
 ]

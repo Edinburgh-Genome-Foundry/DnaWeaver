@@ -9,7 +9,7 @@ from .PlotsMixin.give_quotes_html_locations import give_quotes_html_locations
 
 class PdfReportMixin:
     def make_html_report(self):
-        """Return a HTML version of the assembly report (later converted to PDF)"""
+        """Return a HTML version of the assembly report (later converted to PDF)."""
 
         def _anchor_span(op):
             return "<span id='anchor_%s'>%s</span>" % (op.id, op.id)
@@ -24,9 +24,7 @@ class PdfReportMixin:
 
         operations = sorted(operations, key=sorting_key)
 
-        give_quotes_html_locations(
-            operations, len_sequence=len(self.plan.sequence)
-        )
+        give_quotes_html_locations(operations, len_sequence=len(self.plan.sequence))
         env = Environment(loader=FileSystemLoader(SETTINGS["template_path"]))
         template = env.get_template("report_template.html")
         orders_dataframe = pandas.DataFrame.from_records(
@@ -53,7 +51,7 @@ class PdfReportMixin:
                 "Price",
                 "Lead time",
                 "Location",
-            ]
+            ],
         )
 
         pcrs_dataframe = pandas.DataFrame.from_records(
@@ -61,10 +59,7 @@ class PdfReportMixin:
                 {
                     "ID": _anchor_span(op),
                     "Primers": ", ".join(
-                        [
-                            _anchor_span(child)
-                            for child in op.get("assembly_plan", [])
-                        ]
+                        [_anchor_span(child) for child in op.get("assembly_plan", [])]
                     ),
                     "Source": op.source,
                     "Sequence": op.sequence,

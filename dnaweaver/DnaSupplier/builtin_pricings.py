@@ -1,4 +1,4 @@
-"""Pricings for suppliers such as CommercialDnaOffer"""
+"""Pricings for suppliers such as CommercialDnaOffer."""
 
 
 class PerBasepairPricing:
@@ -8,7 +8,7 @@ class PerBasepairPricing:
     ----------
 
     per_basepair_pricing
-      Variable cost per basepair on top of the fixed cost
+      Variable cost per basepair on top of the fixed cost.
 
     fixed_cost
       Fixed cost added to the variable cost for each sequence.
@@ -20,7 +20,6 @@ class PerBasepairPricing:
     >>>     name="Company 1",
     >>>     pricing=PerBasepairPricing(0.14, fixed_cost=30)
     >>> )
-
     """
 
     def __init__(self, per_basepair_price, fixed_cost=0):
@@ -33,10 +32,7 @@ class PerBasepairPricing:
 
     def __str__(self):
         if self.fixed_cost != 0:
-            return "$(%.02f + %.03f/bp)" % (
-                self.fixed_cost,
-                self.per_basepair_price,
-            )
+            return "$(%.02f + %.03f/bp)" % (self.fixed_cost, self.per_basepair_price,)
         return "$%.03f/bp" % self.per_basepair_price
 
 
@@ -50,7 +46,6 @@ class FixedCostPricing:
     >>>     name="Company 1",
     >>>     pricing=FixedCostPricing(5)
     >>> )
-
     """
 
     def __init__(self, fixed_cost):

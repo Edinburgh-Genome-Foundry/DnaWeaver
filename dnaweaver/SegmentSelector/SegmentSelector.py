@@ -3,6 +3,7 @@ Gibson Assembly, Golden Gate assembly, recombination in yeast."""
 
 from ..biotools import get_sequence_topology
 
+
 class SegmentSelector:
     """Base class for segment selectors such as TmSegmentSelector.
 
@@ -14,7 +15,7 @@ class SegmentSelector:
     def location_filter_method(self, sequence):
         """Return a filter function f(location) => True/False.
 
-        The result is True iff the location is a valid cutting site"""
+        The result is True if the location is a valid cutting site."""
         if self.has_location_filter:
 
             def f(index):
@@ -41,8 +42,7 @@ class SegmentSelector:
                 )
             if end >= len(sequence) - half_homology:
                 return self.compute_fragment_for_sequence_segment(
-                    sequence=sequence + sequence[:half_homology],
-                    segment=segment,
+                    sequence=sequence + sequence[:half_homology], segment=segment,
                 )
         if start == 0:
             fragment_start = 0

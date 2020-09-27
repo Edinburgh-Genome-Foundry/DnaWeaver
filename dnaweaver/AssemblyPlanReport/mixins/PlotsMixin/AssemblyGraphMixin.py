@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 from copy import deepcopy
 import matplotlib.font_manager as fm
@@ -6,16 +5,15 @@ import numpy as np
 from ...config import SETTINGS
 from .plot_tree_graph import plot_tree_graph
 
+
 class AssemblyGraphMixin:
-    def plot_assembly_graph(
-        self, ax=None, margin=None, textprops=None, scale=1.0
-    ):
-        """Plot the complete assembly graph
-        
+    def plot_assembly_graph(self, ax=None, margin=None, textprops=None, scale=1.0):
+        """Plot the complete assembly graph.
+
         Returns
         -------
         elements_positions, ax
-        Dictionary of elements positions, matplotlib ax.
+        Dictionary of element positions, matplotlib ax.
         """
 
         nodes_dict = {}

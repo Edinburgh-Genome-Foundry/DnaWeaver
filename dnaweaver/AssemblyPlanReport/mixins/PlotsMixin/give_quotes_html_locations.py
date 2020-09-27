@@ -2,6 +2,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from .matplotlib_export import matplotlib_figure_to_svg_base64_data
 
+
 def give_quotes_html_locations(quotes, len_sequence, ax=None):
     """Quickly adds an html-location field containing an HTML image of the
     location of each sub-quote in the final sequence.
@@ -40,8 +41,6 @@ def give_quotes_html_locations(quotes, len_sequence, ax=None):
         else:
             rect.set_bounds(location[0], -0.5, location[1] - location[0], 1.0)
             text.set_text("%d-%d" % (location[0], location[1]))
-            svg_data = matplotlib_figure_to_svg_base64_data(
-                ax.figure, transparent=True
-            )
+            svg_data = matplotlib_figure_to_svg_base64_data(ax.figure, transparent=True)
             q.html_location = "<img src='%s' />" % svg_data
     plt.close(ax.figure)

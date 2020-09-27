@@ -1,5 +1,3 @@
-
-
 class DnaAssemblyMethod(object):
     """General class for assembly methods.
 
@@ -102,7 +100,7 @@ class DnaAssemblyMethod(object):
         }
         result.update(self.additional_dict_description())
         return result
-    
+
     # def extend_sequence(self, sequence):
     #     return sequence
 

@@ -17,11 +17,14 @@ def plot_supply_network(
     interlevel_shift=0,
 ):
     """Plot the supply graph of all sources related to the provided source.
+
     Examples:
     ---------
     >>> quote.sources = chunks_assembly_station.compute_dict_supply_graph()
+
     Parameters
     ----------
+
     quote.sources
       A dictionary {"source_1_name": {"depth": 1, "infos": {...}},
                     "source_2_name": {"depth": 2, "infos": {...}},
@@ -30,12 +33,13 @@ def plot_supply_network(
       A matplotlib ax. If None provided, one is created (and returned at the
       end)
     textprops
-      Properties of the text. If none, a nice opensans font is used.
-    
+      Properties of the text. If None, a nice opensans font is used.
+
     Returns
     -------
+
     elements_positions, ax
-      Dictionary of elements positions, matplotlib ax.
+      Dictionary of element positions, matplotlib ax.
     """
     if main_source is not None:
         edges, levels = main_source.compute_supply_graph()
@@ -48,22 +52,14 @@ def plot_supply_network(
                 edges.append((provider_name, source_name))
         levels = [levels[i] for i in range(max(levels) + 1)][::-1]
     else:
-        sources_dict = {
-            source.name: source
-            for level in levels
-            for source in level
-        }
+        sources_dict = {source.name: source for level in levels for source in level}
 
     fontawesome = fm.FontProperties(
-        fname=SETTINGS["fontawesome-ttf-path"],
-        size=18 * scale,
-        family="sans-serif",
+        fname=SETTINGS["fontawesome-ttf-path"], size=18 * scale, family="sans-serif",
     )
     if textprops is None:
         textprops = fm.FontProperties(
-            fname=SETTINGS["OpenSans-ttf-path"],
-            size=12 * scale,
-            family="sans-serif",
+            fname=SETTINGS["OpenSans-ttf-path"], size=12 * scale, family="sans-serif",
         )
 
     def draw_node(x, y, source_name, ax):
@@ -73,7 +69,7 @@ def plot_supply_network(
         else:
             source = sources_dict[source_name.name]
             symbol = source.report_fa_symbol
-        
+
         ax.text(
             x,
             y,

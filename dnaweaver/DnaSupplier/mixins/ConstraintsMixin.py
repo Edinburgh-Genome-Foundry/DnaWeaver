@@ -7,14 +7,13 @@ except:
     Specification = type("BLANK")  # fake type that matches nothing
     DNACHISEL_AVAILABLE = False
 
-class ConstraintsMixin:
 
+class ConstraintsMixin:
     def verify_constraints(self, sequence):
-        """Return True iff `sequence` passes all `self.sequence_constraints`
+        """Return True iff `sequence` passes all `self.sequence_constraints`.
 
         Will automatically process DNA-Chisel constraints that would be in
-        `self.sequence_constraints`
-
+        `self.sequence_constraints`.
         """
         constraints = self.sequence_constraints
         if not hasattr(self, "dnachisel_constraints"):

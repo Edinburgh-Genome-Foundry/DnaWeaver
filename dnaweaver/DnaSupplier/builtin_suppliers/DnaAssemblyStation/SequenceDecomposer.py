@@ -1,4 +1,4 @@
-"""Optimization techniques"""
+"""Optimization techniques."""
 
 import numpy as np
 import networkx as nx
@@ -21,7 +21,7 @@ from proglog import default_bar_logger
 
 
 class SequenceDecomposer:
-    """Find the sequence cuts which optimize the sum of segments scores.
+    """Find the sequence cuts which optimize the sum of segment scores.
 
     This is a very generic method meant to be applied to any sequence
     cutting optimization problem.
@@ -30,7 +30,7 @@ class SequenceDecomposer:
     ----------
 
     sequence_length
-      Length of the sequence
+      Length of the sequence.
 
     segment_score_function
       A function f( (start, end) ) -> score where (start, end) refers to the
@@ -71,11 +71,11 @@ class SequenceDecomposer:
 
     path_size_limit
       Maximal number of edges for acceptable paths. None means no limit.
-      Only works with `a_star_factor=0`
+      Only works with `a_star_factor=0`.
 
     path_size_min_step
       Minimal step for the bisection search when `path_size_limit` is not None
-      (see `dijkstra_path_with_size_limit`)
+      (see `dijkstra_path_with_size_limit`).
 
 
     Returns
@@ -89,7 +89,6 @@ class SequenceDecomposer:
     best_cuts
       The list of optimal cuts (includes 0 and len(sequence)), which minimizes
       the total score of all the segments corresponding to the cuts.
-
     """
 
     def __init__(
@@ -178,9 +177,7 @@ class SequenceDecomposer:
                 valid_ends = [
                     end
                     for end in valid_ends
-                    if all(
-                        fl((start, end)) for fl in self.segments_constraints
-                    )
+                    if all(fl((start, end)) for fl in self.segments_constraints)
                 ]
             segments += [(start, end) for end in valid_ends]
             reachable_indices = reachable_indices.union(valid_ends)
@@ -202,7 +199,7 @@ class SequenceDecomposer:
                 """Compute the weight (cost) for segment (start, end).
 
                 Parameter `props` is useless and is there for compatibility
-                reasons
+                reasons.
                 """
                 segment = tuple(sorted((start, end)))
                 if segment in memodict:
@@ -261,8 +258,7 @@ class SequenceDecomposer:
         forced_but_invalid = self.forced_cuts.difference(self.valid_cuts)
         if len(forced_but_invalid):
             raise NoSolutionFoundError(
-                "One forced cut was also invalid at indices %s"
-                % forced_but_invalid
+                "One forced cut was also invalid at indices %s" % forced_but_invalid
             )
         grained_and_suggested = grained_cuts.union(self.suggested_cuts)
         if self.cut_spread_radius:
@@ -271,10 +267,8 @@ class SequenceDecomposer:
                 radius=self.cut_spread_radius,
                 max_index=L + 1,
             )
-        valid_cuts = (
-            grained_and_suggested
-            .intersection(self.valid_cuts)
-            .union(self.forced_cuts)
+        valid_cuts = grained_and_suggested.intersection(self.valid_cuts).union(
+            self.forced_cuts
         )
 
         self.coarse_graph = self.compute_graph(valid_cuts)
@@ -315,13 +309,9 @@ class SequenceDecomposer:
         )
         if self.cut_spread_radius:
             fine_cuts = spread_indices_in_set(
-                indices=fine_cuts,
-                radius=self.cut_spread_radius,
-                max_index=L + 1,
+                indices=fine_cuts, radius=self.cut_spread_radius, max_index=L + 1,
             )
-        fine_cuts = (fine_cuts.intersection(self.valid_cuts)).union(
-            self.forced_cuts
-        )
+        fine_cuts = (fine_cuts.intersection(self.valid_cuts)).union(self.forced_cuts)
         self.fine_graph = self.compute_graph(fine_cuts)
         _, self.fine_cuts = self.find_shortest_path(self.fine_graph)
 
@@ -338,8 +328,6 @@ def spread_indices_in_set(indices, radius, max_index):
     new_list = [
         new_index
         for i in indices
-        for new_index in range(
-            max(0, i - radius), min(max_index, i + radius + 1)
-        )
+        for new_index in range(max(0, i - radius), min(max_index, i + radius + 1))
     ]
     return set(new_list)

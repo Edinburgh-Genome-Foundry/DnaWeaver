@@ -6,6 +6,7 @@ from Bio.Blast import NCBIXML
 import numpy as np
 from .sequence_operations import sequence_to_atgc
 
+
 def blast_sequence(
     sequence,
     blast_db=None,
@@ -24,26 +25,26 @@ def blast_sequence(
     ----------
 
     sequence
-      An ATGC sequence
+      An ATGC sequence.
 
     blast_db
-      Path to a BLAST database
+      Path to a BLAST database.
 
     subject
       Either a path to a fasta (.fa) file or an ATGC string. Subject to blast
       against.
 
     word_size
-      Word size to use in the blast
+      Word size to use in the blast.
 
     perc_identity
-      Minimal percentage of identical nucleotides in a match for it to be kept
+      Minimal percentage of identical nucleotides in a match for it to be kept.
 
     num_alignments
-      Number of alignments to keep
+      Number of alignments to keep.
 
     num_threads
-      Number of threads for the BLAST
+      Number of threads for the BLAST.
 
     use_megablast
       Whether to use Megablast.
@@ -90,11 +91,7 @@ def blast_sequence(
             "-query",
             fasta_name,
         ]
-        + (
-            ["-db", blast_db]
-            if blast_db is not None
-            else ["-subject", subject]
-        )
+        + (["-db", blast_db] if blast_db is not None else ["-subject", subject])
         + (["-ungapped"] if ungapped else [])
         + (["-task", "megablast"] if use_megablast else [])
         + [
@@ -139,6 +136,7 @@ def blast_sequence(
     else:
         raise ValueError("Problem reading the blast record: " + str(error))
 
+
 def make_blast_db(fasta_input, target):
     proc = subprocess.Popen(
         ["makeblastdb", "-in", fasta_input, "-dbtype", "nucl", "-out", target]
@@ -148,7 +146,7 @@ def make_blast_db(fasta_input, target):
 
 def perfect_match_locations_in_hsp(hsp, span_cutoff=10):
     """Return the locations of perfect matches in a BLAST HSP.
-    
+
     Only locations with a span above span_cutoff are kept.
     """
     if hsp.align_length < span_cutoff:
@@ -174,15 +172,15 @@ def largest_common_substring(query, target, max_overhang):
     -----------
 
     query (str)
-      The sequence to be found in target (minus some overhangs possibly)
+      The sequence to be found in target (minus some overhangs possibly).
 
     target (str)
-      The sequence in which to find `query`
+      The sequence in which to find `query`.
 
     max_overhang
       Maximal size allowed for the flanking regions of `query` that would
       not be contained in `target`.
-    
+
     Examples
     --------
 
@@ -196,7 +194,6 @@ def largest_common_substring(query, target, max_overhang):
 
     This is intended for finding whether `query` can be extracted from `target`
     using PCR. See the PcrExtractionStation implementation in DnaSupplier.py.
-
     """
     # The trick here is to start with the central region of "query".
     # This region is initially as small as max_overhang allows, and it is

@@ -1,7 +1,6 @@
 class SupplyNetworkMixin:
-
     def compute_supply_graph(self):
-        """Return elements to plot the supply graph underlying this DnaSupplier
+        """Return elements to plot the supply graph underlying this DnaSupplier.
 
         Returns
         -------
@@ -41,11 +40,7 @@ class SupplyNetworkMixin:
 
         rec(self, depth=0, seen_sources=[])
         levels = [
-            [
-                source
-                for source, level in source_max_level.items()
-                if level == i
-            ]
+            [source for source, level in source_max_level.items() if level == i]
             for i in range(max(source_max_level.values()) + 1)
         ][::-1]
 
@@ -79,6 +74,5 @@ class SupplyNetworkMixin:
             #         providers.append(other.name)
             #         rec(other, depth + 1)
 
-        
         rec(self)
         return sources

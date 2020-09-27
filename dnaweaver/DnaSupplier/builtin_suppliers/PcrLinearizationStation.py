@@ -8,6 +8,7 @@ class PcrLinearizationStation(DnaSupplier):
     Parameters
     ----------
     """
+
     class_description = "Linearizes a sequence for downstream assembly"
     report_fa_symbol = u""
     report_fa_symbol_plain = "exchange"
@@ -38,10 +39,7 @@ class PcrLinearizationStation(DnaSupplier):
         self.min_basepair_price = supplier.min_basepair_price
 
     def get_best_price(
-        self,
-        sequence,
-        max_lead_time=None,
-        with_assembly_plan=False,
+        self, sequence, max_lead_time=None, with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -53,14 +51,14 @@ class PcrLinearizationStation(DnaSupplier):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quote
+          The sequence submitted to the Dna Source for a quote.
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
         with_assembly_plan
-          If True, the assembly plan is added to the quote
+          If True, the assembly plan is added to the quote.
         """
         if max_lead_time is not None:
             suppliers_max_lead_time = max_lead_time - self.extra_time
@@ -113,9 +111,7 @@ class PcrLinearizationStation(DnaSupplier):
             )
         else:
             overall_lead_time = None
-        total_price = (
-            sum(quote.price for quote in all_quotes) + self.extra_cost
-        )
+        total_price = sum(quote.price for quote in all_quotes) + self.extra_cost
 
         if with_assembly_plan:
             assembly_plan = {

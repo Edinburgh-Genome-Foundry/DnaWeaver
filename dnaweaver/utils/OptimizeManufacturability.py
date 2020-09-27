@@ -1,4 +1,4 @@
-"""Module to optimize sequences for manufacturability using dnaweaver.
+"""Module to optimize sequences for manufacturability using DnaWeaver.
 
 This is still very experimental!
 """
@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import dnachisel as dc
 from dnachisel.biotools import group_nearby_indices
 from ..DnaAssemblyMethod import BluntEndAssemblyMethod
+
 
 class OptimizeManufacturability(dc.Specification):
     def __init__(
@@ -22,8 +23,7 @@ class OptimizeManufacturability(dc.Specification):
     ):
         co_station = deepcopy(station)
         co_station.assembly_method = BluntEndAssemblyMethod(
-            min_segment_length=5 * resolution,
-            max_segment_length=max_segment_length,
+            min_segment_length=5 * resolution, max_segment_length=max_segment_length,
         )
         co_station.a_star_factor = 0
         self.station = station
@@ -36,13 +36,9 @@ class OptimizeManufacturability(dc.Specification):
 
     def compute_cost_graph(self, sequence):
         decomposer = self.co_station.new_sequence_decomposer(sequence)
-        grained_cuts = set(
-            range(0, decomposer.sequence_length + 1, self.resolution)
-        )
+        grained_cuts = set(range(0, decomposer.sequence_length + 1, self.resolution))
         grained_cuts = grained_cuts.union(set([decomposer.sequence_length]))
-        graph = decomposer.compute_graph(
-            grained_cuts, reachable_indices_only=False
-        )
+        graph = decomposer.compute_graph(grained_cuts, reachable_indices_only=False)
         graph, _ = decomposer.find_shortest_path(graph)
         return graph
 
@@ -56,9 +52,7 @@ class OptimizeManufacturability(dc.Specification):
         locations = (diffs < -self.detection_threshold).nonzero()[0]
         locations = (locations + 1) * self.resolution
         locations = group_nearby_indices(
-            locations,
-            max_gap=self.max_loc_size,
-            max_group_spread=self.max_loc_size,
+            locations, max_gap=self.max_loc_size, max_group_spread=self.max_loc_size,
         )
         return [
             dc.Location(l[0] - self.resolution, l[-1] + self.resolution)
@@ -80,13 +74,11 @@ class OptimizeManufacturability(dc.Specification):
         )
 
     def get_quote(self, problem):
-        return self.station.get_quote(
-            problem.sequence, with_assembly_plan=False
-        )
+        return self.station.get_quote(problem.sequence, with_assembly_plan=False)
 
     def localized(self, location, problem=None):
         return self.copy_with_changes(is_localized=True)
-    
+
     @staticmethod
     def plot_cost_profiles(cost_profiles):
         """Plot cost profiles generated in OptimizeManufacturability"""
@@ -104,19 +96,16 @@ class OptimizeManufacturability(dc.Specification):
         ax1b.plot(xx, cost_profiles["count"], c="k", alpha=0.3)
         ax1b.set_ylim(bottom=0, top=1.5 * cost_profiles["count"].max())
         ax1.set_xlim(0, L)
-        ax1.set_title('Basepair cost jumps')
+        ax1.set_title("Basepair cost jumps")
 
         ax2.plot(xx, cost_profiles["mean"], c="b", lw=2)
         ax2.fill_between(
-            xx,
-            cost_profiles["min"],
-            cost_profiles["max"],
-            facecolor="b",
-            alpha=0.2,
+            xx, cost_profiles["min"], cost_profiles["max"], facecolor="b", alpha=0.2,
         )
         ax2.set_ylim(bottom=0, top=1.5 * cost_profiles["max"].max())
         ax2.set_title("<min cost, AVERAGE, max cost>")
         return ax1, ax2
+
 
 def compute_cost_profiles(graph):
 
@@ -138,9 +127,7 @@ def compute_cost_profiles(graph):
         cost_profiles["max"][start:end] = np.maximum(
             bp_price, cost_profiles["max"][start:end]
         )
-    cost_profiles["mean"] = cost_profiles["total"] / (
-        0.0001 + cost_profiles["count"]
-    )
+    cost_profiles["mean"] = cost_profiles["total"] / (0.0001 + cost_profiles["count"])
     diffs = np.diff(cost_profiles["mean"])
     cost_profiles["diffs"] = diffs
     return cost_profiles

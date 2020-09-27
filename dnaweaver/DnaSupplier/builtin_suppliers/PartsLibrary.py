@@ -3,13 +3,11 @@ from ...DnaQuote import DnaQuote
 from ..DnaSupplier import DnaSupplier
 
 
-
 class PartsLibrary(DnaSupplier):
     """Class for collections of ready-to-assemble parts.
 
-
-    This class is admitedly under-developed and could be expanded-subclassed
-    to accomodate with the different kinds of registries etc.
+    This class is admittedly under-developed and could be expanded-subclassed
+    to accommodate the different kinds of registries etc.
     """
 
     class_description = "Parts Library"
@@ -47,10 +45,7 @@ class PartsLibrary(DnaSupplier):
         self.memoize_dict = {}
 
     def get_best_price(
-        self,
-        sequence,
-        max_lead_time=None,
-        with_assembly_plan=False,
+        self, sequence, max_lead_time=None, with_assembly_plan=False,
     ):
         """Returns a price-optimal DnaQuote for the given sequence.
 
@@ -58,14 +53,14 @@ class PartsLibrary(DnaSupplier):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quotes
+          The sequence submitted to the Dna Source for a quote.
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
         with_assembly_plan
-          If True, the assembly plan is added to the quote
+          If True, the assembly plan is added to the quote.
        """
         sequence = self.preprocess_sequence(sequence)
         if sequence in self.sequences_set:
@@ -81,10 +76,7 @@ class PartsLibrary(DnaSupplier):
             )
 
         return DnaQuote(
-            self,
-            sequence,
-            accepted=False,
-            message="Sequence not in the library",
+            self, sequence, accepted=False, message="Sequence not in the library",
         )
 
     def preprocess_sequence(self, sequence):
@@ -115,7 +107,7 @@ class PartsLibrary(DnaSupplier):
 
 
 class GoldenGatePartsLibrary(PartsLibrary):
-    """Library of parts for Golden Gate Assembly"""
+    """Library of parts for Golden Gate Assembly."""
 
     class_description = "Golden Gate parts library"
 
@@ -179,4 +171,3 @@ class GoldenGatePartsLibrary(PartsLibrary):
 PartsLibrary.library_classes.update(
     {"library": PartsLibrary, "golden_gate": GoldenGatePartsLibrary}
 )
-

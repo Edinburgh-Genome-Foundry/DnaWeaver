@@ -40,6 +40,7 @@ def plot_tree_graph(
 
     Returns
     -------
+
     elements_positions, ax
       Dictionary of elements positions, matplotlib ax.
 
@@ -52,14 +53,9 @@ def plot_tree_graph(
                         edges=[("A","D"),("B","D"),("C","E")
                                ("D","F"),("E","F")],
                         draw_node = draw_node,)
-
-
-
     """
     levels_dict = {
-        element: level
-        for level, elements in enumerate(levels)
-        for element in elements
+        element: level for level, elements in enumerate(levels) for element in elements
     }
     if elements_positions is None:
         elements_positions = {}

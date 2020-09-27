@@ -6,27 +6,25 @@ from .ExportsMixin import ExportsMixin
 from .PostProcessingMixin import PostProcessingMixin
 
 
-
-
 class DnaQuote(ExportsMixin, PostProcessingMixin):
     """Class to represent the Quote returned by a DNA source in response to
     a quote request for a given DNA sequence.
 
     Parameters
-    -----------
+    ----------
 
     source
       The DnaSupplier which issued the quote.
 
     sequence
-      The sequence being quoted
+      The sequence being quoted.
 
     accepted
-      False if the sequence was rejected by the supplier, else True
+      False if the sequence was rejected by the supplier, else True.
 
     price
-      Amount asked by the DnaSupplier to build the requested sequence
-    
+      Amount asked by the DnaSupplier to build the requested sequence.
+
     lead_time
       Number of days required by the DnaSupplier to deliver the sequence.
 
@@ -34,26 +32,24 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
       A dict of the form { (start1, end1): op1, (start2, end2): op2, ...}
       where the `(start, end)` represent sub-segments of the final sequence and
       `op1, op2` represent the AssemblyOperations that create the corresponding
-      fragments
-    
+      fragments.
+
     message
       A message added to the quote for more information, for instance the
       reason of the rejection.
 
     id
-      A string identifying this assembly operation
-    
+      A string identifying this assembly operation.
+
     deadline
       If the assembly plan was computed with a dealine in mind, this is the
       number of days at which the sequence should be delivered to ensure that
       the project will be finished on time (so the global deadline minus the
-      duration of downstream operations). This is for
-       drawing assembly timelines. (see the `propagate_deadline` method for
-       this class). 
+      duration of downstream operations). This is for drawing assembly
+      timelines. (see the `propagate_deadline` method for this class).
 
     metadata
       Any other data on the quote.
-
     """
 
     def __init__(
@@ -107,9 +103,7 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
             return self.lead_time - self.children_overall_lead_time()
 
     def compute_assembly_levels(self):
-        """Return edges and levels for drawing the assembly graph nicely.
-
-        """
+        """Return edges and levels for drawing the assembly graph nicely."""
 
         levels = defaultdict(lambda: [])
         edges = []
@@ -141,13 +135,13 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
         return final_txt
 
     def children_total_price(self):
-        """Return the total price of all sub-operations (apart from current)"""
+        """Return the total price of all sub-operations (apart from current)."""
         # print ([quote.accepted for quote in self.assembly_plan.values()])
         return sum(quote.price for quote in self.assembly_plan.values())
 
     def children_overall_lead_time(self):
         """Return the max lead time of all sub-operation (current one not
-        included)"""
+        included)."""
         if self.assembly_plan is None:
             return None
         lead_times = [quote.lead_time for quote in self.assembly_plan.values()]

@@ -3,9 +3,8 @@ import os
 import tempfile
 from ..biotools import blast_sequence
 
+
 class PostProcessingMixin:
-
-
     def compute_full_assembly_plan(self, id_prefix="S", id_digits=5):
         """ """
 
@@ -42,7 +41,6 @@ class PostProcessingMixin:
             return quote
 
         rec(self)
-        
 
         if id_prefix:
             index = next(counter)
@@ -79,11 +77,10 @@ class PostProcessingMixin:
             quotes_dict[al.hit_def].final_location = final_location
             quotes_dict[al.hit_def].matching_segment = matching_segment
         os.remove(temp_fasta)
-    
 
     def propagate_deadline(self, deadline):
         """Add a `deadline` attribute to the quote and propagate it to
-        the quote's children by taking into account the duration of operations
+        the quote's children by taking into account the duration of operations.
 
         For instance if "self" has a duration of 5 and receives a deadline
         of 8, the quotes that "self" depends on will receive a deadline of

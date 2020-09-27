@@ -14,10 +14,8 @@ class FixedSizeSegmentSelector(SegmentSelector):
         self.right_addition = right_addition
 
     def compute_segment_location(self, sequence, index):
-        return self.get_segment_coordinates(
-            index, self.segment_size, len(sequence)
-        )
-    
+        return self.get_segment_coordinates(index, self.segment_size, len(sequence))
+
     @property
     def max_homology_size(self):
         return self.segment_size

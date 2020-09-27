@@ -6,8 +6,8 @@ import matplotlib.font_manager as fm
 from Bio import SeqIO
 from ...config import SETTINGS
 
+
 class AssemblyBlocksMixin:
-    
     def plot_assembly_blocks(
         self,
         parts_offset=0,
@@ -15,22 +15,20 @@ class AssemblyBlocksMixin:
         ax=None,
         edge_widths=None,
         legend=False,
-        legend_offset=-0.05
+        legend_offset=-0.05,
     ):
         """Return a Matplotlib or Bokeh plot of the assembly tree of blocks.
 
         Parameters
         ----------
 
-
-
         parts_offset
           Offset applied so that consecutive blocks are not exactly on the same
-          level. Can go from 0 (flat line of blocks) to e.g. 1
+          level. Can go from 0 (flat line of blocks) to e.g. 1.
 
         plot_top_assembly
           Whether the top assembly (which is just one big block) should be
-          plotted or not
+          plotted or not.
 
         ax
           A Matplotlib Axes object. If no ax is provided, a new figure and ax
@@ -43,9 +41,6 @@ class AssemblyBlocksMixin:
 
         legend
           Whether the legend is included in the ax.
-
-
-
         """
         rectangles = []
         if edge_widths is None:
@@ -124,8 +119,13 @@ class AssemblyBlocksMixin:
         else:
             record = None
         return _matplotlib_plot_assembly_blocks(
-            rectangles, guides, tops, ax, record=record, legend=legend,
-            legend_offset=legend_offset
+            rectangles,
+            guides,
+            tops,
+            ax,
+            record=record,
+            legend=legend,
+            legend_offset=legend_offset,
         )
 
 
@@ -139,7 +139,7 @@ def _matplotlib_plot_assembly_blocks(
     legend=False,
     textprops=None,
     record=None,
-    legend_offset=-0.05
+    legend_offset=-0.05,
 ):
     """Plot the assembly block rectangles using matplotlib."""
 
@@ -191,16 +191,11 @@ def _matplotlib_plot_assembly_blocks(
 
     seen_sources = set([])
     legend_handles = []
-    sorted_rectangles = sorted(
-        rectangles, key=lambda r: (-r["bottom"], r["left"])
-    )
+    sorted_rectangles = sorted(rectangles, key=lambda r: (-r["bottom"], r["left"]))
     for g in sorted_rectangles:
         if g["source"] not in seen_sources:
             legend_patch = mpatches.Patch(
-                facecolor=g["color"],
-                label=g["source"],
-                edgecolor="k",
-                linewidth=1.0,
+                facecolor=g["color"], label=g["source"], edgecolor="k", linewidth=1.0,
             )
             legend_handles.append(legend_patch)
             seen_sources.add(g["source"])

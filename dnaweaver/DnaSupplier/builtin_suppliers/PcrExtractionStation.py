@@ -24,15 +24,15 @@ class PcrExtractionStation(DnaSupplier):
     ----------
 
     name
-      Name of the PCR station (e.g. "Lab constructs PCR station")
+      Name of the PCR station (e.g. "Lab constructs PCR station").
 
     primers_supplier
-      DnaSupplier providing the primers (will typically be an CommercialDnaOffer)
+      DnaSupplier providing the primers (will typically be an CommercialDnaOffer).
 
     blast_database
 
     sequences
-      A dictionary {seq_name: sequence_in_atgc}
+      A dictionary {seq_name: sequence_in_atgc}.
 
     pcr_homology_length
 
@@ -46,7 +46,7 @@ class PcrExtractionStation(DnaSupplier):
 
     blast_word_size
       BLAST parameter, the larger number will lead to faster BLASTing but with
-      a risk of missing short sequences of length shorter than this value. 
+      a risk of missing short sequences of length shorter than this value.
 
     memoize
 
@@ -100,10 +100,7 @@ class PcrExtractionStation(DnaSupplier):
 
     def _get_hits(self, sequence):
         """Return the hits of the given sequence against the blast database
-        in format [(part_hit, (start, end), subsequence)
-        
-        
-        
+        in format [(part_hit, (start, end), subsequence).
         """
         if self.sequences is not None:
             result = []
@@ -125,17 +122,13 @@ class PcrExtractionStation(DnaSupplier):
             )
 
             return [
-                (
-                    al.hit_id + "_h%03d" % i,
-                    (hit.query_start, hit.query_end),
-                    hit.sbjct,
-                )
+                (al.hit_id + "_h%03d" % i, (hit.query_start, hit.query_end), hit.sbjct,)
                 for al in record.alignments
                 for i, hit in enumerate(al.hsps)
             ]
 
     def blast_sequence(self, sequence, cutoff=40):
-        if hasattr(sequence, 'seq'):
+        if hasattr(sequence, "seq"):
             sequence = str(sequence.seq)
         record = blast_sequence(
             sequence,
@@ -145,11 +138,7 @@ class PcrExtractionStation(DnaSupplier):
             word_size=self.blast_word_size,
         )
         return [
-            (
-                al.hit_id + "_h%03d_%02d" % (i, j),
-                (start, end),
-                sequence[start:end],
-            )
+            (al.hit_id + "_h%03d_%02d" % (i, j), (start, end), sequence[start:end],)
             for al in record.alignments
             for i, hit in enumerate(al.hsps)
             for j, (start, end) in enumerate(
@@ -158,10 +147,7 @@ class PcrExtractionStation(DnaSupplier):
         ]
 
     def get_best_price(
-        self,
-        sequence,
-        max_lead_time=None,
-        with_assembly_plan=False,
+        self, sequence, max_lead_time=None, with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -173,14 +159,14 @@ class PcrExtractionStation(DnaSupplier):
         ----------
 
         sequence (str)
-          The sequence submitted to the Dna Source for a quote
+          The sequence submitted to the Dna Source for a quote.
 
         max_lead_time (float)
           If provided, the quote returned is the best quote (price-wise) whose
           lead time is less or equal to max_lead_time.
 
         with_assembly_plan
-          If True, the assembly plan is added to the quote
+          If True, the assembly plan is added to the quote.
         """
         hits = self._get_hits(sequence)
 
@@ -192,9 +178,7 @@ class PcrExtractionStation(DnaSupplier):
 
             if largest_overhang > self.max_overhang_length:
                 continue
-            for i in range(
-                min(len(sequence), self.max_overhang_length) - hit_start
-            ):
+            for i in range(min(len(sequence), self.max_overhang_length) - hit_start):
                 subseq = sequence[hit_start + i :]
                 # print (hit_start, i, subseq, hit_end, hit_start)
                 left_location = self.homology_selector.compute_segment_location(
@@ -224,9 +208,7 @@ class PcrExtractionStation(DnaSupplier):
             # primer_right = reverse_complement(sequence[primer_r_end:])
 
             primer_max_lead_time = (
-                None
-                if max_lead_time is None
-                else max_lead_time - self.extra_time
+                None if max_lead_time is None else max_lead_time - self.extra_time
             )
             quotes = [
                 self.primers_supplier.get_quote(
@@ -243,9 +225,7 @@ class PcrExtractionStation(DnaSupplier):
                 )
             else:
                 overall_lead_time = None
-            total_price = (
-                sum(quote.price for quote in quotes) + self.extra_cost
-            )
+            total_price = sum(quote.price for quote in quotes) + self.extra_cost
 
             if with_assembly_plan:
                 assembly_plan = {
@@ -263,16 +243,10 @@ class PcrExtractionStation(DnaSupplier):
                 price=total_price,
                 assembly_plan=assembly_plan,
                 message="From %s" % subject,
-                metadata={
-                    "subject": subject,
-                    "location": (hit_start, hit_end),
-                },
+                metadata={"subject": subject, "location": (hit_start, hit_end),},
             )
         if len(hits):
-            message = (
-                "Some matches found but could not find suitable primer "
-                "design."
-            )
+            message = "Some matches found but could not find suitable primer design."
         else:
             message = "No BLAST hit found"
         return DnaQuote(self, sequence, accepted=False, message=message)
@@ -364,4 +338,4 @@ class PcrExtractionStation(DnaSupplier):
                 self.primers_supplier = suppliers[0]
         else:
             self.primers_supplier = suppliers
-        self.suppliers = [self.primers_supplier] # for network reconstitution
+        self.suppliers = [self.primers_supplier]  # for network reconstitution

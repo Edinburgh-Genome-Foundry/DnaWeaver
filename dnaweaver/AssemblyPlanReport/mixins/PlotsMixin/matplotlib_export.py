@@ -1,14 +1,13 @@
-"""Plotting functions for the results of DNA Weaver"""
+"""Plotting functions for the results of DNA Weaver."""
 
 from io import StringIO, BytesIO
 from base64 import b64encode
 
 
-
 def matplotlib_figure_to_file_string(fig, format="svg", **kwargs):
     """Return a string of the figure in the requested format."""
 
-    if (format == "pdf"):
+    if format == "pdf":
         output = BytesIO()
     else:
         output = StringIO()
