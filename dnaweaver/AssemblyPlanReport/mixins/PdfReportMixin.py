@@ -5,6 +5,7 @@ import pandas
 from jinja2 import Environment, FileSystemLoader
 from ..config import SETTINGS
 from .PlotsMixin.give_quotes_html_locations import give_quotes_html_locations
+from ...version import __version__ as version
 
 
 class PdfReportMixin:
@@ -159,6 +160,7 @@ class PdfReportMixin:
             "asm_dataframe": asm_dataframe,
             "assembly_operations": assembly_operations,
             "user_name": self.plan.get("user_name", "unknown"),
+            "version": version,
         }
         if len(pcrs_dataframe) > 0:
             render_parameters["pcr_reuses"] = pcrs_dataframe
