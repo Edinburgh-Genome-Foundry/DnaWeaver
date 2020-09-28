@@ -1,5 +1,4 @@
 import dnaweaver as dw
-from dnaweaver.reports import plot_supply_network, AssemblyPlan
 import time
 
 cheap_dna_offer = dw.CommercialDnaOffer(
@@ -59,4 +58,3 @@ quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
 
 print(quote.assembly_step_summary())
 print("Finished in %.01d seconds" % (time.time() - t0))
-
