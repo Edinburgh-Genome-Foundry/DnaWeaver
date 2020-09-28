@@ -144,10 +144,10 @@
 <span class="sd">    ----------</span>
 
 <span class="sd">    name</span>
-<span class="sd">      Name of the station (appears on reports)</span>
+<span class="sd">      Name of the station (appears on reports).</span>
 
 <span class="sd">    assembly_method</span>
-<span class="sd">      AnDnaAssemblyMethod object specifying how the fragments are assembled,</span>
+<span class="sd">      A DnaAssemblyMethod object specifying how the fragments are assembled,</span>
 <span class="sd">      what sequences can be assembled, what fragments can be used, etc.</span>
 
 <span class="sd">    supplier</span>
@@ -193,18 +193,16 @@
 <div class="viewcode-block" id="DnaAssemblyStation.get_quote_for_sequence_segment"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_quote_for_sequence_segment">[docs]</a>    <span class="k">def</span> <span class="nf">get_quote_for_sequence_segment</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the cost of the segment</span>
+        <span class="sd">&quot;&quot;&quot;Return the cost of the segment.</span>
 
 <span class="sd">        Is used as the &quot;cost&quot; function for a segment during decomposition</span>
-<span class="sd">        optimization</span>
+<span class="sd">        optimization.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fragment_to_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_method</span><span class="o">.</span><span class="n">compute_fragment_for_sequence_segment</span><span class="p">(</span>
             <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="o">=</span><span class="n">segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span>
-            <span class="n">fragment_to_order</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">supplier</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span><span class="n">fragment_to_order</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DnaAssemblyStation.get_assembly_plan_from_cuts"><a class="viewcode-back" href="../../../../../ref.html#dnaweaver.DnaAssemblyStation.get_assembly_plan_from_cuts">[docs]</a>    <span class="k">def</span> <span class="nf">get_assembly_plan_from_cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">cuts</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a plan {segment: quote, ...} based on the cut positions.</span>
@@ -214,10 +212,7 @@
         <span class="n">cuts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">segment</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_quote_for_sequence_segment</span><span class="p">(</span>
-                <span class="n">sequence</span><span class="p">,</span>
-                <span class="n">segment</span><span class="p">,</span>
-                <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span>
-                <span class="n">segment_position</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">sequence</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">max_lead_time</span><span class="o">=</span><span class="n">max_lead_time</span><span class="p">,</span> <span class="n">segment_position</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cuts</span><span class="p">,</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
         <span class="p">}</span></div>
@@ -249,9 +244,7 @@
             <span class="n">cut_location_constraints</span><span class="o">=</span><span class="p">[</span>
                 <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">cut_location_constraints</span>
             <span class="p">],</span>
-            <span class="n">segment_constraints</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">segment_constraints</span>
-            <span class="p">],</span>
+            <span class="n">segment_constraints</span><span class="o">=</span><span class="p">[</span><span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">segment_constraints</span><span class="p">],</span>
             <span class="n">min_segment_length</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">min_segment_length</span><span class="p">,</span>
             <span class="n">max_segment_length</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">max_segment_length</span><span class="p">,</span>
             <span class="n">forced_cuts</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">force_cuts</span><span class="p">(</span><span class="n">sequence</span><span class="p">),</span>
@@ -262,9 +255,7 @@
             <span class="n">bar_prefix</span><span class="o">=</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] &quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">a_star_factor</span><span class="o">=</span><span class="n">a_star_factor</span><span class="p">,</span>
             <span class="n">path_size_limit</span><span class="o">=</span><span class="n">assembly</span><span class="o">.</span><span class="n">max_fragments</span><span class="p">,</span>
-            <span class="n">cuts_set_constraints</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">cuts_set_constraints</span>
-            <span class="p">],</span>
+            <span class="n">cuts_set_constraints</span><span class="o">=</span><span class="p">[</span><span class="n">cs</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">assembly</span><span class="o">.</span><span class="n">cuts_set_constraints</span><span class="p">],</span>
             <span class="n">cut_spread_radius</span><span class="o">=</span><span class="n">cut_spread_radius</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -318,24 +309,21 @@
 <span class="sd">        ----------</span>
 
 <span class="sd">        sequence (str)</span>
-<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quote.</span>
 
 <span class="sd">        max_lead_time (float)</span>
 <span class="sd">          If provided, the quote returned is the best quote (price-wise) whose</span>
 <span class="sd">          lead time is less or equal to max_lead_time.</span>
 
 <span class="sd">        with_assembly_plan</span>
-<span class="sd">          If True, the assembly plan is added to the quote</span>
+<span class="sd">          If True, the assembly plan is added to the quote.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">max_lead_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_lead_time</span> <span class="o">=</span> <span class="n">max_lead_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_time</span>
             <span class="k">if</span> <span class="n">max_lead_time</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">DnaQuote</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="p">,</span>
-                    <span class="n">sequence</span><span class="p">,</span>
-                    <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Lead time limit too short&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">accepted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Lead time limit too short&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">assembly_plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assembly_plan_for_sequence</span><span class="p">(</span>
@@ -467,7 +455,7 @@
 </ul><div class="footer" role="contentinfo">
       &#169; Copyright 2020, Edinburgh Genome Foundry.
     <br>
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
 </div>
             </div>
           </div>

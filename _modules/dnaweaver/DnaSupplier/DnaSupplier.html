@@ -155,7 +155,7 @@
 <span class="sd">        ----------</span>
 
 <span class="sd">        sequence (str)</span>
-<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quote.</span>
 
 <span class="sd">        max_lead_time (float)</span>
 <span class="sd">          If provided, the quote returned is the best quote (price-wise) whose</span>
@@ -165,11 +165,11 @@
 <span class="sd">          If provided, the quote returned is the least-lead-time quote</span>
 <span class="sd">          whose price is below or equal to `max_price`.</span>
 <span class="sd">          This is done using bisection and can be slow as it requires to</span>
-<span class="sd">          re-compute the problem many times</span>
-<span class="sd">          Note that either this parameter or `max_lead_time` must be None</span>
+<span class="sd">          re-compute the problem many times.</span>
+<span class="sd">          Note that either this parameter or `max_lead_time` must be None.</span>
 
 <span class="sd">        with_assembly_plan</span>
-<span class="sd">          If True, the assembly plan is added to the quote</span>
+<span class="sd">          If True, the assembly plan is added to the quote.</span>
 
 <span class="sd">        time_resolution</span>
 <span class="sd">          Time resolution for the bisecting search if `max_price` is not None.</span>
@@ -178,9 +178,8 @@
 <span class="sd">        -------</span>
 
 <span class="sd">        A DnaQuote object.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s2">&quot;seq&quot;</span><span class="p">):</span>
             <span class="c1"># Use a simpler format which still remembers the topology</span>
             <span class="n">sequence</span> <span class="o">=</span> <span class="n">SequenceString</span><span class="o">.</span><span class="n">from_record</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
 
@@ -231,29 +230,26 @@
 <div class="viewcode-block" id="DnaSupplier.get_best_lead_time_under_price_limit"><a class="viewcode-back" href="../../../ref.html#dnaweaver.DnaSupplier.get_best_lead_time_under_price_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_lead_time_under_price_limit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">max_price</span><span class="p">,</span> <span class="n">time_resolution</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the quote with fastest lead time under the budget constraint</span>
+        <span class="sd">&quot;&quot;&quot;Return the quote with fastest lead time under the budget constraint/</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
-
-
 <span class="sd">        sequence (str)</span>
-<span class="sd">          The sequence submitted to the Dna Source for a quots</span>
+<span class="sd">          The sequence submitted to the Dna Source for a quote.</span>
 
 <span class="sd">        max_price (float)</span>
 <span class="sd">          If provided, the quote returned is the least-lead-time quote</span>
 <span class="sd">          whose price is below or equal to `max_price`.</span>
 <span class="sd">          This is done using bisection and can be slow as it requires to</span>
-<span class="sd">          re-compute the problem many times</span>
-<span class="sd">          Note that either this parameter or `max_lead_time` must be None</span>
+<span class="sd">          re-compute the problem many times.</span>
+<span class="sd">          Note that either this parameter or `max_lead_time` must be None.</span>
 
 <span class="sd">        with_assembly_plan</span>
-<span class="sd">          If True, the assembly plan is added to the quote</span>
+<span class="sd">          If True, the assembly plan is added to the quote.</span>
 
 <span class="sd">        time_resolution</span>
 <span class="sd">          Time resolution for the bisecting search if `max_price` is not None.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">max_lead_time</span><span class="p">):</span>
@@ -314,7 +310,7 @@
 </ul><div class="footer" role="contentinfo">
       &#169; Copyright 2020, Edinburgh Genome Foundry.
     <br>
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
 </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>How it works</title>
+      <title>DNA Weaver</title>
     
       <link rel="stylesheet" href="_static/pygments.css">
       <link rel="stylesheet" href="_static/theme.css">
@@ -109,7 +109,7 @@
   <ul class="breadcrumbs">
     <li><a href="#">Docs</a> &raquo;</li>
     
-    <li>How it works</li>
+    <li>DNA Weaver</li>
   </ul>
   
 
@@ -127,32 +127,23 @@
   <p align="center">
 <img alt="DNA Weaver Logo" title="DNA Weaver Logo" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/title.png" width="500">
 <br /><br />
-</p><p># DNA Weaver
-.. image:: <a class="reference external" href="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master">https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master</a></p>
-<blockquote>
-<div><dl class="field-list simple">
-<dt class="field-odd">target</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver">https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver</a></p>
-</dd>
-<dt class="field-even">alt</dt>
-<dd class="field-even"><p>Travis CI build status</p>
-</dd>
-</dl>
-</div></blockquote>
+</p><div class="section" id="dna-weaver">
+<h1>DNA Weaver<a class="headerlink" href="#dna-weaver" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver"><img alt="Travis CI build status" src="https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master" /></a>
 <a class="reference external image-reference" href="https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master"><img alt="https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master" src="https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master" /></a>
 <p>DNA Weaver is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
-and assembly steps. Try it online via the <a class="reference external" href="https://dnaweaver.genomefoundry.org">DNA Weaver web app</a></p>
+and assembly steps. Try it online via the <a class="reference external" href="https://dnaweaver.genomefoundry.org">DNA Weaver web app</a>.</p>
 <p>DNA Weaver was written with versatility and extensibility in mind:
 each DNA source and assembly method can be customized, and assembly plans can
 be optimized with respect to total price, overall duration of the assembly,
 or assembly success probabilities.</p>
 <div class="section" id="how-it-works">
-<h1>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h1>
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
 <p>In DNA Weaver you first define a supply network connecting various DNA sources
-(commercial providers, parts repositories, genomic DNA, and cloning stations) to
+(commercial providers, part repositories, genomic DNA, and cloning stations) to
 represent how DNA can be obtained in your lab or biofoundry. For instance, assume
 that you routinely assemble ~10kb sequences using Gibson assembly, from fragments
 obtained either commercially or from the assembly of oligonucleotides. Your
@@ -167,9 +158,9 @@ bidding between the different DNA sources in order to find the best possible
 assembly plan.</p>
 </div>
 <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="ordering-fragments-from-multiple-vendors">
-<h2>Ordering fragments from multiple vendors<a class="headerlink" href="#ordering-fragments-from-multiple-vendors" title="Permalink to this headline">¶</a></h2>
+<h3>Ordering fragments from multiple vendors<a class="headerlink" href="#ordering-fragments-from-multiple-vendors" title="Permalink to this headline">¶</a></h3>
 <p>In the following example we ask DNA Weaver for a plan to assemble a 10kb
 sequence via Gibson assembly of fragments with 40bp homologies. The fragments
 can be ordered from two companies: CheapDNA produces fragments for 10c/bp,
@@ -231,7 +222,7 @@ fragment in the middle of the sequence, which had to be ordered from DeluxeDNA
 due to the presence of a BsaI site.</p>
 </div>
 <div class="section" id="multi-step-assembly-with-assembly-report">
-<h2>Multi-step assembly with assembly report<a class="headerlink" href="#multi-step-assembly-with-assembly-report" title="Permalink to this headline">¶</a></h2>
+<h3>Multi-step assembly with assembly report<a class="headerlink" href="#multi-step-assembly-with-assembly-report" title="Permalink to this headline">¶</a></h3>
 <p>By defining more DNA sources and connecting them together it is possible to
 model complex assembly problems.</p>
 <p>For instance in <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/three-step_assembly/three-step_assembly.py">this example</a> we implement a complex DNA assembly chain,
@@ -246,10 +237,10 @@ DeluxeDNA) or assembled from oligos:</p>
      src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/multiple_step_supply_network.png" width="600"/>
 <br /><br />
 </p><p>Just a few lines of code can produce a comprehensive report (see a sample <a class="reference external" href="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/example_report.zip?raw=true">here</a>)
-featuring plots of the final assembly plan , comprehensive PDF reports
+featuring plots of the final assembly plan, comprehensive PDF reports
 listing all operations needed, and genbank/fasta files of the sequences to order:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">quote</span> <span class="o">=</span> <span class="n">assembly_station</span><span class="o">.</span><span class="n">get_quote</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">with_assembly_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">assembly_plan_eport</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">to_assembly_plan_report</span><span class="p">()</span>
+<span class="n">assembly_plan_report</span> <span class="o">=</span> <span class="n">quote</span><span class="o">.</span><span class="n">to_assembly_plan_report</span><span class="p">()</span>
 <span class="n">assembly_plan_report</span><span class="o">.</span><span class="n">write_full_report</span><span class="p">(</span><span class="s2">&quot;report.zip&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -259,9 +250,9 @@ listing all operations needed, and genbank/fasta files of the sequences to order
      src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/report_illustration.png" width="900"/>
 <br /><br />
 </p></div>
-<div class="section" id="assembly-with-more-or-less-parts-reuse">
-<h2>Assembly with more or less parts reuse<a class="headerlink" href="#assembly-with-more-or-less-parts-reuse" title="Permalink to this headline">¶</a></h2>
-<p>In <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py">This other example</a> be build a sequence comprising a resistance cassette
+<div class="section" id="assembly-with-part-reuse">
+<h3>Assembly with part reuse<a class="headerlink" href="#assembly-with-part-reuse" title="Permalink to this headline">¶</a></h3>
+<p>In <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py">this other example</a> we build a sequence comprising a resistance cassette
 (promoter, resistance, terminator) flanked by two homology arms. The sequence
 incorporates parts from the EMMA library. The script progressively adds new
 DNA sources (commercial DNA, the EMMA library, chromosomal DNA) so we can observe
@@ -272,11 +263,11 @@ the changes in the proposed solution:</p>
 <br /><br />
 </p></div>
 <div class="section" id="site-directed-mutagenesis">
-<h2>Site-directed mutagenesis<a class="headerlink" href="#site-directed-mutagenesis" title="Permalink to this headline">¶</a></h2>
-<p>A common cloning operation is the domestication of physical genetic part for a
+<h3>Site-directed mutagenesis<a class="headerlink" href="#site-directed-mutagenesis" title="Permalink to this headline">¶</a></h3>
+<p>A common cloning operation is the domestication of a genetic part for a
 given assembly standard. Many Golden Gate assembly standards forbid BsaI and
-BsmBI restriction sites in parts sequences. If one wanted to use the wildtype
-E. coli gene <em>yeeJ</em>, one would need to first remove the BsaI and BsmBI sites at
+BsmBI restriction sites in part sequences. If one wanted to use the wildtype
+<em>E. coli</em> gene <em>yeeJ</em>, one would need to first remove the BsaI and BsmBI sites at
 positions 453, 2284, 3979, 5455 and 5990 in the gene sequence. This can be done
 via site-directed mutagenesis, where regions of the chromosome are PCR-amplified
 at precise locations using carefully-designed primers. These primers have overhangs
@@ -286,7 +277,7 @@ site-less final sequence.</p>
 <p>This process can be easily modeled in DNA Weaver by connecting a PCR station
 (and its oligo provider) to an assembly station:</p>
 <p align="center">
-<img alt="DNA Weaver Logo" title="DNA Weaver Logo"
+<img alt="DNA Weaver example" title="DNA Weaver example"
      src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/images/site_directed_mutagenesis.png" width="900"/>
 <br /><br />
 </p><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dnaweaver</span> <span class="k">as</span> <span class="nn">dw</span>
@@ -334,17 +325,17 @@ site-less final sequence.</p>
 <span class="n">Price</span><span class="p">:</span><span class="mf">71.80</span><span class="p">,</span> <span class="n">total</span> <span class="n">lead_time</span><span class="p">:</span><span class="mf">0.0</span>
 </pre></div>
 </div>
-<p>In the full assembly report (which you can generate in <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple">this example</a>) is the list
+<p>The full assembly report (which you can generate in <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/tree/master/examples/scenarios/site_mutagenesis_simple">this example</a>) has the list
 of all primers to order (including overhangs with sequence mutations and BsaI sites).</p>
 </div>
 </div>
 <div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>You can install DnaWeaver through PIP</p>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install DnaWeaver through PIP:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">dnaweaver</span>
 </pre></div>
 </div>
-<p>Alternatively, you can unzip the sources in a folder and type</p>
+<p>Alternatively, you can unzip the sources in a folder and type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
@@ -352,22 +343,22 @@ of all primers to order (including overhangs with sequence mutations and BsaI si
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">ncbi</span><span class="o">-</span><span class="n">blast</span><span class="o">+</span>
 </pre></div>
 </div>
-<p>You may also need the following non-python dependencies for report generation,
-on Ubuntu:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">installbuild</span><span class="o">-</span><span class="n">essential</span> <span class="n">python3</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span> \
+<p>You may also need the following non-Python dependencies for report generation.
+On Ubuntu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">build</span><span class="o">-</span><span class="n">essential</span> <span class="n">python3</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span> \
     <span class="n">python3</span><span class="o">-</span><span class="n">cffi</span> <span class="n">libcairo2</span> <span class="n">libpango</span><span class="o">-</span><span class="mf">1.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libpangocairo</span><span class="o">-</span><span class="mf">1.0</span><span class="o">-</span><span class="mi">0</span> \
     <span class="n">libgdk</span><span class="o">-</span><span class="n">pixbuf2</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libffi</span><span class="o">-</span><span class="n">dev</span> <span class="n">shared</span><span class="o">-</span><span class="n">mime</span><span class="o">-</span><span class="n">info</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="license-mit">
-<h1>License = MIT<a class="headerlink" href="#license-mit" title="Permalink to this headline">¶</a></h1>
+<h2>License = MIT<a class="headerlink" href="#license-mit" title="Permalink to this headline">¶</a></h2>
 <p>DNA Weaver is an open-source software originally written at the <a class="reference external" href="http://edinburgh-genome-foundry.github.io/home.html">Edinburgh Genome Foundry</a> by <a class="reference external" href="https://github.com/Zulko">Zulko</a>
-and <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel">released on Github</a> under the MIT licence (¢ Edinburg Genome Foundry).</p>
-<p>Everyone is welcome to contribute !</p>
+and <a class="reference external" href="https://github.com/Edinburgh-Genome-Foundry/DnaChisel">released on Github</a> under the MIT licence (Copyright 2017 Edinburgh Genome Foundry).</p>
+<p>Everyone is welcome to contribute!</p>
 </div>
 <div class="section" id="more-biology-software">
-<h1>More biology software<a class="headerlink" href="#more-biology-software" title="Permalink to this headline">¶</a></h1>
+<h2>More biology software<a class="headerlink" href="#more-biology-software" title="Permalink to this headline">¶</a></h2>
 <a class="reference external image-reference" href="https://edinburgh-genome-foundry.github.io/"><img alt="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/Edinburgh-Genome-Foundry.github.io/master/static/imgs/logos/egf-codon-horizontal.png" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/Edinburgh-Genome-Foundry.github.io/master/static/imgs/logos/egf-codon-horizontal.png" /></a>
 <p>DNA Weaver is part of the <a class="reference external" href="https://edinburgh-genome-foundry.github.io/">EGF Codons</a>
 synthetic biology software suite for DNA design, manufacturing and validation.</p>
@@ -385,6 +376,7 @@ synthetic biology software suite for DNA design, manufacturing and validation.</
     <iframe src="http://ghbtns.com/github-btn.html?user=Edinburgh-Genome-Foundry&repo=dnaweaver&type=watch&count=true&size=large"
     allowtransparency="true" frameborder="0" scrolling="0" width="152px" height="30px" margin-bottom="30px"></iframe>
 </div></div>
+</div>
 
 
           </div>
@@ -397,7 +389,7 @@ synthetic biology software suite for DNA design, manufacturing and validation.</
 </ul><div class="footer" role="contentinfo">
       &#169; Copyright 2020, Edinburgh Genome Foundry.
     <br>
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
 </div>
             </div>
           </div>
