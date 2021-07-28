@@ -34,7 +34,7 @@ class SegmentSelector:
         start, end = segment
         topology = get_sequence_topology(sequence)
         if topology == "circular":
-            half_homology = self.max_homology_size // 2
+            half_homology = 2
             if start <= half_homology:
                 return self.compute_fragment_for_sequence_segment(
                     sequence=sequence[-half_homology:] + sequence,
@@ -73,7 +73,7 @@ class SegmentSelector:
         """Return the sequence of the selected segment at the given index."""
 
         if get_sequence_topology(sequence) == "circular":
-            half_homology = self.max_homology_size // 2
+            half_homology = 2
             if index <= half_homology:
                 return self.compute_segment_around_index(
                     sequence=sequence[-half_homology:] + sequence,

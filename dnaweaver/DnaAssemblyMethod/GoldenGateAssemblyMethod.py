@@ -32,7 +32,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
     name = "Golden Gate Assembly"
 
-    enzymes_dict = {"BsaI": "GGTCTC", "BsmBI": "CGTCTC", "BbsI": "GAAGAC"}
+    enzymes_dict = {"BsaI": "GGTCTC", "BsmBI": "CGTCTC", "BbsI": "GAAGAC", "SapI": "GCTCTTC"}
 
     def __init__(
         self,
@@ -61,10 +61,11 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             reverse_complement(enzyme_site_plus_basepair) + right_addition
         )
         self.refuse_sequences_with_enzyme_site = refuse_sequences_with_enzyme_site
+        self.overhang_size = 3 if self.enzyme=="SapI" else 4
 
         overhang_selector = TmSegmentSelector(
-            min_size=4,
-            max_size=4,
+            min_size=self.overhang_size,
+            max_size=self.overhang_size,
             min_tm=gc_content_to_tm(4, min_gc),
             max_tm=gc_content_to_tm(4, max_gc),
             left_addition=self.left_addition,
@@ -89,7 +90,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
                 s = overhang_selector.compute_segment_around_index(sequence, i)
                 rev_s = reverse_complement(s)
                 rev_diffs = len([a for a, b in zip(s, rev_s) if a != b])
-                assert len(s) == 4
+                assert len(s) == self.overhang_size
                 return rev_diffs >= self.min_overhangs_differences
 
             return no_palyndrom_filter
