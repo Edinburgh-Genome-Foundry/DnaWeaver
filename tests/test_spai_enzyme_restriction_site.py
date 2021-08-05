@@ -30,9 +30,6 @@ def test_golden_gate_assembly(tmpdir):
         sequence = sequences[fragment]
         desired_sequence += sequence
     # make sure desired has no SapI site.
-    desired_sequence = desired_sequence.replace("GCTCTTC", "GCGGAGC").replace(
-        "GAAGAGC", "GATTTTC"
-    )
     constraints = []
     constraints.append(AvoidPattern("{}_site".format(restriction_enzyme)))
     problem = DnaOptimizationProblem(
