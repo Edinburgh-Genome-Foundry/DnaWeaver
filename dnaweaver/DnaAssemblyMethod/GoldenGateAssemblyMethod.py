@@ -32,7 +32,12 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
 
     name = "Golden Gate Assembly"
 
-    enzymes_dict = {"BsaI": "GGTCTC", "BsmBI": "CGTCTC", "BbsI": "GAAGAC", "SapI": "GCTCTTC"}
+    enzymes_dict = {
+        "BsaI": "GGTCTC",
+        "BsmBI": "CGTCTC",
+        "BbsI": "GAAGAC",
+        "SapI": "GCTCTTC",
+    }
 
     def __init__(
         self,
@@ -61,7 +66,7 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
             reverse_complement(enzyme_site_plus_basepair) + right_addition
         )
         self.refuse_sequences_with_enzyme_site = refuse_sequences_with_enzyme_site
-        self.overhang_size = 3 if self.enzyme=="SapI" else 4
+        self.overhang_size = 3 if self.enzyme == "SapI" else 4
 
         overhang_selector = TmSegmentSelector(
             min_size=self.overhang_size,
