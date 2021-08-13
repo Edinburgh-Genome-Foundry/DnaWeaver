@@ -71,8 +71,8 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
         overhang_selector = TmSegmentSelector(
             min_size=self.overhang_size,
             max_size=self.overhang_size,
-            min_tm=gc_content_to_tm(4, min_gc),
-            max_tm=gc_content_to_tm(4, max_gc),
+            min_tm=gc_content_to_tm(self.overhang_size, min_gc),
+            max_tm=gc_content_to_tm(self.overhang_size, max_gc),
             left_addition=self.left_addition,
             right_addition=self.right_addition,
         )
