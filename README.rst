@@ -9,14 +9,14 @@
 DNA Weaver
 ==========
 
-.. image:: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master
-   :target: https://travis-ci.org/Edinburgh-Genome-Foundry/DnaWeaver
+.. image:: https://travis-ci.com/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master
+   :target: https://travis-ci.com/Edinburgh-Genome-Foundry/DnaWeaver
    :alt: Travis CI build status
 
 .. image:: https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master
    :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
 
-DNA Weaver is a Python library to find optimal strategies for assembling large
+DNA Weaver (documentation `here <https://edinburgh-genome-foundry.github.io/DnaWeaver/>`_) is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
@@ -273,11 +273,11 @@ Installation
 
 You can install DnaWeaver through PIP:
 ::
-    sudo pip install dnaweaver
+    pip install dnaweaver
 
 Alternatively, you can unzip the sources in a folder and type:
 ::
-    sudo python setup.py install
+    python setup.py install
 
 Also install the ncbi-blast+ package to be able to use PCR stations. On Ubuntu:
 ::
@@ -296,7 +296,7 @@ License = MIT
 
 DNA Weaver is an open-source software originally written at the `Edinburgh Genome Foundry
 <http://edinburgh-genome-foundry.github.io/home.html>`_ by `Zulko <https://github.com/Zulko>`_
-and `released on Github <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ under the MIT licence (Copyright 2017 Edinburgh Genome Foundry).
+and `released on Github <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver>`_ under the MIT licence (Copyright 2017 Edinburgh Genome Foundry).
 
 Everyone is welcome to contribute!
 
