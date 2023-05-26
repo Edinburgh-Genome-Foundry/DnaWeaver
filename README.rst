@@ -9,12 +9,12 @@
 DNA Weaver
 ==========
 
-.. image:: https://travis-ci.com/Edinburgh-Genome-Foundry/DnaWeaver.svg?branch=master
-   :target: https://travis-ci.com/Edinburgh-Genome-Foundry/DnaWeaver
-   :alt: Travis CI build status
+.. image:: https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/actions/workflows/build.yml/badge.svg
+    :target: https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/actions/workflows/build.yml
+    :alt: GitHub CI build status
 
 .. image:: https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master
-   :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
+    :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
 
 DNA Weaver (documentation `here <https://edinburgh-genome-foundry.github.io/DnaWeaver/>`_) is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
