@@ -51,6 +51,8 @@ DNA Weaver will use smart sequence decomposition techniques and competitive
 bidding between the different DNA sources in order to find the best possible
 assembly plan.
 
+A detailed description and walkthrough of DNA Weaver can be found in this PDF document: `DNA Weaver presentation <https://github.com/Edinburgh-Genome-Foundry/egf-shared-documents/blob/master/slideshows/dnaweaver_presentation_iwbda_2019/talk_long.pdf>`_.
+
 
 Examples
 ---------
