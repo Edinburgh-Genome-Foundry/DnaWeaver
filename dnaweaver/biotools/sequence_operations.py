@@ -2,6 +2,7 @@ from io import StringIO
 from Bio.Seq import Seq
 from Bio import SeqIO
 import numpy as np
+import re
 
 
 def complement(dna_sequence):

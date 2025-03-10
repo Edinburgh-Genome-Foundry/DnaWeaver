@@ -56,7 +56,7 @@ class TmSegmentSelector(SegmentSelector):
         precompute_segments=True,
         left_addition="",
         right_addition="",
-        **primer3_params
+        **primer3_params,
     ):
         """Initialize."""
         self.min_size = min_size
@@ -140,7 +140,7 @@ class TmSegmentSelector(SegmentSelector):
             table = np.zeros((lmax + 1 - lmin, len(sequence)))
 
             # super fast GC computing using the trick 67=C, 71=G in unicode.
-            seq_array = np.frombuffer((sequence + "").encode(), dtype="uint8")
+            seq_array = np.frombuffer((sequence.upper() + "").encode(), dtype="uint8")
             cumsum = np.cumsum(2 + 2 * ((seq_array == 71) | (seq_array == 67)))
             for i, oh_size in enumerate(range(lmin, min(len(sequence) - 1, lmax + 1))):
                 arr = cumsum[oh_size:] - cumsum[:-oh_size]
@@ -176,7 +176,7 @@ class TmSegmentSelector(SegmentSelector):
         Else the heuristic AT/GC=2/4C is used.
         """
         if self.primer3_params == {}:
-            return sum([4 if c in "GC" else 2 for c in sequence])
+            return sum([4 if c in "GC" else 2 for c in sequence.upper()])
         if not PRIMER3_AVAILABLE:
             raise ImportError(
                 "Melting temperature computation with '%s' "
