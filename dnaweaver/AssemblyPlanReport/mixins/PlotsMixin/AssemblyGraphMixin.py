@@ -12,8 +12,9 @@ class AssemblyGraphMixin:
 
         Returns
         -------
+
         elements_positions, ax
-        Dictionary of element positions, matplotlib ax.
+          Dictionary of element positions, matplotlib ax.
         """
 
         nodes_dict = {}

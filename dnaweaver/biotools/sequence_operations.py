@@ -8,7 +8,7 @@ def complement(dna_sequence):
     """Return the complement of the DNA sequence.
 
     For instance ``complement("ATGCCG")`` returns ``"TACGGC"``.
-    Uses BioPython for speed.
+    Uses Biopython for speed.
     """
     return str(Seq(dna_sequence).complement())
 
@@ -17,7 +17,7 @@ def reverse_complement(sequence):
     """Return the reverse-complement of the DNA sequence.
 
     For instance ``complement("ATGCCG")`` returns ``"CGGCAT"``.
-    Uses BioPython for speed.
+    Uses Biopython for speed.
     """
     return complement(sequence)[::-1]
 
@@ -65,7 +65,7 @@ def load_record(filename, name="unnamed"):
 
 
 def string_to_sequence(string):
-    """Convert a string of a fasta, genbank... into a simple ATGC string.
+    """Convert a string of a FASTA, Genbank... into a simple ATGC string.
 
     Can also be used to detect a format.
     """
@@ -83,7 +83,7 @@ def string_to_sequence(string):
 
 
 def file_to_sequence(filename):
-    """Import a file in fasta, genbank... as a simple ATGC string."""
+    """Import a file in FASTA, Genbank... as a simple ATGC string."""
     with open(filename, "r") as f:
         return string_to_sequence(f.read())
 

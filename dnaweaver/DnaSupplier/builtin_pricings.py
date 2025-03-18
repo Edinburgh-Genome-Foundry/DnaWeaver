@@ -7,7 +7,7 @@ class PerBasepairPricing:
     Parameters
     ----------
 
-    per_basepair_pricing
+    per_basepair_price
       Variable cost per basepair on top of the fixed cost.
 
     fixed_cost
@@ -32,12 +32,21 @@ class PerBasepairPricing:
 
     def __str__(self):
         if self.fixed_cost != 0:
-            return "$(%.02f + %.03f/bp)" % (self.fixed_cost, self.per_basepair_price,)
+            return "$(%.02f + %.03f/bp)" % (
+                self.fixed_cost,
+                self.per_basepair_price,
+            )
         return "$%.03f/bp" % self.per_basepair_price
 
 
 class FixedCostPricing:
     """Class for pricings that return the same price for each sequence.
+
+    Parameters
+    ----------
+
+    fixed_cost
+      The cost of a sequence.
 
     Examples
     --------

@@ -104,9 +104,13 @@ class DnaSupplier(
         return self.name
 
     def get_best_lead_time_under_price_limit(
-        self, sequence, max_price, time_resolution, with_assembly_plan=False,
+        self,
+        sequence,
+        max_price,
+        time_resolution,
+        with_assembly_plan=False,
     ):
-        """Return the quote with fastest lead time under the budget constraint/
+        """Return the quote with fastest lead time under the budget constraint.
 
         Parameters
         ----------
@@ -121,11 +125,11 @@ class DnaSupplier(
           re-compute the problem many times.
           Note that either this parameter or `max_lead_time` must be None.
 
-        with_assembly_plan
-          If True, the assembly plan is added to the quote.
-
         time_resolution
           Time resolution for the bisecting search if `max_price` is not None.
+
+        with_assembly_plan
+          If True, the assembly plan is added to the quote.
         """
 
         def f(max_lead_time):

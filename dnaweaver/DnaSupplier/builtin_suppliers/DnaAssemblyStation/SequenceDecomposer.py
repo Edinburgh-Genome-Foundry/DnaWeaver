@@ -48,18 +48,37 @@ class SequenceDecomposer:
       List or tuple of functions `(int, int) -> bool` which return for each
       segment `(start, end)` whether the segment is a valid segment for the
       decomposition of the sequence or whether it should be forbidden.
-      The segmentss considered are the segments which pass every filter
+      The segments considered are the segments which pass every filter
       in the `segments_filters` list.
 
     forced_cuts
       List of locations at which the decomposition must imperatively cut, even
       if these cuts do not comply with the `cut_location_constraints`.
 
+    suggested_cuts
+      Additional cutpoint locations to add to the coarse cutpoints.
+
+    cuts_set_constraints
+
+    cut_spread_radius
+      If non-zero, add additional 'radius' number of cutpoints upstream and downstream
+      around each cutpoint for coarse- and for fine-grained solutions.
+
+    min_segment_length
+      Minimum length of the segments.
+
     max_segment_length
       Maximal length of the segments. Even though this could be specified using
       a filter in `segments_filters`, in practice providing this parameter
       accelerates computations as it allows to reduce the number
       of segments considered.
+
+    coarse_grain
+      Distance of the coarse cutpoints during the search for a coarse-grain solution.
+
+    fine_grain
+      Distance of the fine cutpoints during the local search around coarse cutpoints,
+      to find a refined solution.
 
     a_star_factor
       If 0, the classical Dijkstra algorithm is used for path finding. Else,
@@ -76,6 +95,12 @@ class SequenceDecomposer:
     path_size_min_step
       Minimal step for the bisection search when `path_size_limit` is not None
       (see `dijkstra_path_with_size_limit`).
+
+    logger
+      The logger to use.
+
+    bar_prefix
+      Bar prefix for the logger.
 
 
     Returns
@@ -309,7 +334,9 @@ class SequenceDecomposer:
         )
         if self.cut_spread_radius:
             fine_cuts = spread_indices_in_set(
-                indices=fine_cuts, radius=self.cut_spread_radius, max_index=L + 1,
+                indices=fine_cuts,
+                radius=self.cut_spread_radius,
+                max_index=L + 1,
             )
         fine_cuts = (fine_cuts.intersection(self.valid_cuts)).union(self.forced_cuts)
         self.fine_graph = self.compute_graph(fine_cuts)

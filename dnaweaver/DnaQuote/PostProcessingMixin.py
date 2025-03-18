@@ -6,7 +6,17 @@ from ..biotools import blast_sequence
 
 class PostProcessingMixin:
     def compute_full_assembly_plan(self, id_prefix="S", id_digits=5):
-        """ """
+        """Compute the full assembly plan.
+
+        Parameters
+        ----------
+
+        id_prefix
+          The prefix to use when naming created sequences.
+
+        id_digits
+          The number of digits to use when naming created sequences.
+        """
 
         counter = itt.count()
 

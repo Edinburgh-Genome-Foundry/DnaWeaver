@@ -4,13 +4,31 @@ from ...DnaQuote import DnaQuote
 
 class PcrLinearizationStation(DnaSupplier):
     """Station which will linearize another station's (circular) output via PCR.
-    
+
     Parameters
     ----------
+
+    name
+      Name of the PCR station.
+
+    supplier
+
+    primers_supplier
+        DnaSupplier providing the primers (will typically be an CommercialDnaOffer).
+
+    homology_selector
+
+    sequence_constraints
+
+    extra_time
+
+    extra_cost
+
+    memoize
     """
 
     class_description = "Linearizes a sequence for downstream assembly"
-    report_fa_symbol = u""
+    report_fa_symbol = ""
     report_fa_symbol_plain = "exchange"
     report_color = "#eefefe"
     operation_type = "PCR"
@@ -39,7 +57,10 @@ class PcrLinearizationStation(DnaSupplier):
         self.min_basepair_price = supplier.min_basepair_price
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False,
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -129,7 +150,9 @@ class PcrLinearizationStation(DnaSupplier):
             lead_time=overall_lead_time,
             price=total_price,
             assembly_plan=assembly_plan,
-            metadata={"location": (0, len(sequence)),},
+            metadata={
+                "location": (0, len(sequence)),
+            },
         )
 
     def additional_dict_description(self):

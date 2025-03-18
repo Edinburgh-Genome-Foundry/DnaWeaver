@@ -3,11 +3,24 @@ from ..DnaSupplier import DnaSupplier
 
 class SequenceAdapter(DnaSupplier):
     """Transparent source adding sequence flanks between suppliers and clients.
+
+    Parameters
+    ----------
+
+    name
+
+    supplier
+
+    left_addition
+
+    right_addition
+
+    memoize
     """
 
     class_description = "Adapts a sequence between a supplier and its clients"
     operation_type = "sequence extension"
-    report_fa_symbol = u"\uf07e"
+    report_fa_symbol = "\uf07e"
     report_fa_symbol_plain = "arrows-h"
     report_color = "#ffeeee"
 
@@ -21,7 +34,7 @@ class SequenceAdapter(DnaSupplier):
     ):
         self.name = name
         self.supplier = supplier
-        self.suppliers = [supplier] # only for network reconstitution
+        self.suppliers = [supplier]  # only for network reconstitution
         self.left_addition = left_addition
         self.right_addition = right_addition
         self.sequence_constraints = ()

@@ -10,9 +10,9 @@ except:
 
 class ConstraintsMixin:
     def verify_constraints(self, sequence):
-        """Return True iff `sequence` passes all `self.sequence_constraints`.
+        """Return True if `sequence` passes all `self.sequence_constraints`.
 
-        Will automatically process DNA-Chisel constraints that would be in
+        Will automatically process DNA Chisel constraints that would be in
         `self.sequence_constraints`.
         """
         constraints = self.sequence_constraints

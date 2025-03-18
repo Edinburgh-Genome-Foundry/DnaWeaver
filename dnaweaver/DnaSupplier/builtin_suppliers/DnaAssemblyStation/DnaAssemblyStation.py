@@ -28,11 +28,16 @@ class DnaAssemblyStation(DnaSupplier):
 
     supplier
 
+    memoize
+
+    decomposer_class
+
+    a_star_auto_multiplier
     """
 
     class_description = "DNA assembly station"
     operation_type = "assembly"
-    report_fa_symbol = u""
+    report_fa_symbol = ""
     report_fa_symbol_plain = "flask"
     report_color = "#eeeeff"
 
@@ -88,7 +93,10 @@ class DnaAssemblyStation(DnaSupplier):
         cuts = sorted(cuts)
         return {
             segment: self.get_quote_for_sequence_segment(
-                sequence, segment, max_lead_time=max_lead_time, segment_position=i,
+                sequence,
+                segment,
+                max_lead_time=max_lead_time,
+                segment_position=i,
             )
             for i, segment in enumerate(zip(cuts, cuts[1:]))
         }
@@ -105,7 +113,9 @@ class DnaAssemblyStation(DnaSupplier):
     ):
         def segment_score(segment):
             quote = self.get_quote_for_sequence_segment(
-                sequence, segment, max_lead_time=max_lead_time,
+                sequence,
+                segment,
+                max_lead_time=max_lead_time,
             )
             if not quote.accepted:
                 return -1
@@ -173,11 +183,16 @@ class DnaAssemblyStation(DnaSupplier):
         self._lattest_decomposer = decomposer  # for debugging
         best_cuts = decomposer.compute_optimal_cuts()
         return self.get_assembly_plan_from_cuts(
-            sequence, best_cuts, max_lead_time=max_lead_time,
+            sequence,
+            best_cuts,
+            max_lead_time=max_lead_time,
         )
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False,
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Returns a price-optimal DnaQuote for the given sequence.
 
@@ -199,7 +214,10 @@ class DnaAssemblyStation(DnaSupplier):
             max_lead_time = max_lead_time - self.extra_time
             if max_lead_time < 0:
                 return DnaQuote(
-                    self, sequence, accepted=False, message="Lead time limit too short",
+                    self,
+                    sequence,
+                    accepted=False,
+                    message="Lead time limit too short",
                 )
         try:
             assembly_plan = self.get_assembly_plan_for_sequence(

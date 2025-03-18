@@ -44,7 +44,7 @@ class ExportsMixin:
           If True, a JSON string is returned, else the result is a dict object.
 
         json_indent
-          number of spaces in the JSON indentation (for pretty printing). The
+          Number of spaces in the JSON indentation (for pretty printing). The
           default None means that the JSON will be on one line (TODO: check).
 
 
@@ -73,7 +73,7 @@ class ExportsMixin:
 
         assembly_plan = []
         if self.assembly_plan is not None:
-            for (segment, quote) in self.assembly_plan.items():
+            for segment, quote in self.assembly_plan.items():
                 quote_as_dict = quote.assembly_plan_as_dict()
                 quote_as_dict["segment_start"] = segment[0]
                 quote_as_dict["segment_end"] = segment[1]
@@ -104,7 +104,7 @@ class ExportsMixin:
             return tree
 
     def to_record(self, record=None, record_id=None):
-        """Return a Biopython seqrecord of the quote.
+        """Return a Biopython SeqRecord of the quote.
 
         >>> record = to_record(solution)
         >>> # Let's plot with DnaVu:

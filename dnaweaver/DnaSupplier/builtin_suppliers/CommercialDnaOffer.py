@@ -19,12 +19,17 @@ class CommercialDnaOffer(DnaSupplier):
 
     class_description = "External DNA offer"
     operation_type = "order"
-    report_fa_symbol = u""
+    report_fa_symbol = ""
     report_fa_symbol_plain = "shopping-cart"
     report_color = "#ffeeee"
 
     def __init__(
-        self, name, pricing, sequence_constraints=(), lead_time=0, memoize=False,
+        self,
+        name,
+        pricing,
+        sequence_constraints=(),
+        lead_time=0,
+        memoize=False,
     ):
         self.name = name
         self.sequence_constraints = sequence_constraints

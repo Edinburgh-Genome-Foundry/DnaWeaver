@@ -10,6 +10,12 @@ class DnaAssemblyMethod(object):
       Duration required for the assembly (e.g. an estimated upper bound). The
       time unit is left at the choice of the user.
 
+    cost
+      Cost of assembly.
+
+    reference
+      Reference to e.g. a paper or a protocol describing the method.
+
     cut_location_constraints
       List or tuple of functions `(sequence, int) -> bool` which return for
       a sequence and an index (cut location) whether the location should be
@@ -26,15 +32,16 @@ class DnaAssemblyMethod(object):
       constraint in the `segments_constraints` list.
 
     min_segment_length
-      Minimal length of the fragments that this assembly method allows
+      Minimum length of the fragments that this assembly method allows.
 
     max_segment_length
-      Maximal length of the fragments that this assembly method allows
-
+      Maximum length of the fragments that this assembly method allows.
 
     force_cuts
       A function `sequence->[i1, i2, i3...]` which for a given sequence returns
       forced cuts locations.
+
+    suggest_cuts
 
     max_fragments
        Maximal number of fragments which can be assembled with this method.
@@ -44,8 +51,7 @@ class DnaAssemblyMethod(object):
       assembly method. It is a list of functions `seq->bool`. If one of
       these constraints returns False the sequence is refused.
 
-    reference
-      Reference to e.g. a paper or a protocol describing the method.
+    cuts_set_constraints
     """
 
     name = "None"

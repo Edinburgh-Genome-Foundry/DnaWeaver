@@ -42,6 +42,10 @@ class TmSegmentSelector(SegmentSelector):
       for each cutting point (and find cutting points which do not allow
       segments), using the AT/GC=2/4C heuristic for melting temperatures.
 
+    left_addition
+
+    right_addition
+
     primer3_params
       If ``precompute_segments`` is False and ``Primer3`` is installed, the
       melting temperature is computed.
@@ -162,9 +166,11 @@ class TmSegmentSelector(SegmentSelector):
                 ovh, val = self.find_optimal_segment(sequence, i, init_size)
                 osizes_and_validity.append((len(ovh), val))
         return [
-            None
-            if not valid
-            else self.get_segment_coordinates(i, ovh_size, len(sequence))
+            (
+                None
+                if not valid
+                else self.get_segment_coordinates(i, ovh_size, len(sequence))
+            )
             for i, (ovh_size, valid) in enumerate(osizes_and_validities)
         ]
 

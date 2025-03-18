@@ -1,6 +1,5 @@
 """Classes to represent assembly strategies in DnaWeaver."""
 
-
 from collections import defaultdict
 from .ExportsMixin import ExportsMixin
 from .PostProcessingMixin import PostProcessingMixin
@@ -19,11 +18,11 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
     sequence
       The sequence being quoted.
 
-    accepted
-      False if the sequence was rejected by the supplier, else True.
-
     price
       Amount asked by the DnaSupplier to build the requested sequence.
+
+    accepted
+      False if the sequence was rejected by the supplier, else True.
 
     lead_time
       Number of days required by the DnaSupplier to deliver the sequence.
@@ -33,6 +32,9 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
       where the `(start, end)` represent sub-segments of the final sequence and
       `op1, op2` represent the AssemblyOperations that create the corresponding
       fragments.
+
+    metadata
+      Any other data on the quote.
 
     message
       A message added to the quote for more information, for instance the
@@ -47,9 +49,6 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
       the project will be finished on time (so the global deadline minus the
       duration of downstream operations). This is for drawing assembly
       timelines. (see the `propagate_deadline` method for this class).
-
-    metadata
-      Any other data on the quote.
     """
 
     def __init__(
@@ -93,7 +92,7 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
     def step_duration(self):
         """Duration of the final step of the assembly in the quote.
 
-        Inferred by substracting the lead time of children operations to the
+        Inferred by subtracting the lead time of children operations to the
         lead time of this operation.
         """
         children_lead_time = self.children_overall_lead_time()
@@ -153,6 +152,5 @@ class DnaQuote(ExportsMixin, PostProcessingMixin):
             return max(lead_times)
 
     def cuts_indices(self):
-        """Return the locations of the `cuts` where the sequence is assembled.
-        """
+        """Return the locations of the `cuts` where the sequence is assembled."""
         return sorted([segment[1] for segment in self.assembly_plan])[:-1]

@@ -19,15 +19,34 @@ class GoldenGateAssemblyMethod(OverlapingAssemblyMethod):
     Parameters
     ----------
 
-    left_overhang
+    enzyme
+      The enzyme used in the cloning.
+
+    wildcard_basepair
+      The base to use between the enzyme recognition site and the restriction site
+      (overhang). For example "A" in ggtctcAgaag.
+
+    left_addition
       An ATGC DNA sequence representing the left overhang, in 5' -3'.
       For practicality, this can contain "[BsaI]", "[BsmBI]", "[BbsI]", which
       will be replaced by their restriction sites.
 
-    right_overhang
+    right_addition
       An ATGC DNA sequence representing the right overhang, in 5'-3'.
       Be careful, it has to be 5'-3' !!!
       If left to None, will be equal to left_overhang.
+
+    refuse_sequences_with_enzyme_site
+      If True, refuse sequences with this enzyme's recognition site.
+
+    min_overhangs_gc
+      Minimum GC content of overhangs, expressed as a fraction (between 0 and 1).
+
+    max_overhangs_gc
+      Maximum GC content of overhangs, expressed as a fraction (between 0 and 1).
+
+    min_overhangs_differences
+      Ensure that overhang sequences differ by at least that many nucleotides.
     """
 
     name = "Golden Gate Assembly"

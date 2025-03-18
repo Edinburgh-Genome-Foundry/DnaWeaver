@@ -2,7 +2,7 @@ import functools
 
 
 def memoize(obj):
-    """Memoize the function results"""
+    """Memoize the function results."""
     cache = obj.cache = {}
 
     @functools.wraps(obj)

@@ -8,9 +8,8 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
     Parameters
     ----------
 
-    homology_arm_length
-      Length of the homology arm, or "overhang". A length of L means that
-      consecutive segments will overlap by 2*L.
+    overhang_selector
+      The overhang (overlap, homology) selector, such as FixedSizeSegmentSelector.
     """
 
     name = "Overlaping Assembly"
@@ -33,13 +32,13 @@ class OverlapingAssemblyMethod(DnaAssemblyMethod):
 
 
 class GibsonAssemblyMethod(OverlapingAssemblyMethod):
-    """Gibson Assembly Method. Just another overlap-method"""
+    """Gibson Assembly Method. Just another overlap-method."""
 
     name = "Gibson Assembly"
 
 
 class OligoAssemblyMethod(OverlapingAssemblyMethod):
-    """The Build-a-Genome Assembly Method. Just another overlap-method"""
+    """The Build-a-Genome Assembly Method. Just another overlap-method."""
 
     alternate_fragments_orientation = True
     name = "Oligo Assembly"

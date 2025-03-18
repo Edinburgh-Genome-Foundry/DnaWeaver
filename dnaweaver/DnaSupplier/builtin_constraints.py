@@ -18,12 +18,18 @@ class NoPatternConstraint:
 
     The interest of having this as a class is that a DnaSupplier using this
     constraint can be displayed as a string with the pattern appearing
-    explicitly, which would not be the case for a function
+    explicitly, which would not be the case for a function.
 
     Parameters
     ----------
 
-    pattern=None, enzyme=None, is_regex=False, with_revcomp=True
+    pattern
+
+    enzyme
+
+    is_regex
+
+    with_revcomp
     """
 
     def __init__(self, pattern=None, enzyme=None, is_regex=False, with_revcomp=True):

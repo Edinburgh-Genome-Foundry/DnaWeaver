@@ -6,6 +6,13 @@ class FixedSizeSegmentSelector(SegmentSelector):
 
     Great for methods involving large homology regions where melting
     temperature matters less.
+
+    segment_size
+      The size of the overlap (homology).
+
+    left_addition
+
+    right_addition
     """
 
     def __init__(self, segment_size=100, left_addition="", right_addition=""):

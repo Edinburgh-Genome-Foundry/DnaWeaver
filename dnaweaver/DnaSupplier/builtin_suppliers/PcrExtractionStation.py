@@ -29,6 +29,8 @@ class PcrExtractionStation(DnaSupplier):
     primers_supplier
       DnaSupplier providing the primers (will typically be an CommercialDnaOffer).
 
+    homology_selector
+
     blast_database
 
     sequences
@@ -51,12 +53,11 @@ class PcrExtractionStation(DnaSupplier):
     memoize
 
     sequence_constraints
-
     """
 
     class_description = "PCR-extraction station"
     operation_type = "PCR"
-    report_fa_symbol = u""
+    report_fa_symbol = ""
     report_fa_symbol_plain = "recycle"
     report_color = "#eeffee"
     dna_banks = {}
@@ -122,7 +123,11 @@ class PcrExtractionStation(DnaSupplier):
             )
 
             return [
-                (al.hit_id + "_h%03d" % i, (hit.query_start, hit.query_end), hit.sbjct,)
+                (
+                    al.hit_id + "_h%03d" % i,
+                    (hit.query_start, hit.query_end),
+                    hit.sbjct,
+                )
                 for al in record.alignments
                 for i, hit in enumerate(al.hsps)
             ]
@@ -138,7 +143,11 @@ class PcrExtractionStation(DnaSupplier):
             word_size=self.blast_word_size,
         )
         return [
-            (al.hit_id + "_h%03d_%02d" % (i, j), (start, end), sequence[start:end],)
+            (
+                al.hit_id + "_h%03d_%02d" % (i, j),
+                (start, end),
+                sequence[start:end],
+            )
             for al in record.alignments
             for i, hit in enumerate(al.hsps)
             for j, (start, end) in enumerate(
@@ -147,7 +156,10 @@ class PcrExtractionStation(DnaSupplier):
         ]
 
     def get_best_price(
-        self, sequence, max_lead_time=None, with_assembly_plan=False,
+        self,
+        sequence,
+        max_lead_time=None,
+        with_assembly_plan=False,
     ):
         """Return a price-optimal DnaQuote for the given sequence.
 
@@ -243,7 +255,10 @@ class PcrExtractionStation(DnaSupplier):
                 price=total_price,
                 assembly_plan=assembly_plan,
                 message="From %s" % subject,
-                metadata={"subject": subject, "location": (hit_start, hit_end),},
+                metadata={
+                    "subject": subject,
+                    "location": (hit_start, hit_end),
+                },
             )
         if len(hits):
             message = "Some matches found but could not find suitable primer design."

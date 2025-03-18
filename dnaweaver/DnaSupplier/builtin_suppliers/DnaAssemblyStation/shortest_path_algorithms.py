@@ -8,6 +8,7 @@ from itertools import count
 
 class NoSolutionFoundError(Exception):
     """Error thrown when an optimization problem seems to have no solution."""
+
     pass
 
 
@@ -29,15 +30,19 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     Parameters
     ----------
 
-    G : NetworkX graph
+    G : NetworkX graph.
+
     source : node
-       Starting node for path
+       Starting node for path.
+
     target : node
-       Ending node for path
+       Ending node for path.
+
     heuristic : function
        A function to evaluate the estimate of the distance
        from the a node to the target.  The function takes
        two nodes arguments and must return a number.
+
     weight: string, optional (default='weight')
        Edge data key corresponding to the edge weight.
 
@@ -65,18 +70,22 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     shortest_path, dijkstra_path
     """
     if source not in G or target not in G:
-        msg = 'Either source {} or target {} is not in G'
+        msg = "Either source {} or target {} is not in G"
         raise nx.exception.NetworkXNoPath(msg.format(source, target))
 
     if heuristic is None:
         # The default heuristic is h=0 - same as Dijkstra's algorithm
         def heuristic(u, v):
             return 0
+
     if weight is None:
+
         def weight(*a):
             return 1
+
     elif isinstance(weight, str):
         key = weight
+
         def weight(n1, n2, props):
             return props[key]
 
@@ -122,17 +131,28 @@ def astar_path(G, source, target, heuristic=None, weight=None):
     raise nx.NetworkXNoPath("Node %s not reachable from %s" % (source, target))
 
 
-def shortest_valid_path(graph, start, end, nodes_constraints=(),
-                        size_limit=None, min_step=None,
-                        compatibility_search_cutoff=100,
-                        penalty=0):
+def shortest_valid_path(
+    graph,
+    start,
+    end,
+    nodes_constraints=(),
+    size_limit=None,
+    min_step=None,
+    compatibility_search_cutoff=100,
+    penalty=0,
+):
     if size_limit is not None:
+
         def f(penalty):
             try:
                 path = shortest_valid_path(
-                    graph, start, end, penalty=penalty, size_limit=None,
+                    graph,
+                    start,
+                    end,
+                    penalty=penalty,
+                    size_limit=None,
                     nodes_constraints=nodes_constraints,
-                    compatibility_search_cutoff=100
+                    compatibility_search_cutoff=100,
                 )
                 return path, len(path) - 1
             except NoSolutionFoundError:
@@ -166,9 +186,13 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
             data["weight"] += penalty
         try:
             path = shortest_valid_path(
-                graph, start, end, penalty=0, size_limit=None,
+                graph,
+                start,
+                end,
+                penalty=0,
+                size_limit=None,
                 compatibility_search_cutoff=compatibility_search_cutoff,
-                nodes_constraints=nodes_constraints
+                nodes_constraints=nodes_constraints,
             )
             for data in edge_datas:
                 data["weight"] -= penalty
@@ -179,22 +203,22 @@ def shortest_valid_path(graph, start, end, nodes_constraints=(),
         return path
 
     elif len(nodes_constraints) == 0:
-        return nx.dijkstra_path(graph, start, end, weight='weight')
+        return nx.dijkstra_path(graph, start, end, weight="weight")
 
     else:
+
         def path_is_valid(path):
-            return all(nodes_constraint(path)
-                       for nodes_constraint in nodes_constraints)
-        tentative_shortest_path = nx.dijkstra_path(graph, start, end,
-                                                   weight='weight')
+            return all(nodes_constraint(path) for nodes_constraint in nodes_constraints)
+
+        tentative_shortest_path = nx.dijkstra_path(graph, start, end, weight="weight")
         if path_is_valid(tentative_shortest_path):
             return tentative_shortest_path
-        shortest_paths = nx.shortest_simple_paths(graph, start, end,
-                                                  weight='weight')
+        shortest_paths = nx.shortest_simple_paths(graph, start, end, weight="weight")
         for i in range(compatibility_search_cutoff):
             shortest_path = next(shortest_paths)
             if path_is_valid(shortest_path):
                 return shortest_path
-        raise nx.NetworkXNoPath("Could not find a solution verifying the cuts"
-                                 " set constraints, after %d tries." %
-                                 compatibility_search_cutoff)
+        raise nx.NetworkXNoPath(
+            "Could not find a solution verifying the cuts"
+            " set constraints, after %d tries." % compatibility_search_cutoff
+        )

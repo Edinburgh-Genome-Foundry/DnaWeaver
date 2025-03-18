@@ -41,6 +41,9 @@ class AssemblyBlocksMixin:
 
         legend
           Whether the legend is included in the ax.
+
+        legend_offset
+          Legend offset.
         """
         rectangles = []
         if edge_widths is None:
@@ -195,7 +198,10 @@ def _matplotlib_plot_assembly_blocks(
     for g in sorted_rectangles:
         if g["source"] not in seen_sources:
             legend_patch = mpatches.Patch(
-                facecolor=g["color"], label=g["source"], edgecolor="k", linewidth=1.0,
+                facecolor=g["color"],
+                label=g["source"],
+                edgecolor="k",
+                linewidth=1.0,
             )
             legend_handles.append(legend_patch)
             seen_sources.add(g["source"])
