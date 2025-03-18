@@ -17,14 +17,16 @@ except ImportError:
 
 from setuptools import setup, find_packages
 
-exec(open("dnaweaver/version.py").read())  # loads __version__
+version = {}
+with open("dnaweaver/version.py") as fp:
+    exec(fp.read(), version)
 
 setup(
     name="DnaWeaver",
-    version=__version__,
+    version=version["__version__"],
     author="Zulko",
     description="Make ordering and assembly plans for DNA sequences",
-    url='https://github.com/Edinburgh-Genome-Foundry/DnaWeaver',
+    url="https://github.com/Edinburgh-Genome-Foundry/DnaWeaver",
     long_description=open("pypi-readme.rst").read(),
     license="MIT",
     keywords="DNA optimization assembly ordering synthetic biology",
@@ -39,6 +41,6 @@ setup(
         "dna_features_viewer",
         "weasyprint",
         "pandas",
-        "jinja2"
+        "jinja2",
     ],
 )
