@@ -6,9 +6,6 @@
     </p>
 
 
-DNA Weaver
-==========
-
 .. image:: https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/actions/workflows/build.yml/badge.svg
     :target: https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/actions/workflows/build.yml
     :alt: GitHub CI build status
@@ -16,7 +13,8 @@ DNA Weaver
 .. image:: https://coveralls.io/repos/github/Edinburgh-Genome-Foundry/DnaWeaver/badge.svg?branch=master
     :target: https://coveralls.io/github/Edinburgh-Genome-Foundry/DnaWeaver?branch=master
 
-DNA Weaver (documentation `here <https://edinburgh-genome-foundry.github.io/DnaWeaver/>`_) is a Python library to find optimal strategies for assembling large
+DNA Weaver (documentation `here <https://edinburgh-genome-foundry.github.io/DnaWeaver/>`_)
+is a Python library to find optimal strategies for assembling large
 DNA constructs. Given an arbitrary sequence, DNA Weaver will select the most
 adapted commercial DNA providers, cloning methods and parts repositories
 (depending on your preferences), and will design all necessary assembly fragments
@@ -55,19 +53,19 @@ A detailed description and walkthrough of DNA Weaver can be found in this PDF do
 
 
 Examples
----------
+--------
 
 
 Ordering fragments from multiple vendors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the following example we ask DNA Weaver for a plan to assemble a 10kb
-sequence via Gibson assembly of fragments with 40bp homologies. The fragments
-can be ordered from two companies: CheapDNA produces fragments for 10c/bp,
-at the condition that they do not contain any BsaI site and are smaller than 3kb,
-and DeluxeDNA produces produces any fragment under 4kb for 20c/bp.
+In the following example we ask DNA Weaver for a plan to assemble a 10 kbp
+sequence via Gibson assembly of fragments with 40 bp overlaps (homologies).
+The fragments can be ordered from two companies: CheapDNA produces fragments for 10c/bp,
+with the condition that they do not contain BsaI enzyme recognition sites and are
+smaller than 4 kbp. DeluxeDNA can produce any fragment under 3 kbp, for 20c/bp.
 
-We will first CheapDNA and DeluxeDNA separately, then link them to a Gibson
+We will first set up CheapDNA and DeluxeDNA separately, then link them to a Gibson
 Assembly station: 
 
 .. raw:: html
@@ -111,7 +109,7 @@ Assembly station:
     sequence = dw.random_dna_sequence(10000, seed=123)
     quote = assembly_station.get_quote(sequence, with_assembly_plan=True)
 
-    print (quote.assembly_step_summary())
+    print(quote.assembly_step_summary())
 
 This code prints out an assembly summary showing the source of the
 different sequence segments (start, end):
@@ -126,7 +124,7 @@ different sequence segments (start, end):
       7359-10000: From CheapDNA - price 265.00 - lead_time 40.0
     Price: 1098.80, total lead_time: 45.0
 
-Notice how DNA Weaver uses preferentially CheapDNA, with the exception of a 1kb
+Notice how DNA Weaver uses preferentially CheapDNA, with the exception of a 1 kbp
 fragment in the middle of the sequence, which had to be ordered from DeluxeDNA
 due to the presence of a BsaI site.
 
@@ -134,12 +132,12 @@ due to the presence of a BsaI site.
 Multi-step assembly with assembly report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By defining more DNA sources and connecting them together it is possible to
+By defining more DNA sources and connecting them together, it is possible to
 model complex assembly problems.
 
 For instance in `this example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/three-step_assembly/three-step_assembly.py>`_ we implement a complex DNA assembly chain,
-where the final DNA sequence (typically 50kb) is obtained from Yeast
-recombination of DNA chunks originating either from the E. coli chromosome
+where the final DNA sequence (typically 50 kbp) is obtained from Yeast
+recombination of DNA chunks originating either from the *E. coli* chromosome
 (via PCR extraction) or from the assembly of smaller fragments
 via Golden Assembly or Gibson assembly (whichever method is best adapted). These
 assembly fragments are obtained either from commercial providers (CheapDNA and
@@ -155,7 +153,7 @@ DeluxeDNA) or assembled from oligos:
 
 Just a few lines of code can produce a comprehensive report (see a sample `here <https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/DnaWeaver/master/docs/_static/example_report.zip?raw=true>`_)
 featuring plots of the final assembly plan, comprehensive PDF reports
-listing all operations needed, and genbank/fasta files of the sequences to order:
+listing all operations needed, and Genbank/FASTA files of the sequences to order:
 
 .. code:: python
 
@@ -179,7 +177,7 @@ Assembly with part reuse
 
 In `this other example <https://github.com/Edinburgh-Genome-Foundry/DnaWeaver/blob/master/examples/scenarios/parts_assembly_with_ever_more_suppliers/example.py>`_ we build a sequence comprising a resistance cassette
 (promoter, resistance, terminator) flanked by two homology arms. The sequence
-incorporates parts from the EMMA library. The script progressively adds new
+incorporates DNA parts from the EMMA Golden Gate toolkit. The script progressively adds new
 DNA sources (commercial DNA, the EMMA library, chromosomal DNA) so we can observe
 the changes in the proposed solution:
 
