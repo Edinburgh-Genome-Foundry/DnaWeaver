@@ -38,7 +38,7 @@ def gc_content(sequence, window_size=None):
     """
     # The code is a little cryptic but speed gain is 300x
     # compared with pure-python string operations
-    arr = np.frombuffer((sequence + "").encode(), dtype="uint8")
+    arr = np.frombuffer((sequence.upper() + "").encode(), dtype="uint8")
     arr_GCs = (arr == 71) | (arr == 67)  # 67=C, 71=G
 
     if window_size is None:
