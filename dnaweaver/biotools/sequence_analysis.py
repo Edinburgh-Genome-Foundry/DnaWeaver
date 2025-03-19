@@ -21,7 +21,7 @@ def gc_content(sequence, window_size=None):
     ----------
 
     sequence
-      An ATGC DNA sequence (upper case!).
+      An ATGC DNA sequence.
 
     window_size
       If provided, the local GC content for the different sliding windows of
