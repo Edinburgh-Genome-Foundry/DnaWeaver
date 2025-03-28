@@ -51,3 +51,6 @@ nosetests.xml
 *.zip
 .vscode
 # *.gb
+
+# Sphinx documentation
+docs/_build/

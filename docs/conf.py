@@ -51,7 +51,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"DNA Weaver"
-copyright = u"2020, Edinburgh Genome Foundry"
+copyright = u"2020, 2025 Edinburgh Genome Foundry, University of Edinburgh"
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
