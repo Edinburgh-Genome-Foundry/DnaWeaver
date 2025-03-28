@@ -1,3 +1,4 @@
 numpydoc
 sphinxcontrib.mermaid
 recommonmark
+sphinx-press-theme
