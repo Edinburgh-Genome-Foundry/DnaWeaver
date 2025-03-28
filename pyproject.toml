@@ -1,0 +1,32 @@
+[project]
+name = "dnaweaver"
+version = "0.3.8"
+license = "MIT"
+authors = [{ name = "Zulko" }]
+description = "Make ordering and assembly plans for DNA sequences"
+readme = "pypi-readme.rst"
+keywords = ["DNA", "optimization", "assembly", "ordering", "synthetic", "biology"]
+dependencies = [
+    "numpy",
+    "Biopython",
+    "proglog",
+    "networkx",
+    "flametree",
+    "dna_features_viewer",
+    "weasyprint",
+    "pandas",
+    "jinja2",
+]
+
+[project.urls]
+Homepage = "https://github.com/Edinburgh-Genome-Foundry/dnaweaver"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["docs"]
