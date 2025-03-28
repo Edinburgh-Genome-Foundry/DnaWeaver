@@ -33,7 +33,10 @@ Infos
 
 `<https://dnaweaver.genomefoundry.org>`_
 
-**License:** MIT, Copyright Edinburgh Genome Foundry
+**License:** MIT
+
+Copyright 2021, 2025 Edinburgh Genome Foundry, University of Edinburgh
+
 
 More biology software
 ---------------------
