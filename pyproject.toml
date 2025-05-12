@@ -1,6 +1,6 @@
 [project]
 name = "dnaweaver"
-version = "0.3.9"
+version = "0.3.10"
 license = "MIT"
 authors = [{ name = "Zulko" }]
 description = "Make ordering and assembly plans for DNA sequences"
